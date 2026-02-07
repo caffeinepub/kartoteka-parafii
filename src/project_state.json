@@ -1,337 +1,42 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 11,
-  "summary": "Kartoteka Parafii is a parish management system for Parafia Świętego Jana Chrzciciela w Zbroszy Dużej, consisting of a Motoko (Internet Computer) backend canister and a React/TypeScript frontend. It supports authenticated staff access via Internet Identity, role-based authorization, and modules for managing parishioners (including family and sacrament data), localities and residents, budget transactions and balance reporting, events with tasks, parish function assignments, parish notes, attendance statistics, offerings (individual and collective) synchronized into the budget, official correspondence letters, and an anniversaries module (baptism/marriage/funeral) with clear views and reminder-oriented listings. The UI includes pagination, search, CRUD dialogs, dashboard summaries, light/dark themes, and branded PDF/print exports for multiple sections.",
+  "projectStateVersion": 3,
+  "summary": "Aplikacja parafialna: plan wdrożenia nowej sekcji „Chrzty” (ewidencja sakramentu chrztu) z listą rekordów, formularzem edycji/dodawania oraz eksportem pojedynczego aktu do PDF (świadectwo chrztu), dostępna wyłącznie dla roli Zarządzający.",
+  "architectural_notes": [
+    "Sekcja „Chrzty” ma być dostępna wyłącznie dla roli Zarządzający (wymagane egzekwowanie uprawnień w UI i backendzie).",
+    "Eksport PDF obejmuje wyłącznie pojedynczy akt chrztu i musi drukować tylko pola niepuste; dokument ma mieć prosty, czytelny styl bez ozdobnych ramek, zdjęć i dodatkowych danych (np. rodzice chrzestni, szafarz)."
+  ],
+  "known_issues": [
+    "Wielokrotne próby wdrożenia sekcji „Chrzty” kończą się niepowodzeniem narzędzia/AI (\"couldn't implement/handle request\"); użytkownik prosi o ponowienie wykonania zadania."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "IF-1",
-      "title": "Internet Identity authentication (login/logout)",
-      "synonyms": [
-        "II auth",
-        "DFINITY AuthClient authentication"
-      ],
-      "description": "Provides a React context (InternetIdentityProvider) wrapping DFINITY AuthClient to login via Internet Identity, persist delegation locally, and logout/clear identity. Login UI is provided via LoginPage.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-2",
-      "title": "Role-based access control with secret initialization",
-      "synonyms": [
-        "RBAC",
-        "admin token initialization"
-      ],
-      "description": "Backend access control assigns roles (admin/user/guest) using a secret token (CAFFEINE_ADMIN_TOKEN) on first initialization. Includes methods to initialize, query caller role/admin status, and assign roles (admin-only). Frontend passes the secret via URL hash param caffeineAdminToken during actor initialization.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-3",
-      "title": "User profile setup and persistence",
-      "synonyms": [
-        "staff profile",
-        "caller profile"
-      ],
-      "description": "Stores and retrieves a per-principal UserProfile (name, role). Frontend prompts first-time authenticated users with a modal to create their profile and displays it in the layout sidebar.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-4",
-      "title": "Parishioner registry (kartoteka) with pagination and search",
-      "synonyms": [
-        "parishioners CRUD",
-        "member registry"
-      ],
-      "description": "Paginated listing of parishioners with configurable page size, search by name/address, and card/list view modes. Supports create/update (via updateParishioner) and delete operations with react-query cache invalidation.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-5",
-      "title": "Parishioner detailed editing: sacraments, family members, and pastoral notes",
-      "synonyms": [
-        "parishioner dialog",
-        "family/sacrament tracking"
-      ],
-      "description": "Dialog-based editing includes tabs for basic details, sacramental years, extended family members (each with full sacrament fields), and pastoral notes. Family members are included in statistics calculations in the UI.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-6",
-      "title": "Individual offerings management synchronized to budget",
-      "synonyms": [
-        "parishioner offerings",
-        "individual donations"
-      ],
-      "description": "CRUD for IndividualOffering entries tied to a parishioner with date picker and description. Backend automatically creates/updates/removes a linked income BudgetTransaction with category \"Ofiary indywidualne\".",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-7",
-      "title": "Localities management with tasks and residents view",
-      "synonyms": [
-        "miejscowości CRUD",
-        "locality directory"
-      ],
-      "description": "CRUD for Locality records (name, contact person, phone, tasks) and paginated listing of LocalityWithParishioners including computed residents. UI provides tabs for residents, tasks, and collective offerings per locality.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-8",
-      "title": "Family-grouped resident lists per locality + PDF export",
-      "synonyms": [
-        "resident list report",
-        "locality residents report"
-      ],
-      "description": "Frontend builds locality resident lists grouped by parishioner family (parishioner + family members) by matching locality name in address, displays hierarchical structure, and exports a branded PDF/printable report.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-9",
-      "title": "Collective offerings per locality synchronized to budget",
-      "synonyms": [
-        "locality donations",
-        "collective donations"
-      ],
-      "description": "CRUD for CollectiveOffering entries by locality. Backend synchronizes each offering into budget as an income BudgetTransaction with category \"Ofiary zbiorowe\" and relatedLocality set. UI loads offerings by locality and supports add/edit/delete via dialogs.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-10",
-      "title": "Budget transactions: CRUD, pagination, month/year filtering, summaries",
-      "synonyms": [
-        "financial ledger",
-        "budget module"
-      ],
-      "description": "Paginated budget transaction listing with month/year filters and configurable page size. UI computes monthly and yearly income/expense/balance and supports add/edit/delete via dialog and confirmation modal.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-11",
-      "title": "Budget reporting and PDF exports (monthly/yearly)",
-      "synonyms": [
-        "financial reports",
-        "budget PDF"
-      ],
-      "description": "Generates branded PDF/print views for monthly detailed reports (including transaction list) and yearly summary reports using the shared HTML-based PDF generator.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-12",
-      "title": "Backend-calculated overall budget balance endpoint",
-      "synonyms": [
-        "budget balance API",
-        "getOverallBudgetBalance"
-      ],
-      "description": "Backend query computes overall balance from all budget transactions; frontend Dashboard uses this for a single authoritative balance value and shows income/expense totals from cached transaction list.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-13",
-      "title": "Events management with tasks, pagination, and PDF export",
-      "synonyms": [
-        "wydarzenia CRUD",
-        "event planner"
-      ],
-      "description": "CRUD for Event entities with timestamp, description, and task list. UI separates upcoming vs past events, provides pagination controls, and exports event reports to PDF/print.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-14",
-      "title": "Parish function assignments (individual and locality) with contacts array",
-      "synonyms": [
-        "functions/roles registry",
-        "duty assignments"
-      ],
-      "description": "Manages ParishFunctionAssignment and ParishFunctionLocalityAssignment with separate paginated lists, dialogs for add/edit, delete actions, and support for multiple contacts per assignment (contacts[]). Includes PDF export for both categories.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-15",
-      "title": "Statistics: sacrament counts + manual Sunday attendance entries + PDF export",
-      "synonyms": [
-        "statystyki module",
-        "attendance tracking"
-      ],
-      "description": "Frontend computes sacrament totals (baptism/communion/confirmation/marriage/funeral) from parishioners and family members, while manual StatisticEntry records track Sunday attendance and communion counts. Includes CRUD and PDF reporting.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-16",
-      "title": "Parish notes (Uwagi) with CRUD and PDF export",
-      "synonyms": [
-        "notes journal",
-        "parish diary"
-      ],
-      "description": "CRUD for ParishNote entries, displayed as cards and exportable to PDF/print. Frontend loads large batches and tracks entries using timestamp-based IDs due to backend entry type lacking uid field.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-17",
-      "title": "Correspondence (letters) management with search and PDF print layout",
-      "synonyms": [
-        "korespondencja module",
-        "official letters"
-      ],
-      "description": "CRUD for Letter records with automatic numbering, search across number/title/body, and export to a dedicated letter-style PDF/print template (EB Garamond styling, parish branding).",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-18",
-      "title": "Branded HTML-to-print PDF generator utilities",
-      "synonyms": [
-        "PDF/print export",
-        "report generator"
-      ],
-      "description": "Client-side generator creates branded A4 HTML documents (logo, quote, headers/footers) and triggers print automatically. Includes specialized generators for events, parish functions, notes/statistics/budget reports, and letters with safe HTML escaping.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-19",
-      "title": "Application shell: responsive sidebar navigation and theme switching",
-      "synonyms": [
-        "main layout",
-        "navigation"
-      ],
-      "description": "MainLayout provides desktop sidebar and mobile menu navigation across modules, shows user profile info, supports logout (clearing react-query cache), and toggles light/dark theme via next-themes.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-20",
-      "title": "React Query data access layer for all backend operations",
-      "synonyms": [
-        "useQueries hooks",
-        "data fetching layer"
-      ],
-      "description": "Centralized hooks wrap backend calls into queries/mutations with caching, pagination query keys, stale times, placeholder data, and targeted cache invalidation across dependent domains (e.g., offerings invalidate budget/balance).",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-21",
-      "title": "Blob storage integration and maintenance endpoints (gateway auth, GC, refill)",
-      "synonyms": [
-        "caffeine storage mixin",
-        "blob lifecycle management"
-      ],
-      "description": "Backend includes a storage mixin providing authorization of gateway principals, dead-blob listing and pruning with GC triggering, and a cashier refill function for cycles management.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-22",
-      "title": "Schema migration for parish function contacts field",
-      "synonyms": [
-        "data migration",
-        "contacts migration"
-      ],
-      "description": "Migration module converts older ParishFunctionAssignment records that had a single contact field into the new contacts[] array representation while preserving locality assignment contacts.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-23",
-      "title": "Anniversaries module (baptism, marriage, funeral) with reminder-oriented views",
-      "synonyms": [
-        "rocznice",
-        "anniversary reminders",
-        "chrzest/małżeństwo/pogrzeb rocznice"
-      ],
-      "description": "Adds frontend support for computing and presenting upcoming/ongoing anniversaries (e.g., baptism, marriage, funeral) from parishioner and family-member sacrament dates/years, providing clear list views suitable for reminder workflows.",
+      "id": "feature-update-the-correspondence-korespondencja-printable-letter-pdf-so-the-main-letter-body-text-is-left-aligned-not-centered-in-the-pdf-generated-by-generateletterpdf-in-frontend-src-lib-pdfgenerator-ts",
+      "title": "Update the Correspondence (Korespondencja) printable letter PDF so the main letter body text is left-aligned (not centered) in the PDF generated by `generateLetterPDF` in `frontend/src/lib/pdfGenerator.ts`.",
       "reqIds": [
-        "AR-1"
+        "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-the-dashboard-anniversaries-section-to-add-a-ui-control-that-filters-the-anniversaries-list-by-type-all-baptism-marriage-funeral-the-filter-must-work-together-with-the-existing-year-selector-and-pagination-changing-year-or-filter-resets-to-page-1-the-displayed-anniversary-numbers-must-match-kartoteka-card-logic-current-year-minus-event-year",
-      "title": "Update the Dashboard anniversaries section to add a UI control that filters the anniversaries list by type (All, Baptism, Marriage, Funeral). The filter must work together with the existing year selector and pagination (changing year or filter resets to page 1). The displayed anniversary numbers must match Kartoteka card logic (current year minus event year).",
+      "id": "feature-update-the-correspondence-korespondencja-printable-letter-pdf-so-the-signature-block-containing-the-lines-z-ufno-ci-w-bo-e-mi-osierdzie-and-ks-marek-michalczyk-is-shifted-slightly-to-the-right-not-centered-at-the-bottom-of-the-page-in-the-pdf-generated-by-generateletterpdf-in-frontend-src-lib-pdfgenerator-ts",
+      "title": "Update the Correspondence (Korespondencja) printable letter PDF so the signature block containing the lines \"Z ufnością w Boże miłosierdzie\" and \"ks. Marek Michalczyk\" is shifted slightly to the right (not centered at the bottom of the page) in the PDF generated by `generateLetterPDF` in `frontend/src/lib/pdfGenerator.ts`.",
       "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-dashboard-anniversaries-pdf-export-to-respect-the-currently-selected-anniversary-type-filter-all-baptism-marriage-funeral-and-selected-year-generating-a-document-that-contains-only-the-filtered-anniversary-entries",
-      "title": "Update the Dashboard anniversaries PDF export to respect the currently selected anniversary type filter (All/Baptism/Marriage/Funeral) and selected year, generating a document that contains only the filtered anniversary entries.",
-      "reqIds": [
-        "REQ-4"
+        "REQ-2"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [
     {
-      "id": "AR-2",
-      "summary": "Ujednolicić sposób liczenia rocznic między Dashboardem a wizytówką Kartoteki: jedna logika i jedno pole źródłowe (bieżący rok − rok wydarzenia), np. chrzest 2016 → w 2026 rocznica = 10",
+      "id": "AR-1",
+      "summary": "Wdrożyć sekcję „Chrzty” (dostęp tylko dla Zarządzającego): lista rekordów z wyszukiwaniem/sortowaniem (nr aktu, nazwisko, data chrztu), dodawanie/edycja, oraz eksport pojedynczego aktu do PDF wg zdefiniowanej treści i zasad (drukować tylko niepuste pola; bez rodziców chrzestnych/szafarza/telefonów/zdjęć/ozdobnych ramek).",
       "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Dodać na Dashboardzie filtrowanie listy rocznic wg typu: chrzest / małżeństwo / pogrzeb",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Unify anniversary-year math in the backend so Dashboard anniversaries use the exact same rule as the Kartoteka parishioner card: anniversaryNumber must be computed as (targetYear - eventYear) (NO +1 offset), based strictly on the corresponding single sacrament year field (baptismYear/marriageYear/funeralYear). Do not return anniversaries where anniversaryNumber is 0 (i.e., when targetYear == eventYear).",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Add backend support for filtering anniversaries by type for both paginated and PDF-export endpoints, so the frontend can request only: baptism, marriage, or funeral anniversaries for a given target year. The filtering must apply before pagination and must also affect totalCount/pageCount and PDF export contents.",
-      "reqIds": [
-        "REQ-2"
-      ],
       "status": "pending"
     }
   ],
-  "architectural_notes": [
-    "Backend is an ICP Motoko canister using in-memory state via mo:core/Map and explicit shared/query methods for CRUD.",
-    "Role-based access control is centralized in authorization/access-control.mo and exposed via a MixinAuthorization mixin; initialization relies on a secret token and first-caller admin assignment logic.",
-    "Storage/asset lifecycle support is included via a blob-storage mixin using Prim storage APIs and an allowlist of gateway principals fetched from an external ‘cashier’ canister.",
-    "Backend implements a reusable pagination helper (validated page/pageSize, max page size) returning a generic PaginatedResult<T>.",
-    "Frontend uses @tanstack/react-query for all data access (queries/mutations), cache invalidation, and stale-while-revalidate patterns for dashboard-friendly ‘all’ queries.",
-    "Frontend actor creation is abstracted in useActor: it builds an authenticated or anonymous actor, then initializes access control using a secret URL hash parameter.",
-    "UI is built with TailwindCSS + shadcn-like component primitives, with next-themes for dark/light mode and skeleton loaders for perceived performance.",
-    "PDF export is implemented client-side by generating branded HTML and triggering window.print() in a new tab/window; content is escaped to mitigate XSS.",
-    "A migration module exists to transform older parish function assignment schema (single contact field) into the new contacts[] array schema.",
-    "Frontend includes a dedicated anniversaries utility (anniversaries.ts) to derive anniversary/reminder lists from parishioner sacrament data for display in UI views."
-  ],
-  "known_issues": [
-    "Frontend useGetCallerUserProfile can execute for anonymous users because useActor returns an anonymous actor when not authenticated; the backend traps on unauthorized access, potentially producing query errors/noise during the unauthenticated LoginPage flow.",
-    "Backend getOverallBudgetBalance returns an absolute difference (always non-negative) rather than a signed net balance; UI colors/signing may therefore be misleading for deficit cases.",
-    "useGetAllAnnualSacramentStats is a stub and always returns an empty array (missing backend method).",
-    "StatisticEntry and ParishNote types do not include uid; frontend workarounds use timestamp as the map key/ID, which can cause collisions and makes IDs semantically unclear.",
-    "Letters: backend addLetter sets date = 0 and numbering uses a global nextLetterNumber not scoped per year; if real dating/per-year numbering is required, current implementation is incomplete.",
-    "Environment variable naming in blob-storage appears inconsistent/typo-prone (e.g., CAFFFEINE_STORAGE_CASHIER_PRINCIPAL has unusual spelling), which can cause runtime traps if misconfigured.",
-    "Locality resident association relies on address text containing locality name; this is heuristic and can misclassify residents (false positives/negatives).",
-    "Several ‘add*’ backend methods are deprecated and trap (parishioners, events, parish notes, statistics, parish function assignments); frontend correctly uses update* but the deprecated endpoints remain exposed.",
-    "Rozbieżne wyliczanie rocznic między Dashboardem a wizytówką Kartoteki (różne źródło danych i/lub logika obliczeń), co powoduje niespójne wartości rocznic."
-  ],
-  "isFixRequest": true,
-  "gameProjectType": "none",
-  "projectName": "Kartoteka Parafii",
+  "projectName": "Retry: Fix Correspondence (Korespondencja) printable letter PDF layout",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

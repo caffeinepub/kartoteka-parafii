@@ -275,12 +275,11 @@ export function generateLetterPDF(letter: { number: string; title: string; body:
         }
         
         .letter-container {
-          max-width: 65%;
-          margin: 0 auto;
+          width: 100%;
           background: white;
         }
         
-        /* Header with logo */
+        /* Header with logo - centered */
         .letter-header {
           text-align: center;
           margin-bottom: 40px;
@@ -301,7 +300,7 @@ export function generateLetterPDF(letter: { number: string; title: string; body:
           text-align: center;
         }
         
-        /* Letter title - enlarged and bold */
+        /* Letter title - centered, enlarged and bold */
         .letter-title {
           font-size: 20pt;
           font-weight: 700;
@@ -310,20 +309,23 @@ export function generateLetterPDF(letter: { number: string; title: string; body:
           text-align: center;
         }
         
-        /* Letter body - center aligned */
+        /* Letter body - left aligned, full width */
         .letter-body {
           font-size: 12pt;
           line-height: 1.4;
           color: #1e293b;
-          text-align: center;
+          text-align: left;
           white-space: pre-wrap;
           margin: 30px 0;
+          width: 100%;
         }
         
-        /* Signature block - center aligned */
+        /* Signature block - shifted to the right */
         .signature-block {
           margin-top: 50px;
-          text-align: center;
+          margin-left: 50%;
+          text-align: left;
+          width: 50%;
         }
         
         .signature-line {
@@ -343,7 +345,7 @@ export function generateLetterPDF(letter: { number: string; title: string; body:
           }
           
           .letter-container {
-            max-width: 100%;
+            width: 100%;
           }
         }
       </style>
@@ -365,9 +367,7 @@ export function generateLetterPDF(letter: { number: string; title: string; body:
         </div>
         
         <!-- Letter Body -->
-        <div class="letter-body">
-${escapeHtml(letter.body)}
-        </div>
+        <div class="letter-body">${escapeHtml(letter.body)}</div>
         
         <!-- Signature Block -->
         <div class="signature-block">
