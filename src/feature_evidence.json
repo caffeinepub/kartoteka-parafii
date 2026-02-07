@@ -1,0 +1,47 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-update-the-dashboard-anniversaries-section-to-add-a-ui-control-that-filters-the-anniversaries-list-by-type-all-baptism-marriage-funeral-the-filter-must-work-together-with-the-existing-year-selector-and-pagination-changing-year-or-filter-resets-to-page-1-the-displayed-anniversary-numbers-must-match-kartoteka-card-logic-current-year-minus-event-year",
+      "featureTitle": "Update the Dashboard anniversaries section to add a UI control that filters the anniversaries list by type (All, Baptism, Marriage, Funeral). The filter must work together with the existing year selector and pagination (changing year or filter resets to page 1). The displayed anniversary numbers must match Kartoteka card logic (current year minus event year).",
+      "files": [
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/Dashboard.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "blob-storage@4.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-dashboard-anniversaries-pdf-export-to-respect-the-currently-selected-anniversary-type-filter-all-baptism-marriage-funeral-and-selected-year-generating-a-document-that-contains-only-the-filtered-anniversary-entries",
+      "featureTitle": "Update the Dashboard anniversaries PDF export to respect the currently selected anniversary type filter (All/Baptism/Marriage/Funeral) and selected year, generating a document that contains only the filtered anniversary entries.",
+      "files": [
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/Dashboard.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "blob-storage@4.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    }
+  ]
+}
