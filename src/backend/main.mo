@@ -13,6 +13,8 @@ import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 
+
+
 actor {
   include MixinStorage();
 
@@ -292,6 +294,48 @@ actor {
     anniversaryType : ?AnniversaryType;
   };
 
+  public type ParentsData = {
+    fullName : Text;
+    age : Text;
+    religion : Text;
+    residence : Text;
+  };
+
+  public type BaptismAnnotations = {
+    confirmation : ?Text;
+    marriage : ?Text;
+    ordination : ?Text;
+    profession : ?Text;
+    generalNotes : ?Text;
+  };
+
+  public type BaptismRecord = {
+    id : Nat;
+    actNumber : Text;
+    baptismDate : Int;
+    baptismPlace : Text;
+    personFullName : Text;
+    birthDate : Text;
+    birthPlace : Text;
+    father : ParentsData;
+    mother : ParentsData;
+    annotations : BaptismAnnotations;
+    createdAt : Int;
+  };
+
+  public type BaptismRecordSortMode = {
+    #newestFirst;
+    #oldestFirst;
+    #alphabetical;
+  };
+
+  public type GetBaptismRegistryRequest = {
+    page : ?Nat;
+    pageSize : ?Nat;
+    search : ?Text;
+    sortMode : ?BaptismRecordSortMode;
+  };
+
   func compareLocalities(a : Locality, b : Locality) : Order.Order {
     a.name.compare(b.name);
   };
@@ -351,6 +395,9 @@ actor {
   var individualOfferings = Map.empty<UniqueId, IndividualOffering>();
   let letters = Map.empty<Nat, Letter>();
   var nextLetterNumber = 1;
+
+  // New state for Baptism registry
+  var baptismRegistry = Map.empty<Nat, BaptismRecord>();
 
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -1285,5 +1332,101 @@ actor {
     };
 
     Runtime.trap("Letter does not exist");
+  };
+
+  // Baptism registry endpoints
+  func compareBaptismRecordsByDateDescending(a : BaptismRecord, b : BaptismRecord) : Order.Order {
+    Int.compare(b.baptismDate, a.baptismDate);
+  };
+
+  func compareBaptismRecordsByDateAscending(a : BaptismRecord, b : BaptismRecord) : Order.Order {
+    Int.compare(a.baptismDate, b.baptismDate);
+  };
+
+  func compareBaptismRecordsByName(a : BaptismRecord, b : BaptismRecord) : Order.Order {
+    a.personFullName.compare(b.personFullName);
+  };
+
+  public shared ({ caller }) func createBaptismRecord(record : BaptismRecord) : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authorized users can create baptism registry entries");
+    };
+    let id = nextUniqueId;
+    nextUniqueId += 1;
+    let recordWithId = { record with id };
+    baptismRegistry.add(id, recordWithId);
+    id;
+  };
+
+  public query ({ caller }) func getBaptismRecord(id : Nat) : async ?BaptismRecord {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authorized users can access baptism registry entries");
+    };
+    baptismRegistry.get(id);
+  };
+
+  public shared ({ caller }) func updateBaptismRecord(id : Nat, record : BaptismRecord) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authorized users can update baptism registry entries");
+    };
+    if (not baptismRegistry.containsKey(id)) {
+      Runtime.trap("Record does not exist");
+    };
+    let updatedRecord = { record with id };
+    baptismRegistry.add(id, updatedRecord);
+  };
+
+  public shared ({ caller }) func deleteBaptismRecord(id : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authorized users can delete baptism registry entries");
+    };
+    if (not baptismRegistry.containsKey(id)) {
+      Runtime.trap("Record does not exist");
+    };
+    baptismRegistry.remove(id);
+  };
+
+  public query ({ caller }) func getBaptismRegistry(request : GetBaptismRegistryRequest) : async PaginatedResult<BaptismRecord> {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authorized users can access baptism registry");
+    };
+
+    var recordsArray = baptismRegistry.values().toArray();
+
+    switch (request.search) {
+      case (?searchTerm) {
+        let updatedSearchTerm = searchTerm.toLower();
+        recordsArray := recordsArray.filter(
+          func(record) { record.personFullName.toLower().contains(#text updatedSearchTerm) }
+        );
+      };
+      case (null) {};
+    };
+
+    switch (request.sortMode) {
+      case (?sortMode) {
+        recordsArray := switch (sortMode) {
+          case (#newestFirst) {
+            recordsArray.sort(compareBaptismRecordsByDateDescending);
+          };
+          case (#oldestFirst) {
+            recordsArray.sort(compareBaptismRecordsByDateAscending);
+          };
+          case (#alphabetical) {
+            recordsArray.sort(compareBaptismRecordsByName);
+          };
+        };
+      };
+      case (null) {};
+    };
+
+    getPaginatedInternalArray(recordsArray, request.page, request.pageSize);
+  };
+
+  public shared ({ caller }) func clearBaptismRegistry() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authorized users can clear baptism registry");
+    };
+    baptismRegistry.clear();
   };
 };

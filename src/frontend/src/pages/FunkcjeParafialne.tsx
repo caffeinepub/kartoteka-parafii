@@ -10,11 +10,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Edit, Trash2, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import FunctionAssignmentDialog from '../components/FunctionAssignmentDialog';
 import FunctionLocalityDialog from '../components/FunctionLocalityDialog';
-import { generateParishFunctionsPDF } from '../lib/pdfGenerator';
+import { generateParishPDF, generateSingleParishFunctionAssignmentPDF, generateSingleParishFunctionLocalityAssignmentPDF } from '../lib/pdfGenerator';
 import type { ParishFunctionAssignment, ParishFunctionLocalityAssignment } from '../backend';
 import {
   Select,
@@ -23,12 +23,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ExportPdfModeControl } from '../components/ExportPdfModeControl';
 
 export default function FunkcjeParafialne() {
   const [currentPageIndividual, setCurrentPageIndividual] = useState(1);
   const [pageSizeIndividual, setPageSizeIndividual] = useState(20);
   const [currentPageLocality, setCurrentPageLocality] = useState(1);
   const [pageSizeLocality, setPageSizeLocality] = useState(20);
+  const [activeTab, setActiveTab] = useState<'individual' | 'locality'>('individual');
+  const [selectedIndividualId, setSelectedIndividualId] = useState<bigint | null>(null);
+  const [selectedLocalityId, setSelectedLocalityId] = useState<bigint | null>(null);
 
   const { data: individualPaginatedData, isLoading: loadingIndividual } = useGetPaginatedParishFunctionAssignments(
     currentPageIndividual,
@@ -73,6 +77,9 @@ export default function FunkcjeParafialne() {
     try {
       await deleteIndividual.mutateAsync(assignment.uid);
       toast.success('Przypisanie zostało usunięte');
+      if (selectedIndividualId === assignment.uid) {
+        setSelectedIndividualId(null);
+      }
     } catch (error) {
       toast.error('Błąd podczas usuwania');
       console.error(error);
@@ -108,6 +115,9 @@ export default function FunkcjeParafialne() {
     try {
       await deleteLocality.mutateAsync(assignment.uid);
       toast.success('Przypisanie zostało usunięte');
+      if (selectedLocalityId === assignment.uid) {
+        setSelectedLocalityId(null);
+      }
     } catch (error) {
       toast.error('Błąd podczas usuwania');
       console.error(error);
@@ -127,18 +137,68 @@ export default function FunkcjeParafialne() {
     }
   };
 
-  const handleExportPDF = () => {
+  const handleExportAll = () => {
     if (individualAssignments.length === 0 && localityAssignments.length === 0) {
       toast.error('Brak danych do wyeksportowania');
       return;
     }
 
-    try {
-      generateParishFunctionsPDF(individualAssignments, localityAssignments);
-      toast.success('Generowanie PDF...');
-    } catch (error) {
-      toast.error('Błąd podczas generowania PDF');
-      console.error(error);
+    let content = 'FUNKCJE PARAFIALNE\n\n';
+    content += '─'.repeat(90) + '\n\n';
+
+    if (individualAssignments.length > 0) {
+      content += `PRZYPISANIA INDYWIDUALNE (${individualAssignments.length}):\n\n`;
+      individualAssignments.forEach((assignment, idx) => {
+        content += `${(idx + 1).toString().padStart(3, ' ')}. ${assignment.title}\n`;
+        content += `     Opis: ${assignment.description}\n`;
+        content += `     Adres: ${assignment.address}\n`;
+        if (assignment.contacts.length > 0) {
+          content += `     Kontakty:\n`;
+          assignment.contacts.forEach(contact => {
+            content += `       • ${contact}\n`;
+          });
+        }
+        content += '\n';
+      });
+    }
+
+    if (localityAssignments.length > 0) {
+      content += `\nPRZYPISANIA WEDŁUG MIEJSCOWOŚCI (${localityAssignments.length}):\n\n`;
+      localityAssignments.forEach((assignment, idx) => {
+        content += `${(idx + 1).toString().padStart(3, ' ')}. ${assignment.localityName}\n`;
+        content += `     Opis: ${assignment.description}\n`;
+        if (assignment.contacts.length > 0) {
+          content += `     Kontakty:\n`;
+          assignment.contacts.forEach(contact => {
+            content += `       • ${contact}\n`;
+          });
+        }
+        content += '\n';
+      });
+    }
+
+    generateParishPDF({
+      title: 'FUNKCJE PARAFIALNE',
+      content,
+      footer: 'Dokument wygenerowany automatycznie'
+    });
+
+    toast.success('PDF został wygenerowany');
+  };
+
+  const handleExportSelected = () => {
+    if (activeTab === 'individual') {
+      const selected = individualAssignments.find(a => a.uid === selectedIndividualId);
+      if (selected) {
+        generateSingleParishFunctionAssignmentPDF(selected);
+        toast.success('PDF przypisania został wygenerowany');
+      }
+    } else {
+      const selected = localityAssignments.find(a => a.uid === selectedLocalityId);
+      if (selected) {
+        generateSingleParishFunctionLocalityAssignmentPDF(selected);
+        toast.success('PDF przypisania został wygenerowany');
+      }
     }
   };
 
@@ -155,6 +215,8 @@ export default function FunkcjeParafialne() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
+
+  const hasSelection = activeTab === 'individual' ? selectedIndividualId !== null : selectedLocalityId !== null;
 
   if (loadingIndividual || loadingLocality) {
     return (
@@ -174,13 +236,15 @@ export default function FunkcjeParafialne() {
           <h1 className="text-3xl font-bold text-foreground">Funkcje Parafialne</h1>
           <p className="text-muted-foreground mt-1">Zarządzanie funkcjami i obowiązkami</p>
         </div>
-        <Button onClick={handleExportPDF} variant="outline" className="gap-2">
-          <FileText className="h-4 w-4" />
-          Eksportuj PDF
-        </Button>
+        <ExportPdfModeControl
+          onExportAll={handleExportAll}
+          onExportSelected={handleExportSelected}
+          hasSelection={hasSelection}
+          isLoading={loadingIndividual || loadingLocality}
+        />
       </header>
 
-      <Tabs defaultValue="individual" className="w-full">
+      <Tabs defaultValue="individual" className="w-full" onValueChange={(value) => setActiveTab(value as 'individual' | 'locality')}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="individual">Indywidualne ({totalIndividual})</TabsTrigger>
           <TabsTrigger value="locality">Według miejscowości ({totalLocality})</TabsTrigger>
@@ -249,41 +313,50 @@ export default function FunkcjeParafialne() {
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {individualAssignments.map((assignment) => (
-                <Card key={Number(assignment.uid)}>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{assignment.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-sm">{assignment.description}</p>
-                    <p className="text-sm text-muted-foreground">Adres: {assignment.address}</p>
-                    {assignment.contacts.length > 0 && (
-                      <div>
-                        <p className="text-sm font-medium">Kontakty:</p>
-                        <ul className="text-sm text-muted-foreground">
-                          {assignment.contacts.map((contact, cIdx) => (
-                            <li key={cIdx}>• {contact}</li>
-                          ))}
-                        </ul>
+              {individualAssignments.map((assignment) => {
+                const isSelected = selectedIndividualId === assignment.uid;
+                return (
+                  <Card
+                    key={Number(assignment.uid)}
+                    className={`cursor-pointer transition-all ${
+                      isSelected ? 'ring-2 ring-primary' : ''
+                    }`}
+                    onClick={() => setSelectedIndividualId(assignment.uid === selectedIndividualId ? null : assignment.uid)}
+                  >
+                    <CardHeader>
+                      <CardTitle className="text-lg">{assignment.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <p className="text-sm">{assignment.description}</p>
+                      <p className="text-sm text-muted-foreground">Adres: {assignment.address}</p>
+                      {assignment.contacts.length > 0 && (
+                        <div>
+                          <p className="text-sm font-medium">Kontakty:</p>
+                          <ul className="text-sm text-muted-foreground">
+                            {assignment.contacts.map((contact, cIdx) => (
+                              <li key={cIdx}>• {contact}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditIndividual(assignment)}
+                        >
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edytuj
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleDeleteIndividual(assignment)}>
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Usuń
+                        </Button>
                       </div>
-                    )}
-                    <div className="flex gap-2 pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditIndividual(assignment)}
-                      >
-                        <Edit className="h-3 w-3 mr-1" />
-                        Edytuj
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDeleteIndividual(assignment)}>
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        Usuń
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>
@@ -351,36 +424,45 @@ export default function FunkcjeParafialne() {
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {localityAssignments.map((assignment) => (
-                <Card key={Number(assignment.uid)}>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{assignment.localityName}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-sm">{assignment.description}</p>
-                    {assignment.contacts.length > 0 && (
-                      <div>
-                        <p className="text-sm font-medium">Kontakty:</p>
-                        <ul className="text-sm text-muted-foreground">
-                          {assignment.contacts.map((contact, cIdx) => (
-                            <li key={cIdx}>• {contact}</li>
-                          ))}
-                        </ul>
+              {localityAssignments.map((assignment) => {
+                const isSelected = selectedLocalityId === assignment.uid;
+                return (
+                  <Card
+                    key={Number(assignment.uid)}
+                    className={`cursor-pointer transition-all ${
+                      isSelected ? 'ring-2 ring-primary' : ''
+                    }`}
+                    onClick={() => setSelectedLocalityId(assignment.uid === selectedLocalityId ? null : assignment.uid)}
+                  >
+                    <CardHeader>
+                      <CardTitle className="text-lg">{assignment.localityName}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <p className="text-sm">{assignment.description}</p>
+                      {assignment.contacts.length > 0 && (
+                        <div>
+                          <p className="text-sm font-medium">Kontakty:</p>
+                          <ul className="text-sm text-muted-foreground">
+                            {assignment.contacts.map((contact, cIdx) => (
+                              <li key={cIdx}>• {contact}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="outline" size="sm" onClick={() => handleEditLocality(assignment)}>
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edytuj
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleDeleteLocality(assignment)}>
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Usuń
+                        </Button>
                       </div>
-                    )}
-                    <div className="flex gap-2 pt-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEditLocality(assignment)}>
-                        <Edit className="h-3 w-3 mr-1" />
-                        Edytuj
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDeleteLocality(assignment)}>
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        Usuń
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGetAllStatistics, useUpdateStatisticEntry, useDeleteStatisticEntry, useGetAllParishioners } from '../hooks/useQueries';
+import { useGetPaginatedStatisticEntries, useUpdateStatisticEntry, useDeleteStatisticEntry, useGetAllParishioners } from '../hooks/useQueries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Edit, Trash2, Download } from 'lucide-react';
@@ -9,13 +9,15 @@ import type { StatisticEntry } from '../backend';
 import { generateParishPDF } from '../lib/pdfGenerator';
 
 export default function Statystyki() {
-  const { data: statisticsMap = new Map(), isLoading } = useGetAllStatistics();
+  const { data: statisticsData, isLoading } = useGetPaginatedStatisticEntries(1, 1000);
   const { data: parishioners = [] } = useGetAllParishioners();
   const updateStatistic = useUpdateStatisticEntry();
   const deleteStatistic = useDeleteStatisticEntry();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingStatistic, setEditingStatistic] = useState<{ id: bigint; data: StatisticEntry } | null>(null);
+
+  const statistics = statisticsData?.data || [];
 
   const totalFamilyMembers = parishioners.reduce((sum, p) => sum + p.family.length, 0);
   const totalParishionerCount = parishioners.length + totalFamilyMembers;
@@ -39,16 +41,16 @@ export default function Statystyki() {
     setDialogOpen(true);
   };
 
-  const handleEdit = (id: bigint, statistic: StatisticEntry) => {
-    setEditingStatistic({ id, data: statistic });
+  const handleEdit = (statistic: StatisticEntry) => {
+    setEditingStatistic({ id: statistic.timestamp, data: statistic });
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: bigint) => {
+  const handleDelete = async (statistic: StatisticEntry) => {
     if (!confirm('Czy na pewno chcesz usunąć ten wpis?')) return;
 
     try {
-      await deleteStatistic.mutateAsync(id);
+      await deleteStatistic.mutateAsync(statistic.timestamp);
       toast.success('Wpis został usunięty');
     } catch (error) {
       toast.error('Błąd podczas usuwania wpisu');
@@ -93,11 +95,10 @@ export default function Statystyki() {
     content += `Pogrzeby:             ${sacramentCounts.funeral.toString().padStart(10)}\n\n`;
     content += '─'.repeat(90) + '\n\n';
 
-    if (statisticsMap.size > 0) {
+    if (statistics.length > 0) {
       content += `FREKWENCJA NIEDZIELNA\n\n`;
-      const sortedStats = Array.from(statisticsMap.entries())
-        .sort((a, b) => Number(b[1].timestamp) - Number(a[1].timestamp));
-      sortedStats.forEach(([id, stat]) => {
+      const sortedStats = [...statistics].sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
+      sortedStats.forEach((stat) => {
         const date = new Date(Number(stat.timestamp) / 1000000);
         content += `${date.toLocaleDateString('pl-PL').padEnd(15)}: `;
         content += `Frekwencja: ${Number(stat.sundayAttendance).toString().padStart(6)}  `;
@@ -114,8 +115,7 @@ export default function Statystyki() {
     toast.success('Raport statystyczny został wygenerowany - okno drukowania otworzy się automatycznie');
   };
 
-  const sortedStatistics = Array.from(statisticsMap.entries())
-    .sort((a, b) => Number(b[1].timestamp) - Number(a[1].timestamp));
+  const sortedStatistics = [...statistics].sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
 
   if (isLoading) {
     return (
@@ -205,8 +205,8 @@ export default function Statystyki() {
               <p className="text-sm text-muted-foreground">Brak wpisów statystycznych</p>
             ) : (
               <div className="space-y-3">
-                {sortedStatistics.slice(0, 3).map(([id, stat]) => (
-                  <div key={id.toString()} className="flex items-center justify-between pb-3 border-b border-border last:border-0">
+                {sortedStatistics.slice(0, 3).map((stat) => (
+                  <div key={stat.timestamp.toString()} className="flex items-center justify-between pb-3 border-b border-border last:border-0">
                     <div>
                       <p className="text-sm font-medium">
                         {new Date(Number(stat.timestamp) / 1000000).toLocaleDateString('pl-PL')}
@@ -235,29 +235,34 @@ export default function Statystyki() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="border-b border-border">
-                  <tr className="bg-muted/50">
-                    <th className="text-left p-4 font-medium text-sm">Data</th>
-                    <th className="text-right p-4 font-medium text-sm">Frekwencja niedzielna</th>
-                    <th className="text-right p-4 font-medium text-sm">Liczba komunii</th>
-                    <th className="text-right p-4 font-medium text-sm">Akcje</th>
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Data</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Frekwencja</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Komunia</th>
+                    <th className="text-right p-4 text-sm font-medium text-muted-foreground">Akcje</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedStatistics.map(([id, stat]) => (
-                    <tr key={id.toString()} className="border-b border-border hover:bg-muted/30">
+                  {sortedStatistics.map((stat) => (
+                    <tr key={stat.timestamp.toString()} className="border-b border-border hover:bg-muted/30">
                       <td className="p-4 text-sm">
                         {new Date(Number(stat.timestamp) / 1000000).toLocaleDateString('pl-PL')}
                       </td>
-                      <td className="p-4 text-sm text-right">{Number(stat.sundayAttendance)}</td>
-                      <td className="p-4 text-sm text-right">{Number(stat.communionCount)}</td>
+                      <td className="p-4 text-sm">{Number(stat.sundayAttendance)}</td>
+                      <td className="p-4 text-sm">{Number(stat.communionCount)}</td>
                       <td className="p-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(id, stat)}>
-                            <Edit className="h-3 w-3" />
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(stat)}>
+                            <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(id)}>
-                            <Trash2 className="h-3 w-3" />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(stat)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </td>

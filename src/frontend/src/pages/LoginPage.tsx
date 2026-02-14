@@ -1,8 +1,13 @@
+import { useState } from 'react';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import DiagnosticsView from '../components/DiagnosticsView';
+import { Settings } from 'lucide-react';
 
 export default function LoginPage() {
   const { login, loginStatus } = useInternetIdentity();
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
@@ -37,6 +42,25 @@ export default function LoginPage() {
             >
               {loginStatus === 'logging-in' ? 'Logowanie...' : 'Zaloguj się'}
             </Button>
+
+            <Dialog open={showDiagnostics} onOpenChange={setShowDiagnostics}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  size="sm"
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  Diagnostics
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>System Diagnostics</DialogTitle>
+                </DialogHeader>
+                <DiagnosticsView />
+              </DialogContent>
+            </Dialog>
 
             <p className="text-xs text-center text-muted-foreground">
               System zarządzania parafią dla autoryzowanego personelu

@@ -27,6 +27,29 @@ export interface AnniversaryPdfExport {
 export type AnniversaryType = { 'baptism' : null } |
   { 'marriage' : null } |
   { 'funeral' : null };
+export interface BaptismAnnotations {
+  'profession' : [] | [string],
+  'marriage' : [] | [string],
+  'confirmation' : [] | [string],
+  'generalNotes' : [] | [string],
+  'ordination' : [] | [string],
+}
+export interface BaptismRecord {
+  'id' : bigint,
+  'personFullName' : string,
+  'birthDate' : string,
+  'createdAt' : bigint,
+  'birthPlace' : string,
+  'baptismDate' : bigint,
+  'annotations' : BaptismAnnotations,
+  'actNumber' : string,
+  'baptismPlace' : string,
+  'mother' : ParentsData,
+  'father' : ParentsData,
+}
+export type BaptismRecordSortMode = { 'alphabetical' : null } |
+  { 'newestFirst' : null } |
+  { 'oldestFirst' : null };
 export interface BudgetTransaction {
   'uid' : UniqueId,
   'relatedParishioner' : [] | [bigint],
@@ -67,6 +90,12 @@ export interface GetAnniversariesRequest {
   'page' : [] | [bigint],
   'year' : bigint,
   'pageSize' : [] | [bigint],
+}
+export interface GetBaptismRegistryRequest {
+  'page' : [] | [bigint],
+  'sortMode' : [] | [BaptismRecordSortMode],
+  'pageSize' : [] | [bigint],
+  'search' : [] | [string],
 }
 export interface IndividualOffering {
   'id' : UniqueId,
@@ -130,6 +159,13 @@ export interface PaginatedResult_10 {
   'pageCount' : bigint,
 }
 export interface PaginatedResult_11 {
+  'data' : Array<BaptismRecord>,
+  'totalCount' : bigint,
+  'pageSize' : bigint,
+  'currentPage' : bigint,
+  'pageCount' : bigint,
+}
+export interface PaginatedResult_12 {
   'data' : Array<Anniversary>,
   'totalCount' : bigint,
   'pageSize' : bigint,
@@ -191,6 +227,12 @@ export interface PaginatedResult_9 {
   'pageSize' : bigint,
   'currentPage' : bigint,
   'pageCount' : bigint,
+}
+export interface ParentsData {
+  'age' : string,
+  'residence' : string,
+  'fullName' : string,
+  'religion' : string,
 }
 export interface ParishFunctionAssignment {
   'uid' : UniqueId,
@@ -300,6 +342,9 @@ export interface _SERVICE {
   'addParishioner' : ActorMethod<[Parishioner], bigint>,
   'addStatisticEntry' : ActorMethod<[StatisticEntry], UniqueId>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'clearBaptismRegistry' : ActorMethod<[], undefined>,
+  'createBaptismRecord' : ActorMethod<[BaptismRecord], bigint>,
+  'deleteBaptismRecord' : ActorMethod<[bigint], undefined>,
   'deleteBudgetTransaction' : ActorMethod<[UniqueId], undefined>,
   'deleteCollectiveOffering' : ActorMethod<[UniqueId], undefined>,
   'deleteEvent' : ActorMethod<[UniqueId], undefined>,
@@ -324,11 +369,16 @@ export interface _SERVICE {
   'getAllResidents' : ActorMethod<[], Array<LocalityResident>>,
   'getAnniversariesForYearPaginated' : ActorMethod<
     [GetAnniversariesRequest],
-    PaginatedResult_11
+    PaginatedResult_12
   >,
   'getAnniversariesForYearPdfExport' : ActorMethod<
     [GetAnniversariesPdfExportRequest],
     AnniversaryPdfExport
+  >,
+  'getBaptismRecord' : ActorMethod<[bigint], [] | [BaptismRecord]>,
+  'getBaptismRegistry' : ActorMethod<
+    [GetBaptismRegistryRequest],
+    PaginatedResult_11
   >,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
@@ -399,6 +449,7 @@ export interface _SERVICE {
   'hasParishioners' : ActorMethod<[], boolean>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'updateBaptismRecord' : ActorMethod<[bigint, BaptismRecord], undefined>,
   'updateBudgetTransaction' : ActorMethod<
     [UniqueId, BudgetTransaction],
     undefined

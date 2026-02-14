@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useGetPaginatedEvents, useUpdateEvent, useDeleteEvent } from '../hooks/useQueries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Calendar, Edit, Trash2, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Calendar, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import EventDialog from '../components/EventDialog';
-import { generateEventsPDF } from '../lib/pdfGenerator';
+import { generateParishPDF, generateSingleEventPDF } from '../lib/pdfGenerator';
 import type { Event } from '../backend';
 import {
   Select,
@@ -14,10 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ExportPdfModeControl } from '../components/ExportPdfModeControl';
 
 export default function Wydarzenia() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [selectedEventId, setSelectedEventId] = useState<bigint | null>(null);
   
   const { data: paginatedData, isLoading } = useGetPaginatedEvents(currentPage, pageSize);
   const updateEvent = useUpdateEvent();
@@ -46,6 +48,9 @@ export default function Wydarzenia() {
     try {
       await deleteEvent.mutateAsync(event.uid);
       toast.success('Wydarzenie zostało usunięte');
+      if (selectedEventId === event.uid) {
+        setSelectedEventId(null);
+      }
     } catch (error) {
       toast.error('Błąd podczas usuwania wydarzenia');
       console.error(error);
@@ -65,23 +70,57 @@ export default function Wydarzenia() {
     }
   };
 
-  const handleExportPDF = async () => {
+  const handleCardClick = (event: Event) => {
+    setSelectedEventId(event.uid === selectedEventId ? null : event.uid);
+  };
+
+  const handleExportAll = () => {
     if (events.length === 0) {
       toast.error('Brak wydarzeń do wyeksportowania');
       return;
     }
     
-    toast.info('Generowanie PDF...');
-    
-    setTimeout(() => {
-      try {
-        generateEventsPDF(events);
-        toast.success('PDF został wygenerowany - okno drukowania otworzy się automatycznie');
-      } catch (error) {
-        toast.error('Błąd podczas generowania PDF');
-        console.error(error);
+    let content = 'WYDARZENIA\n\n';
+    content += `Liczba wydarzeń: ${events.length}\n\n`;
+    content += '─'.repeat(90) + '\n\n';
+
+    events.forEach((event, idx) => {
+      const eventDate = new Date(Number(event.timestamp) / 1000000);
+      const formattedDate = eventDate.toLocaleDateString('pl-PL', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      content += `${(idx + 1).toString().padStart(3, ' ')}. ${event.title}\n`;
+      content += `     Data: ${formattedDate}\n`;
+      content += `     Opis: ${event.description}\n`;
+      if (event.tasks.length > 0) {
+        content += `     Zadania: ${event.tasks.length}\n`;
+        event.tasks.forEach((task, taskIdx) => {
+          content += `       ${taskIdx + 1}. ${task.description}\n`;
+        });
       }
-    }, 100);
+      content += '\n';
+    });
+
+    generateParishPDF({
+      title: 'WYDARZENIA',
+      content,
+      footer: 'Dokument wygenerowany automatycznie'
+    });
+
+    toast.success('PDF został wygenerowany - okno drukowania otworzy się automatycznie');
+  };
+
+  const handleExportSelected = () => {
+    const selectedEvent = events.find(e => e.uid === selectedEventId);
+    if (selectedEvent) {
+      generateSingleEventPDF(selectedEvent);
+      toast.success('PDF wydarzenia został wygenerowany');
+    }
   };
 
   const handlePageChange = (newPage: number) => {
@@ -119,10 +158,12 @@ export default function Wydarzenia() {
           <p className="text-muted-foreground mt-1">{totalCount} wydarzeń</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleExportPDF} variant="outline" className="gap-2">
-            <FileText className="h-4 w-4" />
-            Eksportuj PDF
-          </Button>
+          <ExportPdfModeControl
+            onExportAll={handleExportAll}
+            onExportSelected={handleExportSelected}
+            hasSelection={selectedEventId !== null}
+            isLoading={isLoading}
+          />
           <Button onClick={handleAdd}>
             <Plus className="h-4 w-4 mr-2" />
             Dodaj wydarzenie
@@ -182,49 +223,58 @@ export default function Wydarzenia() {
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {upcomingEvents.map((event) => (
-                <Card key={Number(event.uid)} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-primary" />
-                      {event.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(Number(event.timestamp) / 1000000).toLocaleDateString('pl-PL', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </p>
-                    <p className="text-sm">{event.description}</p>
-                    {event.tasks.length > 0 && (
-                      <div>
-                        <p className="text-sm font-medium mb-1">Zadania:</p>
-                        <ul className="text-sm space-y-1">
-                          {event.tasks.map((task, taskIdx) => (
-                            <li key={taskIdx} className="text-muted-foreground">
-                              • {task.description}
-                            </li>
-                          ))}
-                        </ul>
+              {upcomingEvents.map((event) => {
+                const isSelected = selectedEventId === event.uid;
+                return (
+                  <Card
+                    key={Number(event.uid)}
+                    className={`hover:shadow-lg transition-all cursor-pointer ${
+                      isSelected ? 'ring-2 ring-primary' : ''
+                    }`}
+                    onClick={() => handleCardClick(event)}
+                  >
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-primary" />
+                        {event.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(Number(event.timestamp) / 1000000).toLocaleDateString('pl-PL', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </p>
+                      <p className="text-sm">{event.description}</p>
+                      {event.tasks.length > 0 && (
+                        <div>
+                          <p className="text-sm font-medium mb-1">Zadania:</p>
+                          <ul className="text-sm space-y-1">
+                            {event.tasks.map((task, taskIdx) => (
+                              <li key={taskIdx} className="text-muted-foreground">
+                                • {task.description}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(event)}>
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edytuj
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleDelete(event)}>
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Usuń
+                        </Button>
                       </div>
-                    )}
-                    <div className="flex gap-2 pt-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(event)}>
-                        <Edit className="h-3 w-3 mr-1" />
-                        Edytuj
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDelete(event)}>
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        Usuń
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>
@@ -233,27 +283,36 @@ export default function Wydarzenia() {
           <div>
             <h2 className="text-xl font-semibold mb-4">Przeszłe wydarzenia</h2>
             <div className="grid gap-4 md:grid-cols-2">
-              {pastEvents.slice(0, 6).map((event) => (
-                <Card key={Number(event.uid)} className="opacity-75">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      {event.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(Number(event.timestamp) / 1000000).toLocaleDateString('pl-PL')}
-                    </p>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(event)}>
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        Usuń
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {pastEvents.slice(0, 6).map((event) => {
+                const isSelected = selectedEventId === event.uid;
+                return (
+                  <Card
+                    key={Number(event.uid)}
+                    className={`opacity-75 cursor-pointer transition-all ${
+                      isSelected ? 'ring-2 ring-primary' : ''
+                    }`}
+                    onClick={() => handleCardClick(event)}
+                  >
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        {event.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(Number(event.timestamp) / 1000000).toLocaleDateString('pl-PL')}
+                      </p>
+                      <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(event)}>
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Usuń
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         )}

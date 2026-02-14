@@ -136,6 +136,32 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const BaptismAnnotations = IDL.Record({
+  'profession' : IDL.Opt(IDL.Text),
+  'marriage' : IDL.Opt(IDL.Text),
+  'confirmation' : IDL.Opt(IDL.Text),
+  'generalNotes' : IDL.Opt(IDL.Text),
+  'ordination' : IDL.Opt(IDL.Text),
+});
+export const ParentsData = IDL.Record({
+  'age' : IDL.Text,
+  'residence' : IDL.Text,
+  'fullName' : IDL.Text,
+  'religion' : IDL.Text,
+});
+export const BaptismRecord = IDL.Record({
+  'id' : IDL.Nat,
+  'personFullName' : IDL.Text,
+  'birthDate' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'birthPlace' : IDL.Text,
+  'baptismDate' : IDL.Int,
+  'annotations' : BaptismAnnotations,
+  'actNumber' : IDL.Text,
+  'baptismPlace' : IDL.Text,
+  'mother' : ParentsData,
+  'father' : ParentsData,
+});
 export const Letter = IDL.Record({
   'uid' : IDL.Nat,
   'title' : IDL.Text,
@@ -184,7 +210,7 @@ export const Anniversary = IDL.Record({
   'eventYear' : IDL.Nat,
   'firstName' : IDL.Text,
 });
-export const PaginatedResult_11 = IDL.Record({
+export const PaginatedResult_12 = IDL.Record({
   'data' : IDL.Vec(Anniversary),
   'totalCount' : IDL.Nat,
   'pageSize' : IDL.Nat,
@@ -198,6 +224,24 @@ export const GetAnniversariesPdfExportRequest = IDL.Record({
 export const AnniversaryPdfExport = IDL.Record({
   'year' : IDL.Nat,
   'anniversaries' : IDL.Vec(Anniversary),
+});
+export const BaptismRecordSortMode = IDL.Variant({
+  'alphabetical' : IDL.Null,
+  'newestFirst' : IDL.Null,
+  'oldestFirst' : IDL.Null,
+});
+export const GetBaptismRegistryRequest = IDL.Record({
+  'page' : IDL.Opt(IDL.Nat),
+  'sortMode' : IDL.Opt(BaptismRecordSortMode),
+  'pageSize' : IDL.Opt(IDL.Nat),
+  'search' : IDL.Opt(IDL.Text),
+});
+export const PaginatedResult_11 = IDL.Record({
+  'data' : IDL.Vec(BaptismRecord),
+  'totalCount' : IDL.Nat,
+  'pageSize' : IDL.Nat,
+  'currentPage' : IDL.Nat,
+  'pageCount' : IDL.Nat,
 });
 export const UserProfile = IDL.Record({ 'name' : IDL.Text, 'role' : IDL.Text });
 export const PaginatedResult_10 = IDL.Record({
@@ -320,6 +364,9 @@ export const idlService = IDL.Service({
   'addParishioner' : IDL.Func([Parishioner], [IDL.Nat], []),
   'addStatisticEntry' : IDL.Func([StatisticEntry], [UniqueId], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'clearBaptismRegistry' : IDL.Func([], [], []),
+  'createBaptismRecord' : IDL.Func([BaptismRecord], [IDL.Nat], []),
+  'deleteBaptismRecord' : IDL.Func([IDL.Nat], [], []),
   'deleteBudgetTransaction' : IDL.Func([UniqueId], [], []),
   'deleteCollectiveOffering' : IDL.Func([UniqueId], [], []),
   'deleteEvent' : IDL.Func([UniqueId], [], []),
@@ -355,12 +402,18 @@ export const idlService = IDL.Service({
   'getAllResidents' : IDL.Func([], [IDL.Vec(LocalityResident)], ['query']),
   'getAnniversariesForYearPaginated' : IDL.Func(
       [GetAnniversariesRequest],
-      [PaginatedResult_11],
+      [PaginatedResult_12],
       ['query'],
     ),
   'getAnniversariesForYearPdfExport' : IDL.Func(
       [GetAnniversariesPdfExportRequest],
       [AnniversaryPdfExport],
+      ['query'],
+    ),
+  'getBaptismRecord' : IDL.Func([IDL.Nat], [IDL.Opt(BaptismRecord)], ['query']),
+  'getBaptismRegistry' : IDL.Func(
+      [GetBaptismRegistryRequest],
+      [PaginatedResult_11],
       ['query'],
     ),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
@@ -462,6 +515,7 @@ export const idlService = IDL.Service({
   'hasParishioners' : IDL.Func([], [IDL.Bool], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'updateBaptismRecord' : IDL.Func([IDL.Nat, BaptismRecord], [], []),
   'updateBudgetTransaction' : IDL.Func([UniqueId, BudgetTransaction], [], []),
   'updateCollectiveOffering' : IDL.Func([UniqueId, CollectiveOffering], [], []),
   'updateEvent' : IDL.Func([UniqueId, Event], [], []),
@@ -614,6 +668,32 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const BaptismAnnotations = IDL.Record({
+    'profession' : IDL.Opt(IDL.Text),
+    'marriage' : IDL.Opt(IDL.Text),
+    'confirmation' : IDL.Opt(IDL.Text),
+    'generalNotes' : IDL.Opt(IDL.Text),
+    'ordination' : IDL.Opt(IDL.Text),
+  });
+  const ParentsData = IDL.Record({
+    'age' : IDL.Text,
+    'residence' : IDL.Text,
+    'fullName' : IDL.Text,
+    'religion' : IDL.Text,
+  });
+  const BaptismRecord = IDL.Record({
+    'id' : IDL.Nat,
+    'personFullName' : IDL.Text,
+    'birthDate' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'birthPlace' : IDL.Text,
+    'baptismDate' : IDL.Int,
+    'annotations' : BaptismAnnotations,
+    'actNumber' : IDL.Text,
+    'baptismPlace' : IDL.Text,
+    'mother' : ParentsData,
+    'father' : ParentsData,
+  });
   const Letter = IDL.Record({
     'uid' : IDL.Nat,
     'title' : IDL.Text,
@@ -662,7 +742,7 @@ export const idlFactory = ({ IDL }) => {
     'eventYear' : IDL.Nat,
     'firstName' : IDL.Text,
   });
-  const PaginatedResult_11 = IDL.Record({
+  const PaginatedResult_12 = IDL.Record({
     'data' : IDL.Vec(Anniversary),
     'totalCount' : IDL.Nat,
     'pageSize' : IDL.Nat,
@@ -676,6 +756,24 @@ export const idlFactory = ({ IDL }) => {
   const AnniversaryPdfExport = IDL.Record({
     'year' : IDL.Nat,
     'anniversaries' : IDL.Vec(Anniversary),
+  });
+  const BaptismRecordSortMode = IDL.Variant({
+    'alphabetical' : IDL.Null,
+    'newestFirst' : IDL.Null,
+    'oldestFirst' : IDL.Null,
+  });
+  const GetBaptismRegistryRequest = IDL.Record({
+    'page' : IDL.Opt(IDL.Nat),
+    'sortMode' : IDL.Opt(BaptismRecordSortMode),
+    'pageSize' : IDL.Opt(IDL.Nat),
+    'search' : IDL.Opt(IDL.Text),
+  });
+  const PaginatedResult_11 = IDL.Record({
+    'data' : IDL.Vec(BaptismRecord),
+    'totalCount' : IDL.Nat,
+    'pageSize' : IDL.Nat,
+    'currentPage' : IDL.Nat,
+    'pageCount' : IDL.Nat,
   });
   const UserProfile = IDL.Record({ 'name' : IDL.Text, 'role' : IDL.Text });
   const PaginatedResult_10 = IDL.Record({
@@ -798,6 +896,9 @@ export const idlFactory = ({ IDL }) => {
     'addParishioner' : IDL.Func([Parishioner], [IDL.Nat], []),
     'addStatisticEntry' : IDL.Func([StatisticEntry], [UniqueId], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'clearBaptismRegistry' : IDL.Func([], [], []),
+    'createBaptismRecord' : IDL.Func([BaptismRecord], [IDL.Nat], []),
+    'deleteBaptismRecord' : IDL.Func([IDL.Nat], [], []),
     'deleteBudgetTransaction' : IDL.Func([UniqueId], [], []),
     'deleteCollectiveOffering' : IDL.Func([UniqueId], [], []),
     'deleteEvent' : IDL.Func([UniqueId], [], []),
@@ -833,12 +934,22 @@ export const idlFactory = ({ IDL }) => {
     'getAllResidents' : IDL.Func([], [IDL.Vec(LocalityResident)], ['query']),
     'getAnniversariesForYearPaginated' : IDL.Func(
         [GetAnniversariesRequest],
-        [PaginatedResult_11],
+        [PaginatedResult_12],
         ['query'],
       ),
     'getAnniversariesForYearPdfExport' : IDL.Func(
         [GetAnniversariesPdfExportRequest],
         [AnniversaryPdfExport],
+        ['query'],
+      ),
+    'getBaptismRecord' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Opt(BaptismRecord)],
+        ['query'],
+      ),
+    'getBaptismRegistry' : IDL.Func(
+        [GetBaptismRegistryRequest],
+        [PaginatedResult_11],
         ['query'],
       ),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
@@ -940,6 +1051,7 @@ export const idlFactory = ({ IDL }) => {
     'hasParishioners' : IDL.Func([], [IDL.Bool], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'updateBaptismRecord' : IDL.Func([IDL.Nat, BaptismRecord], [], []),
     'updateBudgetTransaction' : IDL.Func([UniqueId, BudgetTransaction], [], []),
     'updateCollectiveOffering' : IDL.Func(
         [UniqueId, CollectiveOffering],

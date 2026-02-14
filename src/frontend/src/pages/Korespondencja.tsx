@@ -5,14 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Plus, Search, Download, Trash2, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import LetterDialog from '../components/LetterDialog';
-import { generateLetterPDF } from '../lib/pdfGenerator';
+import { generateLetterPDF, generateParishPDF } from '../lib/pdfGenerator';
 import { useGetAllLetters, useAddLetter, useUpdateLetter, useDeleteLetter } from '../hooks/useQueries';
 import type { Letter } from '../backend';
+import { ExportPdfModeControl } from '../components/ExportPdfModeControl';
 
 export default function Korespondencja() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLetter, setEditingLetter] = useState<Letter | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedLetterId, setSelectedLetterId] = useState<bigint | null>(null);
 
   // Fetch letters from backend
   const { data: letters = [], isLoading } = useGetAllLetters();
@@ -37,6 +39,9 @@ export default function Korespondencja() {
     try {
       await deleteLetterMutation.mutateAsync(letter.uid);
       toast.success('Pismo zostało usunięte');
+      if (selectedLetterId === letter.uid) {
+        setSelectedLetterId(null);
+      }
     } catch (error) {
       toast.error('Błąd podczas usuwania pisma');
       console.error(error);
@@ -54,8 +59,13 @@ export default function Korespondencja() {
         });
         toast.success('Pismo zostało zaktualizowane');
       } else {
-        // Create new letter
-        await addLetterMutation.mutateAsync(data);
+        // Create new letter - add year parameter
+        const currentYear = BigInt(new Date().getFullYear());
+        await addLetterMutation.mutateAsync({
+          title: data.title,
+          body: data.body,
+          year: currentYear,
+        });
         toast.success('Pismo zostało utworzone');
       }
       
@@ -78,6 +88,47 @@ export default function Korespondencja() {
     };
     generateLetterPDF(letterForPDF);
     toast.success('PDF został wygenerowany - okno drukowania otworzy się automatycznie');
+  };
+
+  const handleExportAll = () => {
+    if (letters.length === 0) {
+      toast.error('Brak pism do wyeksportowania');
+      return;
+    }
+
+    let content = 'KORESPONDENCJA\n\n';
+    content += `Liczba pism: ${letters.length}\n\n`;
+    content += '─'.repeat(90) + '\n\n';
+
+    const sortedLetters = [...letters].sort((a, b) => {
+      if (a.year !== b.year) {
+        return Number(b.year) - Number(a.year);
+      }
+      return Number(b.number) - Number(a.number);
+    });
+
+    sortedLetters.forEach((letter, idx) => {
+      const letterNumber = `KP-${letter.year}-${letter.number.toString().padStart(3, '0')}`;
+      content += `${(idx + 1).toString().padStart(3, ' ')}. ${letterNumber}\n`;
+      content += `     Tytuł: ${letter.title}\n`;
+      content += `     Rok: ${Number(letter.year)}\n`;
+      content += '\n';
+    });
+
+    generateParishPDF({
+      title: 'KORESPONDENCJA',
+      content,
+      footer: 'Dokument wygenerowany automatycznie'
+    });
+
+    toast.success('Lista korespondencji została wygenerowana');
+  };
+
+  const handleExportSelected = () => {
+    const selectedLetter = letters.find(l => l.uid === selectedLetterId);
+    if (selectedLetter) {
+      handleExportPDF(selectedLetter);
+    }
   };
 
   // Filter letters based on search query
@@ -108,10 +159,18 @@ export default function Korespondencja() {
             {isLoading ? 'Ładowanie...' : `${letters.length} ${letters.length === 1 ? 'pismo' : 'pism'}`}
           </p>
         </div>
-        <Button onClick={handleAdd}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nowe pismo
-        </Button>
+        <div className="flex gap-2">
+          <ExportPdfModeControl
+            onExportAll={handleExportAll}
+            onExportSelected={handleExportSelected}
+            hasSelection={selectedLetterId !== null}
+            isLoading={isLoading}
+          />
+          <Button onClick={handleAdd}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nowe pismo
+          </Button>
+        </div>
       </header>
 
       {/* Search Bar */}
@@ -148,8 +207,15 @@ export default function Korespondencja() {
         <div className="space-y-4">
           {sortedLetters.map((letter) => {
             const letterNumber = `KP-${letter.year}-${letter.number.toString().padStart(3, '0')}`;
+            const isSelected = selectedLetterId === letter.uid;
             return (
-              <Card key={letter.uid.toString()} className="hover:shadow-lg transition-shadow">
+              <Card
+                key={letter.uid.toString()}
+                className={`hover:shadow-lg transition-all cursor-pointer ${
+                  isSelected ? 'ring-2 ring-primary' : ''
+                }`}
+                onClick={() => setSelectedLetterId(letter.uid === selectedLetterId ? null : letter.uid)}
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -169,7 +235,7 @@ export default function Korespondencja() {
                   <div className="text-sm text-muted-foreground line-clamp-3 whitespace-pre-wrap">
                     {letter.body}
                   </div>
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
                     <Button 
                       variant="outline" 
                       size="sm" 

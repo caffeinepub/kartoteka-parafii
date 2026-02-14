@@ -113,7 +113,7 @@ export default function Budzet() {
   const handleSave = async (data: BudgetTransaction) => {
     try {
       if (editingTransaction) {
-        await updateTransaction.mutateAsync({ id: editingTransaction.tid, transaction: data });
+        await updateTransaction.mutateAsync({ uid: editingTransaction.tid, transaction: data });
         toast.success('Transakcja została zaktualizowana');
       } else {
         await addTransaction.mutateAsync(data);
@@ -291,250 +291,221 @@ export default function Budzet() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex-1 flex items-end">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSelectedMonth(currentDate.getMonth());
-                  setSelectedYear(currentDate.getFullYear());
-                  setCurrentPage(1);
-                }}
-                className="w-full"
-              >
-                Bieżący miesiąc
-              </Button>
-            </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Przychody</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Podsumowanie miesięczne
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {monthlyLoading ? (
-              <>
-                <Skeleton className="h-8 w-32 mb-2" />
-                <Skeleton className="h-4 w-full" />
-              </>
-            ) : (
-              <>
-                <div className="text-2xl font-bold text-green-600">
-                  {monthlyIncome.toLocaleString('pl-PL')} zł
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {monthOptions[selectedMonth]} {selectedYear}
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Wydatki</CardTitle>
-            <TrendingDown className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            {monthlyLoading ? (
-              <>
-                <Skeleton className="h-8 w-32 mb-2" />
-                <Skeleton className="h-4 w-full" />
-              </>
-            ) : (
-              <>
-                <div className="text-2xl font-bold text-red-600">
-                  {monthlyExpense.toLocaleString('pl-PL')} zł
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {monthOptions[selectedMonth]} {selectedYear}
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Saldo</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {monthlyLoading ? (
-              <>
-                <Skeleton className="h-8 w-32 mb-2" />
-                <Skeleton className="h-4 w-full" />
-              </>
-            ) : (
-              <>
-                <div className={`text-2xl font-bold ${monthlyBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {monthlyBalance.toLocaleString('pl-PL')} zł
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {monthOptions[selectedMonth]} {selectedYear}
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="border-2 border-primary/20 bg-primary/5">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
-            Saldo całego wybranego roku
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {yearlyLoading ? (
-            <>
-              <Skeleton className="h-9 w-40 mb-3" />
-              <Skeleton className="h-5 w-full mb-2" />
-              <Skeleton className="h-4 w-3/4" />
-            </>
-          ) : (
-            <>
-              <div className={`text-3xl font-bold ${yearlyBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {yearlyBalance.toLocaleString('pl-PL')} zł
+              <div className="space-y-4">
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-8 w-full" />
               </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                Rok {selectedYear}: {yearlyIncome.toLocaleString('pl-PL')} zł przychodów - {yearlyExpense.toLocaleString('pl-PL')} zł wydatków
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Łącznie {yearlyTransactions.length} transakcji w całym roku
-              </p>
-            </>
-          )}
-        </CardContent>
-      </Card>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-green-600" />
+                    <span className="text-sm text-muted-foreground">Przychody</span>
+                  </div>
+                  <span className="text-lg font-semibold text-green-600">
+                    {monthlyIncome.toLocaleString('pl-PL')} zł
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingDown className="h-4 w-4 text-red-600" />
+                    <span className="text-sm text-muted-foreground">Wydatki</span>
+                  </div>
+                  <span className="text-lg font-semibold text-red-600">
+                    {monthlyExpense.toLocaleString('pl-PL')} zł
+                  </span>
+                </div>
+                <div className="pt-4 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Saldo</span>
+                    <span className={`text-xl font-bold ${monthlyBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {monthlyBalance.toLocaleString('pl-PL')} zł
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-      {/* Pagination Controls */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/50 p-4 rounded-lg">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Wyświetl:</span>
-          <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-            <SelectTrigger className="w-[100px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="20">20</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
-          <span className="text-sm text-muted-foreground">na stronę</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1 || monthlyLoading}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-sm text-muted-foreground px-4">
-            Strona {currentPage} z {pageCount}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === pageCount || monthlyLoading}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Podsumowanie roczne
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {yearlyLoading ? (
+              <div className="space-y-4">
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-8 w-full" />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-green-600" />
+                    <span className="text-sm text-muted-foreground">Przychody</span>
+                  </div>
+                  <span className="text-lg font-semibold text-green-600">
+                    {yearlyIncome.toLocaleString('pl-PL')} zł
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingDown className="h-4 w-4 text-red-600" />
+                    <span className="text-sm text-muted-foreground">Wydatki</span>
+                  </div>
+                  <span className="text-lg font-semibold text-red-600">
+                    {yearlyExpense.toLocaleString('pl-PL')} zł
+                  </span>
+                </div>
+                <div className="pt-4 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Saldo</span>
+                    <span className={`text-xl font-bold ${yearlyBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {yearlyBalance.toLocaleString('pl-PL')} zł
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Historia transakcji</CardTitle>
+          <CardTitle>Transakcje</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent>
           {monthlyLoading ? (
-            <div className="p-6 space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center gap-4">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 flex-1" />
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-8 w-16" />
-                </div>
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-20 w-full" />
               ))}
             </div>
           ) : sortedTransactions.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="text-muted-foreground">Brak transakcji w wybranym okresie</p>
-            </div>
+            <p className="text-center text-muted-foreground py-8">
+              Brak transakcji w wybranym okresie
+            </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="border-b border-border">
-                  <tr className="bg-muted/50">
-                    <th className="text-left p-4 font-medium text-sm">Data</th>
-                    <th className="text-left p-4 font-medium text-sm">Typ</th>
-                    <th className="text-left p-4 font-medium text-sm">Kategoria</th>
-                    <th className="text-left p-4 font-medium text-sm">Opis</th>
-                    <th className="text-right p-4 font-medium text-sm">Kwota</th>
-                    <th className="text-right p-4 font-medium text-sm">Akcje</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedTransactions.map((transaction) => (
-                    <tr key={Number(transaction.uid)} className="border-b border-border hover:bg-muted/30">
-                      <td className="p-4 text-sm">
-                        {new Date(Number(transaction.timestamp) / 1000000).toLocaleDateString('pl-PL')}
-                      </td>
-                      <td className="p-4 text-sm">
-                        <span
-                          className={`inline-flex items-center gap-1 ${
-                            transaction.type === TransactionType.income ? 'text-green-600' : 'text-red-600'
-                          }`}
-                        >
-                          {transaction.type === TransactionType.income ? (
-                            <>
-                              <TrendingUp className="h-3 w-3" />
-                              Przychód
-                            </>
-                          ) : (
-                            <>
-                              <TrendingDown className="h-3 w-3" />
-                              Wydatek
-                            </>
-                          )}
+            <>
+              <div className="space-y-3">
+                {sortedTransactions.map((transaction) => (
+                  <div
+                    key={transaction.uid.toString()}
+                    className="flex items-start justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        {transaction.type === TransactionType.income ? (
+                          <TrendingUp className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <TrendingDown className="h-4 w-4 text-red-600" />
+                        )}
+                        <span className="font-medium text-sm">
+                          {transaction.category}
                         </span>
-                      </td>
-                      <td className="p-4 text-sm">{transaction.category}</td>
-                      <td className="p-4 text-sm text-muted-foreground">{transaction.description}</td>
-                      <td className="p-4 text-sm text-right font-medium">
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(Number(transaction.timestamp) / 1000000).toLocaleDateString('pl-PL')}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{transaction.description}</p>
+                      {transaction.relatedLocality && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Miejscowość: {transaction.relatedLocality}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`text-lg font-semibold ${
+                          transaction.type === TransactionType.income ? 'text-green-600' : 'text-red-600'
+                        }`}
+                      >
                         {Number(transaction.amount).toLocaleString('pl-PL')} zł
-                      </td>
-                      <td className="p-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(transaction)}
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(transaction.uid)}>
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </span>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(transaction)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(transaction.uid)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Pokaż</span>
+                  <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <span className="text-sm text-muted-foreground">
+                    na stronę (Łącznie: {totalCount})
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground px-2">
+                    Strona {currentPage} z {pageCount}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === pageCount}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -549,14 +520,16 @@ export default function Budzet() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Potwierdzenie usunięcia</AlertDialogTitle>
+            <AlertDialogTitle>Czy na pewno chcesz usunąć tę transakcję?</AlertDialogTitle>
             <AlertDialogDescription>
-              Czy na pewno chcesz usunąć tę transakcję? Ta operacja jest nieodwracalna.
+              Ta operacja jest nieodwracalna. Transakcja zostanie trwale usunięta z bazy danych.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm}>Usuń</AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Usuń
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, Moon, Sun, Home, Users, MapPin, Wallet, Calendar, Briefcase, BarChart3, FileText, Mail } from 'lucide-react';
+import { Menu, X, Moon, Sun, Home, Users, MapPin, Wallet, Calendar, Briefcase, BarChart3, FileText, Mail, BookOpen } from 'lucide-react';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useGetCallerUserProfile } from '../hooks/useQueries';
 import { useQueryClient } from '@tanstack/react-query';
@@ -14,8 +14,9 @@ import FunkcjeParafialne from '../pages/FunkcjeParafialne';
 import Statystyki from '../pages/Statystyki';
 import Uwagi from '../pages/Uwagi';
 import Korespondencja from '../pages/Korespondencja';
+import BaptismsRegistry from '../pages/BaptismsRegistry';
 
-type Section = 'dashboard' | 'kartoteka' | 'miejscowosci' | 'budzet' | 'wydarzenia' | 'funkcje' | 'statystyki' | 'uwagi' | 'korespondencja';
+type Section = 'dashboard' | 'kartoteka' | 'miejscowosci' | 'budzet' | 'wydarzenia' | 'funkcje' | 'statystyki' | 'uwagi' | 'korespondencja' | 'chrzty';
 
 export default function MainLayout() {
   const [currentSection, setCurrentSection] = useState<Section>('dashboard');
@@ -40,6 +41,7 @@ export default function MainLayout() {
     { id: 'statystyki' as Section, label: 'Statystyki', icon: BarChart3 },
     { id: 'uwagi' as Section, label: 'Uwagi', icon: FileText },
     { id: 'korespondencja' as Section, label: 'Korespondencja', icon: Mail },
+    { id: 'chrzty' as Section, label: 'Chrzty', icon: BookOpen },
   ];
 
   const renderSection = () => {
@@ -62,6 +64,8 @@ export default function MainLayout() {
         return <Uwagi />;
       case 'korespondencja':
         return <Korespondencja />;
+      case 'chrzty':
+        return <BaptismsRegistry />;
       default:
         return <Dashboard />;
     }

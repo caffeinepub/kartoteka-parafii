@@ -28,6 +28,13 @@ export interface PaginatedResult_6 {
     currentPage: bigint;
     pageCount: bigint;
 }
+export interface PaginatedResult_12 {
+    data: Array<Anniversary>;
+    totalCount: bigint;
+    pageSize: bigint;
+    currentPage: bigint;
+    pageCount: bigint;
+}
 export interface ParishFunctionLocalityAssignment {
     uid: UniqueId;
     contacts: Array<string>;
@@ -99,6 +106,12 @@ export interface PaginatedResult {
     currentPage: bigint;
     pageCount: bigint;
 }
+export interface ParentsData {
+    age: string;
+    residence: string;
+    fullName: string;
+    religion: string;
+}
 export interface GetAnniversariesRequest {
     anniversaryType?: AnniversaryType;
     page?: bigint;
@@ -137,6 +150,19 @@ export interface IndividualOffering {
     parishionerId: bigint;
     amount: bigint;
 }
+export interface BaptismRecord {
+    id: bigint;
+    personFullName: string;
+    birthDate: string;
+    createdAt: bigint;
+    birthPlace: string;
+    baptismDate: bigint;
+    annotations: BaptismAnnotations;
+    actNumber: string;
+    baptismPlace: string;
+    mother: ParentsData;
+    father: ParentsData;
+}
 export interface Letter {
     uid: bigint;
     title: string;
@@ -152,6 +178,19 @@ export interface PaginatedResult_7 {
     currentPage: bigint;
     pageCount: bigint;
 }
+export interface BaptismAnnotations {
+    profession?: string;
+    marriage?: string;
+    confirmation?: string;
+    generalNotes?: string;
+    ordination?: string;
+}
+export interface GetBaptismRegistryRequest {
+    page?: bigint;
+    sortMode?: BaptismRecordSortMode;
+    pageSize?: bigint;
+    search?: string;
+}
 export interface Event {
     uid: UniqueId;
     tasks: Array<Task>;
@@ -161,7 +200,7 @@ export interface Event {
 }
 export type UniqueId = bigint;
 export interface PaginatedResult_11 {
-    data: Array<Anniversary>;
+    data: Array<BaptismRecord>;
     totalCount: bigint;
     pageSize: bigint;
     currentPage: bigint;
@@ -254,6 +293,11 @@ export enum AnniversaryType {
     marriage = "marriage",
     funeral = "funeral"
 }
+export enum BaptismRecordSortMode {
+    alphabetical = "alphabetical",
+    newestFirst = "newestFirst",
+    oldestFirst = "oldestFirst"
+}
 export enum RelationType {
     other = "other",
     child = "child",
@@ -281,6 +325,9 @@ export interface backendInterface {
     addParishioner(arg0: Parishioner): Promise<bigint>;
     addStatisticEntry(arg0: StatisticEntry): Promise<UniqueId>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    clearBaptismRegistry(): Promise<void>;
+    createBaptismRecord(record: BaptismRecord): Promise<bigint>;
+    deleteBaptismRecord(id: bigint): Promise<void>;
     deleteBudgetTransaction(uid: UniqueId): Promise<void>;
     deleteCollectiveOffering(id: UniqueId): Promise<void>;
     deleteEvent(id: UniqueId): Promise<void>;
@@ -300,8 +347,10 @@ export interface backendInterface {
         localityAssignments: PaginatedResult_3;
     }>;
     getAllResidents(): Promise<Array<LocalityResident>>;
-    getAnniversariesForYearPaginated(request: GetAnniversariesRequest): Promise<PaginatedResult_11>;
+    getAnniversariesForYearPaginated(request: GetAnniversariesRequest): Promise<PaginatedResult_12>;
     getAnniversariesForYearPdfExport(request: GetAnniversariesPdfExportRequest): Promise<AnniversaryPdfExport>;
+    getBaptismRecord(id: bigint): Promise<BaptismRecord | null>;
+    getBaptismRegistry(request: GetBaptismRegistryRequest): Promise<PaginatedResult_11>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCollectiveOffering(id: UniqueId): Promise<CollectiveOffering | null>;
@@ -329,6 +378,7 @@ export interface backendInterface {
     hasParishioners(): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    updateBaptismRecord(id: bigint, record: BaptismRecord): Promise<void>;
     updateBudgetTransaction(uid: UniqueId, transaction: BudgetTransaction): Promise<void>;
     updateCollectiveOffering(id: UniqueId, offering: CollectiveOffering): Promise<void>;
     updateEvent(id: UniqueId, event: Event): Promise<void>;

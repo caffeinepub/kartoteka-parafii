@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGetAllParishioners, useGetAllBudgetTransactions, useGetAllEvents, useGetOverallBudgetBalance, useGetPaginatedAnniversaries, useGetAnniversariesForPdfExport } from '../hooks/useQueries';
+import { useGetAllParishioners, useGetAllBudgetTransactionsByYear, useGetPaginatedEvents, useGetOverallBudgetBalance, useGetAnniversariesForYearPaginated, useGetAnniversariesForYearPdfExport } from '../hooks/useQueries';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Wallet, Calendar, TrendingUp, Download, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import { TransactionType, AnniversaryType } from '../backend';
@@ -20,20 +20,20 @@ export default function Dashboard() {
   const anniversariesPageSize = 10;
 
   const { data: parishioners = [], isLoading: parishionersLoading } = useGetAllParishioners();
-  const { data: transactions = [], isLoading: transactionsLoading } = useGetAllBudgetTransactions();
+  const { data: transactions = [], isLoading: transactionsLoading } = useGetAllBudgetTransactionsByYear(currentYear);
   const { data: balanceFromBackend = BigInt(0), isLoading: balanceLoading } = useGetOverallBudgetBalance();
-  const { data: eventsWithIds = [], isLoading: eventsLoading } = useGetAllEvents();
+  const { data: eventsData, isLoading: eventsLoading } = useGetPaginatedEvents(1, 100);
   
   const anniversaryTypeFilter = anniversaryFilter === 'all' ? null : anniversaryFilter;
   
-  const { data: anniversariesData, isLoading: anniversariesLoading } = useGetPaginatedAnniversaries(
+  const { data: anniversariesData, isLoading: anniversariesLoading } = useGetAnniversariesForYearPaginated(
     selectedYear,
     anniversariesPage,
     anniversariesPageSize,
     anniversaryTypeFilter
   );
 
-  const { data: pdfExportData } = useGetAnniversariesForPdfExport(selectedYear, anniversaryTypeFilter);
+  const { data: pdfExportData } = useGetAnniversariesForYearPdfExport(selectedYear, anniversaryTypeFilter);
 
   // Calculate income and expense totals from ALL transactions without any exclusions
   const totalIncome = transactions
@@ -47,8 +47,9 @@ export default function Dashboard() {
   // Use backend-calculated balance for guaranteed accuracy
   const balance = Number(balanceFromBackend);
 
-  const upcomingEvents = eventsWithIds
-    .filter((e) => Number(e.data.timestamp) > Date.now() * 1000000)
+  const events = eventsData?.data || [];
+  const upcomingEvents = events
+    .filter((e) => Number(e.timestamp) > Date.now() * 1000000)
     .slice(0, 5);
 
   // Count parishioners including family members with their sacramental data
@@ -250,13 +251,13 @@ export default function Dashboard() {
               <p className="text-sm text-muted-foreground">Brak nadchodzących wydarzeń</p>
             ) : (
               <ul className="space-y-3">
-                {upcomingEvents.map((eventWithId) => (
-                  <li key={eventWithId.id.toString()} className="flex items-start gap-3 pb-3 border-b border-border last:border-0">
+                {upcomingEvents.map((event) => (
+                  <li key={event.uid.toString()} className="flex items-start gap-3 pb-3 border-b border-border last:border-0">
                     <Calendar className="h-5 w-5 text-primary mt-0.5" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-foreground truncate">{eventWithId.data.title}</p>
+                      <p className="font-medium text-sm text-foreground truncate">{event.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(Number(eventWithId.data.timestamp) / 1000000).toLocaleDateString('pl-PL')}
+                        {new Date(Number(event.timestamp) / 1000000).toLocaleDateString('pl-PL')}
                       </p>
                     </div>
                   </li>

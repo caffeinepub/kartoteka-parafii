@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGetAllParishNotes, useUpdateParishNote, useDeleteParishNote } from '../hooks/useQueries';
+import { useGetPaginatedParishNotes, useUpdateParishNote, useDeleteParishNote } from '../hooks/useQueries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Edit, Trash2, Download } from 'lucide-react';
@@ -9,28 +9,34 @@ import type { ParishNote } from '../backend';
 import { generateParishPDF } from '../lib/pdfGenerator';
 
 export default function Uwagi() {
-  const { data: notesMap = new Map(), isLoading } = useGetAllParishNotes();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(20);
+  const { data: notesData, isLoading } = useGetPaginatedParishNotes(currentPage, pageSize);
   const updateNote = useUpdateParishNote();
   const deleteNote = useDeleteParishNote();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<{ id: bigint; data: ParishNote } | null>(null);
 
+  const notes = notesData?.data || [];
+  const totalCount = Number(notesData?.totalCount || 0);
+  const pageCount = Number(notesData?.pageCount || 1);
+
   const handleAdd = () => {
     setEditingNote(null);
     setDialogOpen(true);
   };
 
-  const handleEdit = (id: bigint, note: ParishNote) => {
-    setEditingNote({ id, data: note });
+  const handleEdit = (note: ParishNote) => {
+    setEditingNote({ id: note.timestamp, data: note });
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: bigint) => {
+  const handleDelete = async (note: ParishNote) => {
     if (!confirm('Czy na pewno chcesz usunąć tę notatkę?')) return;
 
     try {
-      await deleteNote.mutateAsync(id);
+      await deleteNote.mutateAsync(note.timestamp);
       toast.success('Notatka została usunięta');
     } catch (error) {
       toast.error('Błąd podczas usuwania notatki');
@@ -41,11 +47,9 @@ export default function Uwagi() {
   const handleSave = async (data: ParishNote) => {
     try {
       if (editingNote) {
-        // Use existing ID for update
         await updateNote.mutateAsync({ id: editingNote.id, note: data });
         toast.success('Notatka została zaktualizowana');
       } else {
-        // For new entries, use timestamp as ID
         const newId = data.timestamp;
         await updateNote.mutateAsync({ id: newId, note: data });
         toast.success('Notatka została dodana');
@@ -58,49 +62,35 @@ export default function Uwagi() {
     }
   };
 
-  const exportNotesPDF = () => {
-    const sortedNotes = Array.from(notesMap.entries())
-      .sort((a, b) => Number(b[1].timestamp) - Number(a[1].timestamp));
+  const exportNotesPDF = async () => {
+    toast.info('Generowanie PDF...');
     
-    let content = '';
-    content += `LICZBA NOTATEK: ${notesMap.size}\n\n`;
-    content += '─'.repeat(90) + '\n\n';
+    setTimeout(() => {
+      const sortedNotes = [...notes].sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
 
-    if (sortedNotes.length === 0) {
-      content += `Brak notatek do wyświetlenia.\n`;
-    } else {
-      sortedNotes.forEach(([id, note], idx) => {
+      let content = '';
+      content += `NOTATKI PARAFIALNE\n\n`;
+      content += `Łączna liczba notatek: ${totalCount}\n\n`;
+      content += '═'.repeat(90) + '\n\n';
+
+      sortedNotes.forEach((note, idx) => {
         const date = new Date(Number(note.timestamp) / 1000000);
-        const dateStr = date.toLocaleDateString('pl-PL', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        });
-        
         content += `${(idx + 1).toString().padStart(3, ' ')}. ${note.title}\n`;
-        content += `     Data: ${dateStr}\n\n`;
-        
-        // Format content with proper indentation
-        const lines = note.content.split('\n');
-        lines.forEach(line => {
-          content += `     ${line}\n`;
-        });
-        
-        content += '\n' + '─'.repeat(90) + '\n\n';
+        content += `     Data: ${date.toLocaleDateString('pl-PL')}\n`;
+        content += `     Treść: ${note.content}\n\n`;
       });
-    }
 
-    generateParishPDF({
-      title: 'NOTATKI PARAFIALNE',
-      content,
-      footer: 'Dziennik parafialny wygenerowany automatycznie'
-    });
+      generateParishPDF({
+        title: 'NOTATKI PARAFIALNE',
+        content,
+        footer: 'Dokument wygenerowany automatycznie'
+      });
 
-    toast.success('Notatki zostały wygenerowane - okno drukowania otworzy się automatycznie');
+      toast.success('PDF został wygenerowany - okno drukowania otworzy się automatycznie');
+    }, 100);
   };
 
-  const sortedNotes = Array.from(notesMap.entries())
-    .sort((a, b) => Number(b[1].timestamp) - Number(a[1].timestamp));
+  const sortedNotes = [...notes].sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
 
   if (isLoading) {
     return (
@@ -118,7 +108,9 @@ export default function Uwagi() {
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Uwagi</h1>
-          <p className="text-muted-foreground mt-1">{notesMap.size} notatek</p>
+          <p className="text-muted-foreground mt-1">
+            {totalCount} {totalCount === 1 ? 'notatka' : 'notatek'}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={exportNotesPDF}>
@@ -139,45 +131,67 @@ export default function Uwagi() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2">
-          {sortedNotes.map(([id, note]) => (
-            <Card key={id.toString()} className="hover:shadow-lg transition-shadow">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {sortedNotes.map((note) => (
+            <Card key={note.timestamp.toString()} className="hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="text-lg">{note.title}</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(Number(note.timestamp) / 1000000).toLocaleDateString('pl-PL', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
+                <div className="flex items-start justify-between">
+                  <CardTitle className="text-lg">{note.title}</CardTitle>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => handleEdit(note)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(note)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(Number(note.timestamp) / 1000000).toLocaleDateString('pl-PL')}
                 </p>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm whitespace-pre-wrap">{note.content}</p>
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" onClick={() => handleEdit(id, note)}>
-                    <Edit className="h-3 w-3 mr-1" />
-                    Edytuj
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleDelete(id)}>
-                    <Trash2 className="h-3 w-3 mr-1" />
-                    Usuń
-                  </Button>
-                </div>
+              <CardContent>
+                <p className="text-sm text-muted-foreground line-clamp-4 whitespace-pre-wrap">
+                  {note.content}
+                </p>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
 
+      {pageCount > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+          >
+            Poprzednia
+          </Button>
+          <span className="text-sm text-muted-foreground px-2">
+            Strona {currentPage} z {pageCount}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(Math.min(pageCount, currentPage + 1))}
+            disabled={currentPage === pageCount}
+          >
+            Następna
+          </Button>
+        </div>
+      )}
+
       <NoteDialog
         open={dialogOpen}
-        onOpenChange={(open) => {
-          setDialogOpen(open);
-          if (!open) {
-            setEditingNote(null);
-          }
-        }}
+        onOpenChange={setDialogOpen}
         note={editingNote?.data || null}
         onSave={handleSave}
       />

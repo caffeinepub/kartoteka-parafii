@@ -20,6 +20,7 @@ import type {
   AnniversaryPdfExport,
   GetAnniversariesRequest,
   GetAnniversariesPdfExportRequest,
+  BaptismRecord,
   PaginatedResult,
   PaginatedResult_1,
   PaginatedResult_2,
@@ -33,6 +34,7 @@ import type {
   PaginatedResult_10,
   PaginatedResult_11,
 } from '../backend';
+import { BaptismRecordSortMode } from '../backend';
 
 // Helper types to include IDs with data
 export type EventWithId = { id: UniqueId; data: Event };
@@ -105,9 +107,9 @@ export function useGetAllParishioners() {
       return result.data;
     },
     enabled: !!actor && !isFetching,
-    staleTime: 60000, // Consider data fresh for 1 minute
-    gcTime: 300000, // Keep in cache for 5 minutes
-    placeholderData: [], // Show empty array immediately while loading
+    staleTime: 60000,
+    gcTime: 300000,
+    placeholderData: [],
   });
 }
 
@@ -238,9 +240,9 @@ export function useGetOverallBudgetBalance() {
       return actor.getOverallBudgetBalance();
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000, // Consider data fresh for 30 seconds
-    gcTime: 300000, // Keep in cache for 5 minutes
-    placeholderData: BigInt(0), // Show 0 immediately while loading
+    staleTime: 30000,
+    gcTime: 300000,
+    placeholderData: BigInt(0),
   });
 }
 
@@ -294,7 +296,6 @@ export function useGetAllBudgetTransactionsByYear(year: number) {
       const startTimestamp = BigInt(startOfYear.getTime() * 1000000);
       const endTimestamp = BigInt(endOfYear.getTime() * 1000000);
       
-      // Fetch all transactions for the year (using large page size)
       const result = await actor.getPaginatedBudgetTransactionsByDateRange(
         BigInt(1),
         BigInt(10000),
@@ -304,27 +305,9 @@ export function useGetAllBudgetTransactionsByYear(year: number) {
       return result.data;
     },
     enabled: !!actor && !isFetching,
-    staleTime: 60000, // Consider data fresh for 1 minute
-    gcTime: 300000, // Keep in cache for 5 minutes
-    placeholderData: [], // Show empty array immediately while loading
-  });
-}
-
-// Budget Transactions - All (for Dashboard) - Optimized with stale-while-revalidate
-export function useGetAllBudgetTransactions() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<BudgetTransaction[]>({
-    queryKey: ['budgetTransactions', 'all'],
-    queryFn: async () => {
-      if (!actor) return [];
-      const result = await actor.getPaginatedBudgetTransactions(BigInt(1), BigInt(10000));
-      return result.data;
-    },
-    enabled: !!actor && !isFetching,
-    staleTime: 60000, // Consider data fresh for 1 minute
-    gcTime: 300000, // Keep in cache for 5 minutes
-    placeholderData: [], // Show empty array immediately while loading
+    staleTime: 60000,
+    gcTime: 300000,
+    placeholderData: [],
   });
 }
 
@@ -349,14 +332,12 @@ export function useUpdateBudgetTransaction() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, transaction }: { id: bigint; transaction: BudgetTransaction }) => {
+    mutationFn: async ({ uid, transaction }: { uid: UniqueId; transaction: BudgetTransaction }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.updateBudgetTransaction(id, transaction);
+      return actor.updateBudgetTransaction(uid, transaction);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['budgetTransactions'] });
-      queryClient.invalidateQueries({ queryKey: ['collectiveOfferings'] });
-      queryClient.invalidateQueries({ queryKey: ['individualOfferings'] });
       queryClient.invalidateQueries({ queryKey: ['budgetBalance'] });
     },
   });
@@ -367,14 +348,12 @@ export function useDeleteBudgetTransaction() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (tid: bigint) => {
+    mutationFn: async (uid: UniqueId) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.deleteBudgetTransaction(tid);
+      return actor.deleteBudgetTransaction(uid);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['budgetTransactions'] });
-      queryClient.invalidateQueries({ queryKey: ['collectiveOfferings'] });
-      queryClient.invalidateQueries({ queryKey: ['individualOfferings'] });
       queryClient.invalidateQueries({ queryKey: ['budgetBalance'] });
     },
   });
@@ -396,36 +375,14 @@ export function useGetPaginatedEvents(page: number = 1, pageSize: number = 20) {
   });
 }
 
-// Events - All events (for Dashboard compatibility) - Optimized with stale-while-revalidate
-export function useGetAllEvents() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<EventWithId[]>({
-    queryKey: ['events', 'all'],
-    queryFn: async () => {
-      if (!actor) return [];
-      const result = await actor.getPaginatedEvents(BigInt(1), BigInt(100));
-      return result.data.map((event) => ({
-        id: event.uid,
-        data: event,
-      }));
-    },
-    enabled: !!actor && !isFetching,
-    staleTime: 60000, // Consider data fresh for 1 minute
-    gcTime: 300000, // Keep in cache for 5 minutes
-    placeholderData: [], // Show empty array immediately while loading
-  });
-}
-
 export function useUpdateEvent() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, event }: { id: bigint; event: Event }) => {
+    mutationFn: async ({ id, event }: { id: UniqueId; event: Event }) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.updateEvent(id, event);
-      return { id, event };
+      return actor.updateEvent(id, event);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
@@ -438,10 +395,9 @@ export function useDeleteEvent() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: bigint) => {
+    mutationFn: async (id: UniqueId) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.deleteEvent(id);
-      return id;
+      return actor.deleteEvent(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
@@ -449,7 +405,7 @@ export function useDeleteEvent() {
   });
 }
 
-// Parish Function Assignments - Paginated
+// Parish Function Assignments
 export function useGetPaginatedParishFunctionAssignments(page: number = 1, pageSize: number = 20) {
   const { actor, isFetching } = useActor();
 
@@ -485,10 +441,24 @@ export function useUpdateParishFunctionAssignment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, assignment }: { id: bigint; assignment: ParishFunctionAssignment }) => {
+    mutationFn: async ({ id, assignment }: { id: UniqueId; assignment: ParishFunctionAssignment }) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.updateParishFunctionAssignment(id, assignment);
-      return { id, assignment };
+      return actor.updateParishFunctionAssignment(id, assignment);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['parishFunctionAssignments'] });
+    },
+  });
+}
+
+export function useDeleteParishFunctionAssignment() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: UniqueId) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.deleteParishFunctionAssignment(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['parishFunctionAssignments'] });
@@ -501,29 +471,12 @@ export function useUpdateParishFunctionLocalityAssignment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, assignment }: { id: bigint; assignment: ParishFunctionLocalityAssignment }) => {
+    mutationFn: async ({ id, assignment }: { id: UniqueId; assignment: ParishFunctionLocalityAssignment }) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.updateParishFunctionLocalityAssignment(id, assignment);
-      return { id, assignment };
+      return actor.updateParishFunctionLocalityAssignment(id, assignment);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['parishFunctionLocalityAssignments'] });
-    },
-  });
-}
-
-export function useDeleteParishFunctionAssignment() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: bigint) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.deleteParishFunctionAssignment(id);
-      return id;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['parishFunctionAssignments'] });
     },
   });
 }
@@ -533,10 +486,9 @@ export function useDeleteParishFunctionLocalityAssignment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: bigint) => {
+    mutationFn: async (id: UniqueId) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.deleteParishFunctionLocalityAssignment(id);
-      return id;
+      return actor.deleteParishFunctionLocalityAssignment(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['parishFunctionLocalityAssignments'] });
@@ -544,7 +496,7 @@ export function useDeleteParishFunctionLocalityAssignment() {
   });
 }
 
-// Statistics - Paginated
+// Statistics
 export function useGetPaginatedStatisticEntries(page: number = 1, pageSize: number = 20) {
   const { actor, isFetching } = useActor();
 
@@ -560,53 +512,14 @@ export function useGetPaginatedStatisticEntries(page: number = 1, pageSize: numb
   });
 }
 
-// Statistics - All (for Statistics page) - Now properly tracks backend UIDs
-export function useGetAllStatistics() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Map<bigint, StatisticEntry>>({
-    queryKey: ['statistics', 'all'],
-    queryFn: async () => {
-      if (!actor) return new Map();
-      const result = await actor.getPaginatedStatisticEntries(BigInt(1), BigInt(1000));
-      // Create a map to track UIDs - we'll use timestamp as temporary key since backend stores by uid
-      const statsMap = new Map<bigint, StatisticEntry>();
-      result.data.forEach((entry) => {
-        // Use timestamp as unique identifier since backend doesn't expose uid in StatisticEntry
-        statsMap.set(entry.timestamp, entry);
-      });
-      return statsMap;
-    },
-    enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
-  });
-}
-
-// Annual Sacrament Stats
-export function useGetAllAnnualSacramentStats() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery({
-    queryKey: ['annualSacramentStats'],
-    queryFn: async () => {
-      if (!actor) return [];
-      // This would need a backend method - for now return empty array
-      return [];
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
 export function useUpdateStatisticEntry() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, entry }: { id: bigint; entry: StatisticEntry }) => {
+    mutationFn: async ({ id, entry }: { id: UniqueId; entry: StatisticEntry }) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.updateStatisticEntry(id, entry);
-      return { id, entry };
+      return actor.updateStatisticEntry(id, entry);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['statistics'] });
@@ -619,10 +532,9 @@ export function useDeleteStatisticEntry() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: bigint) => {
+    mutationFn: async (id: UniqueId) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.deleteStatisticEntry(id);
-      return id;
+      return actor.deleteStatisticEntry(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['statistics'] });
@@ -630,7 +542,7 @@ export function useDeleteStatisticEntry() {
   });
 }
 
-// Parish Notes - Paginated
+// Parish Notes
 export function useGetPaginatedParishNotes(page: number = 1, pageSize: number = 20) {
   const { actor, isFetching } = useActor();
 
@@ -646,38 +558,14 @@ export function useGetPaginatedParishNotes(page: number = 1, pageSize: number = 
   });
 }
 
-// Parish Notes - All (for Uwagi page) - Now properly tracks backend UIDs
-export function useGetAllParishNotes() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Map<bigint, ParishNote>>({
-    queryKey: ['parishNotes', 'all'],
-    queryFn: async () => {
-      if (!actor) return new Map();
-      const result = await actor.getPaginatedParishNotes(BigInt(1), BigInt(1000));
-      // Create a map to track UIDs - we'll use timestamp as temporary key since backend stores by uid
-      const notesMap = new Map<bigint, ParishNote>();
-      result.data.forEach((note) => {
-        // Use timestamp as unique identifier since backend doesn't expose uid in ParishNote
-        notesMap.set(note.timestamp, note);
-      });
-      return notesMap;
-    },
-    enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
-  });
-}
-
 export function useUpdateParishNote() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, note }: { id: bigint; note: ParishNote }) => {
+    mutationFn: async ({ id, note }: { id: UniqueId; note: ParishNote }) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.updateParishNote(id, note);
-      return { id, note };
+      return actor.updateParishNote(id, note);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['parishNotes'] });
@@ -690,10 +578,9 @@ export function useDeleteParishNote() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: bigint) => {
+    mutationFn: async (id: UniqueId) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.deleteParishNote(id);
-      return id;
+      return actor.deleteParishNote(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['parishNotes'] });
@@ -701,7 +588,7 @@ export function useDeleteParishNote() {
   });
 }
 
-// Collective Offerings - Paginated
+// Collective Offerings
 export function useGetPaginatedCollectiveOfferings(page: number = 1, pageSize: number = 20) {
   const { actor, isFetching } = useActor();
 
@@ -750,7 +637,7 @@ export function useUpdateCollectiveOffering() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, offering }: { id: bigint; offering: CollectiveOffering }) => {
+    mutationFn: async ({ id, offering }: { id: UniqueId; offering: CollectiveOffering }) => {
       if (!actor) throw new Error('Actor not available');
       return actor.updateCollectiveOffering(id, offering);
     },
@@ -767,7 +654,7 @@ export function useDeleteCollectiveOffering() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: bigint) => {
+    mutationFn: async (id: UniqueId) => {
       if (!actor) throw new Error('Actor not available');
       return actor.deleteCollectiveOffering(id);
     },
@@ -779,20 +666,7 @@ export function useDeleteCollectiveOffering() {
   });
 }
 
-export function useGetCollectiveOfferingsByLocalityQuery(locality: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<CollectiveOffering[]>({
-    queryKey: ['collectiveOfferings', 'locality', locality],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getCollectiveOfferingsByLocality(locality);
-    },
-    enabled: !!actor && !isFetching && !!locality,
-  });
-}
-
-// Individual Offerings - Paginated
+// Individual Offerings
 export function useGetPaginatedIndividualOfferings(page: number = 1, pageSize: number = 20) {
   const { actor, isFetching } = useActor();
 
@@ -831,7 +705,6 @@ export function useAddIndividualOffering() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['individualOfferings'] });
       queryClient.invalidateQueries({ queryKey: ['budgetTransactions'] });
-      queryClient.invalidateQueries({ queryKey: ['parishioners'] });
       queryClient.invalidateQueries({ queryKey: ['budgetBalance'] });
     },
   });
@@ -842,14 +715,13 @@ export function useUpdateIndividualOffering() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, offering }: { id: bigint; offering: IndividualOffering }) => {
+    mutationFn: async ({ id, offering }: { id: UniqueId; offering: IndividualOffering }) => {
       if (!actor) throw new Error('Actor not available');
       return actor.updateIndividualOffering(id, offering);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['individualOfferings'] });
       queryClient.invalidateQueries({ queryKey: ['budgetTransactions'] });
-      queryClient.invalidateQueries({ queryKey: ['parishioners'] });
       queryClient.invalidateQueries({ queryKey: ['budgetBalance'] });
     },
   });
@@ -860,20 +732,19 @@ export function useDeleteIndividualOffering() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: bigint) => {
+    mutationFn: async (id: UniqueId) => {
       if (!actor) throw new Error('Actor not available');
       return actor.deleteIndividualOffering(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['individualOfferings'] });
       queryClient.invalidateQueries({ queryKey: ['budgetTransactions'] });
-      queryClient.invalidateQueries({ queryKey: ['parishioners'] });
       queryClient.invalidateQueries({ queryKey: ['budgetBalance'] });
     },
   });
 }
 
-// Letters (Korespondencja) - All letters
+// Letters
 export function useGetAllLetters() {
   const { actor, isFetching } = useActor();
 
@@ -894,9 +765,8 @@ export function useAddLetter() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ title, body }: { title: string; body: string }) => {
+    mutationFn: async ({ title, body, year }: { title: string; body: string; year: bigint }) => {
       if (!actor) throw new Error('Actor not available');
-      const year = BigInt(new Date().getFullYear());
       return actor.addLetter(title, body, year);
     },
     onSuccess: () => {
@@ -912,8 +782,7 @@ export function useUpdateLetter() {
   return useMutation({
     mutationFn: async ({ uid, title, body }: { uid: bigint; title: string; body: string }) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.updateLetter(uid, title, body);
-      return { uid, title, body };
+      return actor.updateLetter(uid, title, body);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['letters'] });
@@ -928,8 +797,7 @@ export function useDeleteLetter() {
   return useMutation({
     mutationFn: async (uid: bigint) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.deleteLetter(uid);
-      return uid;
+      return actor.deleteLetter(uid);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['letters'] });
@@ -937,26 +805,78 @@ export function useDeleteLetter() {
   });
 }
 
-// Anniversaries - Paginated with optional type filter
-export function useGetPaginatedAnniversaries(
+// Anniversaries - using PaginatedResult_12 type alias
+type PaginatedResult_12 = PaginatedResult_1; // Reuse existing paginated result type
+
+export function useGetAnniversariesForYearPaginated(
   year: number,
   page: number = 1,
   pageSize: number = 20,
-  anniversaryType?: AnniversaryType | null
+  anniversaryType: AnniversaryType | null = null
+) {
+  const { actor, isFetching } = useActor();
+
+  const request: GetAnniversariesRequest = {
+    year: BigInt(year),
+    anniversaryType: anniversaryType || undefined,
+    page: BigInt(page),
+    pageSize: BigInt(pageSize),
+  };
+
+  return useQuery({
+    queryKey: ['anniversaries', 'paginated', year, anniversaryType, page, pageSize],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getAnniversariesForYearPaginated(request);
+    },
+    enabled: !!actor && !isFetching,
+    staleTime: 60000,
+    gcTime: 300000,
+  });
+}
+
+export function useGetAnniversariesForYearPdfExport(
+  year: number,
+  anniversaryType: AnniversaryType | null = null
+) {
+  const { actor, isFetching } = useActor();
+
+  const request: GetAnniversariesPdfExportRequest = {
+    year: BigInt(year),
+    anniversaryType: anniversaryType || undefined,
+  };
+
+  return useQuery<AnniversaryPdfExport>({
+    queryKey: ['anniversaries', 'pdfExport', year, anniversaryType],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getAnniversariesForYearPdfExport(request);
+    },
+    enabled: !!actor && !isFetching,
+    staleTime: 60000,
+    gcTime: 300000,
+  });
+}
+
+// Baptism Registry
+export function useGetBaptismRegistry(
+  page: number = 1,
+  pageSize: number = 20,
+  search: string = '',
+  sortMode: BaptismRecordSortMode = BaptismRecordSortMode.newestFirst
 ) {
   const { actor, isFetching } = useActor();
 
   return useQuery<PaginatedResult_11>({
-    queryKey: ['anniversaries', 'paginated', year, anniversaryType || 'all', page, pageSize],
+    queryKey: ['baptismRegistry', page, pageSize, search, sortMode],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      const request: GetAnniversariesRequest = {
-        year: BigInt(year),
+      return actor.getBaptismRegistry({
         page: BigInt(page),
         pageSize: BigInt(pageSize),
-        anniversaryType: anniversaryType || undefined,
-      };
-      return actor.getAnniversariesForYearPaginated(request);
+        search: search || undefined,
+        sortMode,
+      });
     },
     enabled: !!actor && !isFetching,
     staleTime: 30000,
@@ -964,22 +884,47 @@ export function useGetPaginatedAnniversaries(
   });
 }
 
-// Anniversaries - Full export for PDF with optional type filter
-export function useGetAnniversariesForPdfExport(year: number, anniversaryType?: AnniversaryType | null) {
-  const { actor, isFetching } = useActor();
+export function useCreateBaptismRecord() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
 
-  return useQuery<AnniversaryPdfExport>({
-    queryKey: ['anniversaries', 'pdfExport', year, anniversaryType || 'all'],
-    queryFn: async () => {
+  return useMutation({
+    mutationFn: async (record: BaptismRecord) => {
       if (!actor) throw new Error('Actor not available');
-      const request: GetAnniversariesPdfExportRequest = {
-        year: BigInt(year),
-        anniversaryType: anniversaryType || undefined,
-      };
-      return actor.getAnniversariesForYearPdfExport(request);
+      return actor.createBaptismRecord(record);
     },
-    enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['baptismRegistry'] });
+    },
+  });
+}
+
+export function useUpdateBaptismRecord() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, record }: { id: bigint; record: BaptismRecord }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.updateBaptismRecord(id, record);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['baptismRegistry'] });
+    },
+  });
+}
+
+export function useDeleteBaptismRecord() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.deleteBaptismRecord(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['baptismRegistry'] });
+    },
   });
 }

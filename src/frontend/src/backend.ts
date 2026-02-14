@@ -106,6 +106,13 @@ export interface PaginatedResult_6 {
 export interface _CaffeineStorageRefillInformation {
     proposed_top_up_amount?: bigint;
 }
+export interface PaginatedResult_12 {
+    data: Array<Anniversary>;
+    totalCount: bigint;
+    pageSize: bigint;
+    currentPage: bigint;
+    pageCount: bigint;
+}
 export interface ParishFunctionLocalityAssignment {
     uid: UniqueId;
     contacts: Array<string>;
@@ -181,6 +188,12 @@ export interface PaginatedResult {
     currentPage: bigint;
     pageCount: bigint;
 }
+export interface ParentsData {
+    age: string;
+    residence: string;
+    fullName: string;
+    religion: string;
+}
 export interface GetAnniversariesRequest {
     anniversaryType?: AnniversaryType;
     page?: bigint;
@@ -219,6 +232,19 @@ export interface IndividualOffering {
     parishionerId: bigint;
     amount: bigint;
 }
+export interface BaptismRecord {
+    id: bigint;
+    personFullName: string;
+    birthDate: string;
+    createdAt: bigint;
+    birthPlace: string;
+    baptismDate: bigint;
+    annotations: BaptismAnnotations;
+    actNumber: string;
+    baptismPlace: string;
+    mother: ParentsData;
+    father: ParentsData;
+}
 export interface Letter {
     uid: bigint;
     title: string;
@@ -234,6 +260,19 @@ export interface PaginatedResult_7 {
     currentPage: bigint;
     pageCount: bigint;
 }
+export interface BaptismAnnotations {
+    profession?: string;
+    marriage?: string;
+    confirmation?: string;
+    generalNotes?: string;
+    ordination?: string;
+}
+export interface GetBaptismRegistryRequest {
+    page?: bigint;
+    sortMode?: BaptismRecordSortMode;
+    pageSize?: bigint;
+    search?: string;
+}
 export interface Event {
     uid: UniqueId;
     tasks: Array<Task>;
@@ -243,7 +282,7 @@ export interface Event {
 }
 export type UniqueId = bigint;
 export interface PaginatedResult_11 {
-    data: Array<Anniversary>;
+    data: Array<BaptismRecord>;
     totalCount: bigint;
     pageSize: bigint;
     currentPage: bigint;
@@ -340,6 +379,11 @@ export enum AnniversaryType {
     marriage = "marriage",
     funeral = "funeral"
 }
+export enum BaptismRecordSortMode {
+    alphabetical = "alphabetical",
+    newestFirst = "newestFirst",
+    oldestFirst = "oldestFirst"
+}
 export enum RelationType {
     other = "other",
     child = "child",
@@ -374,6 +418,9 @@ export interface backendInterface {
     addParishioner(arg0: Parishioner): Promise<bigint>;
     addStatisticEntry(arg0: StatisticEntry): Promise<UniqueId>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    clearBaptismRegistry(): Promise<void>;
+    createBaptismRecord(record: BaptismRecord): Promise<bigint>;
+    deleteBaptismRecord(id: bigint): Promise<void>;
     deleteBudgetTransaction(uid: UniqueId): Promise<void>;
     deleteCollectiveOffering(id: UniqueId): Promise<void>;
     deleteEvent(id: UniqueId): Promise<void>;
@@ -393,8 +440,10 @@ export interface backendInterface {
         localityAssignments: PaginatedResult_3;
     }>;
     getAllResidents(): Promise<Array<LocalityResident>>;
-    getAnniversariesForYearPaginated(request: GetAnniversariesRequest): Promise<PaginatedResult_11>;
+    getAnniversariesForYearPaginated(request: GetAnniversariesRequest): Promise<PaginatedResult_12>;
     getAnniversariesForYearPdfExport(request: GetAnniversariesPdfExportRequest): Promise<AnniversaryPdfExport>;
+    getBaptismRecord(id: bigint): Promise<BaptismRecord | null>;
+    getBaptismRegistry(request: GetBaptismRegistryRequest): Promise<PaginatedResult_11>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCollectiveOffering(id: UniqueId): Promise<CollectiveOffering | null>;
@@ -422,6 +471,7 @@ export interface backendInterface {
     hasParishioners(): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    updateBaptismRecord(id: bigint, record: BaptismRecord): Promise<void>;
     updateBudgetTransaction(uid: UniqueId, transaction: BudgetTransaction): Promise<void>;
     updateCollectiveOffering(id: UniqueId, offering: CollectiveOffering): Promise<void>;
     updateEvent(id: UniqueId, event: Event): Promise<void>;
@@ -434,7 +484,7 @@ export interface backendInterface {
     updateParishioner(id: bigint, parishioner: Parishioner): Promise<void>;
     updateStatisticEntry(id: UniqueId, entry: StatisticEntry): Promise<void>;
 }
-import type { Anniversary as _Anniversary, AnniversaryPdfExport as _AnniversaryPdfExport, AnniversaryType as _AnniversaryType, BudgetTransaction as _BudgetTransaction, CollectiveOffering as _CollectiveOffering, ExternalBlob as _ExternalBlob, FamilyMember as _FamilyMember, GetAnniversariesPdfExportRequest as _GetAnniversariesPdfExportRequest, GetAnniversariesRequest as _GetAnniversariesRequest, IndividualOffering as _IndividualOffering, Letter as _Letter, LocalityResident as _LocalityResident, LocalityWithParishioners as _LocalityWithParishioners, Offer as _Offer, PaginatedResult_1 as _PaginatedResult_1, PaginatedResult_10 as _PaginatedResult_10, PaginatedResult_11 as _PaginatedResult_11, PaginatedResult_5 as _PaginatedResult_5, Parishioner as _Parishioner, RelationType as _RelationType, Sacraments as _Sacraments, TransactionType as _TransactionType, UniqueId as _UniqueId, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
+import type { Anniversary as _Anniversary, AnniversaryPdfExport as _AnniversaryPdfExport, AnniversaryType as _AnniversaryType, BaptismAnnotations as _BaptismAnnotations, BaptismRecord as _BaptismRecord, BaptismRecordSortMode as _BaptismRecordSortMode, BudgetTransaction as _BudgetTransaction, CollectiveOffering as _CollectiveOffering, ExternalBlob as _ExternalBlob, FamilyMember as _FamilyMember, GetAnniversariesPdfExportRequest as _GetAnniversariesPdfExportRequest, GetAnniversariesRequest as _GetAnniversariesRequest, GetBaptismRegistryRequest as _GetBaptismRegistryRequest, IndividualOffering as _IndividualOffering, Letter as _Letter, LocalityResident as _LocalityResident, LocalityWithParishioners as _LocalityWithParishioners, Offer as _Offer, PaginatedResult_1 as _PaginatedResult_1, PaginatedResult_10 as _PaginatedResult_10, PaginatedResult_11 as _PaginatedResult_11, PaginatedResult_12 as _PaginatedResult_12, PaginatedResult_5 as _PaginatedResult_5, ParentsData as _ParentsData, Parishioner as _Parishioner, RelationType as _RelationType, Sacraments as _Sacraments, TransactionType as _TransactionType, UniqueId as _UniqueId, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _caffeineStorageBlobIsLive(arg0: Uint8Array): Promise<boolean> {
@@ -703,6 +753,48 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async clearBaptismRegistry(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.clearBaptismRegistry();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.clearBaptismRegistry();
+            return result;
+        }
+    }
+    async createBaptismRecord(arg0: BaptismRecord): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createBaptismRecord(to_candid_BaptismRecord_n24(this._uploadFile, this._downloadFile, arg0));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createBaptismRecord(to_candid_BaptismRecord_n24(this._uploadFile, this._downloadFile, arg0));
+            return result;
+        }
+    }
+    async deleteBaptismRecord(arg0: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteBaptismRecord(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteBaptismRecord(arg0);
+            return result;
+        }
+    }
     async deleteBudgetTransaction(arg0: UniqueId): Promise<void> {
         if (this.processError) {
             try {
@@ -905,14 +997,14 @@ export class Backend implements backendInterface {
     }> {
         if (this.processError) {
             try {
-                const result = await this.actor.getAllPaginatedParishFunctionData(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.getAllPaginatedParishFunctionData(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getAllPaginatedParishFunctionData(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.getAllPaginatedParishFunctionData(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
@@ -920,84 +1012,112 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllResidents();
-                return from_candid_vec_n25(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n29(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getAllResidents();
-            return from_candid_vec_n25(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n29(this._uploadFile, this._downloadFile, result);
         }
     }
-    async getAnniversariesForYearPaginated(arg0: GetAnniversariesRequest): Promise<PaginatedResult_11> {
+    async getAnniversariesForYearPaginated(arg0: GetAnniversariesRequest): Promise<PaginatedResult_12> {
         if (this.processError) {
             try {
-                const result = await this.actor.getAnniversariesForYearPaginated(to_candid_GetAnniversariesRequest_n31(this._uploadFile, this._downloadFile, arg0));
-                return from_candid_PaginatedResult_11_n35(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor.getAnniversariesForYearPaginated(to_candid_GetAnniversariesRequest_n35(this._uploadFile, this._downloadFile, arg0));
+                return from_candid_PaginatedResult_12_n39(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getAnniversariesForYearPaginated(to_candid_GetAnniversariesRequest_n31(this._uploadFile, this._downloadFile, arg0));
-            return from_candid_PaginatedResult_11_n35(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor.getAnniversariesForYearPaginated(to_candid_GetAnniversariesRequest_n35(this._uploadFile, this._downloadFile, arg0));
+            return from_candid_PaginatedResult_12_n39(this._uploadFile, this._downloadFile, result);
         }
     }
     async getAnniversariesForYearPdfExport(arg0: GetAnniversariesPdfExportRequest): Promise<AnniversaryPdfExport> {
         if (this.processError) {
             try {
-                const result = await this.actor.getAnniversariesForYearPdfExport(to_candid_GetAnniversariesPdfExportRequest_n43(this._uploadFile, this._downloadFile, arg0));
-                return from_candid_AnniversaryPdfExport_n45(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor.getAnniversariesForYearPdfExport(to_candid_GetAnniversariesPdfExportRequest_n47(this._uploadFile, this._downloadFile, arg0));
+                return from_candid_AnniversaryPdfExport_n49(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getAnniversariesForYearPdfExport(to_candid_GetAnniversariesPdfExportRequest_n43(this._uploadFile, this._downloadFile, arg0));
-            return from_candid_AnniversaryPdfExport_n45(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor.getAnniversariesForYearPdfExport(to_candid_GetAnniversariesPdfExportRequest_n47(this._uploadFile, this._downloadFile, arg0));
+            return from_candid_AnniversaryPdfExport_n49(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getBaptismRecord(arg0: bigint): Promise<BaptismRecord | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getBaptismRecord(arg0);
+                return from_candid_opt_n51(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getBaptismRecord(arg0);
+            return from_candid_opt_n51(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getBaptismRegistry(arg0: GetBaptismRegistryRequest): Promise<PaginatedResult_11> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getBaptismRegistry(to_candid_GetBaptismRegistryRequest_n56(this._uploadFile, this._downloadFile, arg0));
+                return from_candid_PaginatedResult_11_n60(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getBaptismRegistry(to_candid_GetBaptismRegistryRequest_n56(this._uploadFile, this._downloadFile, arg0));
+            return from_candid_PaginatedResult_11_n60(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserProfile(): Promise<UserProfile | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserProfile();
-                return from_candid_opt_n47(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n63(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserProfile();
-            return from_candid_opt_n47(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n63(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserRole(): Promise<UserRole> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserRole();
-                return from_candid_UserRole_n48(this._uploadFile, this._downloadFile, result);
+                return from_candid_UserRole_n64(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserRole();
-            return from_candid_UserRole_n48(this._uploadFile, this._downloadFile, result);
+            return from_candid_UserRole_n64(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCollectiveOffering(arg0: UniqueId): Promise<CollectiveOffering | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCollectiveOffering(arg0);
-                return from_candid_opt_n50(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n66(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCollectiveOffering(arg0);
-            return from_candid_opt_n50(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n66(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCollectiveOfferingsByLocality(arg0: string): Promise<Array<CollectiveOffering>> {
@@ -1018,14 +1138,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getIndividualOffering(arg0);
-                return from_candid_opt_n51(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n67(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getIndividualOffering(arg0);
-            return from_candid_opt_n51(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n67(this._uploadFile, this._downloadFile, result);
         }
     }
     async getIndividualOfferingsByParishioner(arg0: bigint): Promise<Array<IndividualOffering>> {
@@ -1046,14 +1166,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getLetter(arg0);
-                return from_candid_opt_n52(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n68(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getLetter(arg0);
-            return from_candid_opt_n52(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n68(this._uploadFile, this._downloadFile, result);
         }
     }
     async getOverallBudgetBalance(): Promise<bigint> {
@@ -1073,168 +1193,168 @@ export class Backend implements backendInterface {
     async getPaginatedBudgetTransactions(arg0: bigint | null, arg1: bigint | null): Promise<PaginatedResult_10> {
         if (this.processError) {
             try {
-                const result = await this.actor.getPaginatedBudgetTransactions(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
-                return from_candid_PaginatedResult_10_n53(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor.getPaginatedBudgetTransactions(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
+                return from_candid_PaginatedResult_10_n69(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getPaginatedBudgetTransactions(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
-            return from_candid_PaginatedResult_10_n53(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor.getPaginatedBudgetTransactions(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
+            return from_candid_PaginatedResult_10_n69(this._uploadFile, this._downloadFile, result);
         }
     }
     async getPaginatedBudgetTransactionsByDateRange(arg0: bigint | null, arg1: bigint | null, arg2: bigint, arg3: bigint): Promise<PaginatedResult_10> {
         if (this.processError) {
             try {
-                const result = await this.actor.getPaginatedBudgetTransactionsByDateRange(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1), arg2, arg3);
-                return from_candid_PaginatedResult_10_n53(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor.getPaginatedBudgetTransactionsByDateRange(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1), arg2, arg3);
+                return from_candid_PaginatedResult_10_n69(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getPaginatedBudgetTransactionsByDateRange(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1), arg2, arg3);
-            return from_candid_PaginatedResult_10_n53(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor.getPaginatedBudgetTransactionsByDateRange(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1), arg2, arg3);
+            return from_candid_PaginatedResult_10_n69(this._uploadFile, this._downloadFile, result);
         }
     }
     async getPaginatedCollectiveOfferings(arg0: bigint | null, arg1: bigint | null): Promise<PaginatedResult_9> {
         if (this.processError) {
             try {
-                const result = await this.actor.getPaginatedCollectiveOfferings(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.getPaginatedCollectiveOfferings(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getPaginatedCollectiveOfferings(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.getPaginatedCollectiveOfferings(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
     async getPaginatedEvents(arg0: bigint | null, arg1: bigint | null): Promise<PaginatedResult_8> {
         if (this.processError) {
             try {
-                const result = await this.actor.getPaginatedEvents(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.getPaginatedEvents(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getPaginatedEvents(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.getPaginatedEvents(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
     async getPaginatedIndividualOfferings(arg0: bigint | null, arg1: bigint | null): Promise<PaginatedResult_7> {
         if (this.processError) {
             try {
-                const result = await this.actor.getPaginatedIndividualOfferings(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.getPaginatedIndividualOfferings(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getPaginatedIndividualOfferings(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.getPaginatedIndividualOfferings(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
     async getPaginatedLocalities(arg0: bigint | null, arg1: bigint | null): Promise<PaginatedResult_6> {
         if (this.processError) {
             try {
-                const result = await this.actor.getPaginatedLocalities(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.getPaginatedLocalities(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getPaginatedLocalities(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.getPaginatedLocalities(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
     async getPaginatedLocalitiesWithParishioners(arg0: bigint | null, arg1: bigint | null): Promise<PaginatedResult_5> {
         if (this.processError) {
             try {
-                const result = await this.actor.getPaginatedLocalitiesWithParishioners(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
-                return from_candid_PaginatedResult_5_n60(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor.getPaginatedLocalitiesWithParishioners(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
+                return from_candid_PaginatedResult_5_n76(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getPaginatedLocalitiesWithParishioners(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
-            return from_candid_PaginatedResult_5_n60(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor.getPaginatedLocalitiesWithParishioners(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
+            return from_candid_PaginatedResult_5_n76(this._uploadFile, this._downloadFile, result);
         }
     }
     async getPaginatedParishFunctionAssignments(arg0: bigint | null, arg1: bigint | null): Promise<PaginatedResult_4> {
         if (this.processError) {
             try {
-                const result = await this.actor.getPaginatedParishFunctionAssignments(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.getPaginatedParishFunctionAssignments(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getPaginatedParishFunctionAssignments(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.getPaginatedParishFunctionAssignments(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
     async getPaginatedParishFunctionLocalityAssignments(arg0: bigint | null, arg1: bigint | null): Promise<PaginatedResult_3> {
         if (this.processError) {
             try {
-                const result = await this.actor.getPaginatedParishFunctionLocalityAssignments(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.getPaginatedParishFunctionLocalityAssignments(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getPaginatedParishFunctionLocalityAssignments(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.getPaginatedParishFunctionLocalityAssignments(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
     async getPaginatedParishNotes(arg0: bigint | null, arg1: bigint | null): Promise<PaginatedResult_2> {
         if (this.processError) {
             try {
-                const result = await this.actor.getPaginatedParishNotes(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.getPaginatedParishNotes(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getPaginatedParishNotes(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.getPaginatedParishNotes(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
     async getPaginatedParishioners(arg0: bigint | null, arg1: bigint | null): Promise<PaginatedResult_1> {
         if (this.processError) {
             try {
-                const result = await this.actor.getPaginatedParishioners(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
-                return from_candid_PaginatedResult_1_n65(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor.getPaginatedParishioners(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
+                return from_candid_PaginatedResult_1_n81(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getPaginatedParishioners(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
-            return from_candid_PaginatedResult_1_n65(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor.getPaginatedParishioners(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
+            return from_candid_PaginatedResult_1_n81(this._uploadFile, this._downloadFile, result);
         }
     }
     async getPaginatedStatisticEntries(arg0: bigint | null, arg1: bigint | null): Promise<PaginatedResult> {
         if (this.processError) {
             try {
-                const result = await this.actor.getPaginatedStatisticEntries(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.getPaginatedStatisticEntries(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getPaginatedStatisticEntries(to_candid_opt_n24(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n24(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.getPaginatedStatisticEntries(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
@@ -1256,14 +1376,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getResidentsByLocality(arg0);
-                return from_candid_vec_n25(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n29(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getResidentsByLocality(arg0);
-            return from_candid_vec_n25(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n29(this._uploadFile, this._downloadFile, result);
         }
     }
     async getTotalResidentCount(): Promise<bigint> {
@@ -1284,14 +1404,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getUserProfile(arg0);
-                return from_candid_opt_n47(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n63(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getUserProfile(arg0);
-            return from_candid_opt_n47(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n63(this._uploadFile, this._downloadFile, result);
         }
     }
     async hasParishioners(): Promise<boolean> {
@@ -1333,6 +1453,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.saveCallerUserProfile(arg0);
+            return result;
+        }
+    }
+    async updateBaptismRecord(arg0: bigint, arg1: BaptismRecord): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateBaptismRecord(arg0, to_candid_BaptismRecord_n24(this._uploadFile, this._downloadFile, arg1));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateBaptismRecord(arg0, to_candid_BaptismRecord_n24(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
@@ -1491,88 +1625,100 @@ export class Backend implements backendInterface {
         }
     }
 }
-function from_candid_AnniversaryPdfExport_n45(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _AnniversaryPdfExport): AnniversaryPdfExport {
-    return from_candid_record_n46(_uploadFile, _downloadFile, value);
+function from_candid_AnniversaryPdfExport_n49(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _AnniversaryPdfExport): AnniversaryPdfExport {
+    return from_candid_record_n50(_uploadFile, _downloadFile, value);
 }
-function from_candid_AnniversaryType_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _AnniversaryType): AnniversaryType {
-    return from_candid_variant_n41(_uploadFile, _downloadFile, value);
+function from_candid_AnniversaryType_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _AnniversaryType): AnniversaryType {
+    return from_candid_variant_n45(_uploadFile, _downloadFile, value);
 }
-function from_candid_Anniversary_n38(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Anniversary): Anniversary {
-    return from_candid_record_n39(_uploadFile, _downloadFile, value);
+function from_candid_Anniversary_n42(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Anniversary): Anniversary {
+    return from_candid_record_n43(_uploadFile, _downloadFile, value);
 }
-function from_candid_BudgetTransaction_n56(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _BudgetTransaction): BudgetTransaction {
-    return from_candid_record_n57(_uploadFile, _downloadFile, value);
+function from_candid_BaptismAnnotations_n54(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _BaptismAnnotations): BaptismAnnotations {
+    return from_candid_record_n55(_uploadFile, _downloadFile, value);
 }
-async function from_candid_ExternalBlob_n73(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ExternalBlob): Promise<ExternalBlob> {
+function from_candid_BaptismRecord_n52(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _BaptismRecord): BaptismRecord {
+    return from_candid_record_n53(_uploadFile, _downloadFile, value);
+}
+function from_candid_BudgetTransaction_n72(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _BudgetTransaction): BudgetTransaction {
+    return from_candid_record_n73(_uploadFile, _downloadFile, value);
+}
+async function from_candid_ExternalBlob_n89(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ExternalBlob): Promise<ExternalBlob> {
     return await _downloadFile(value);
 }
-function from_candid_FamilyMember_n75(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _FamilyMember): FamilyMember {
-    return from_candid_record_n76(_uploadFile, _downloadFile, value);
+function from_candid_FamilyMember_n91(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _FamilyMember): FamilyMember {
+    return from_candid_record_n92(_uploadFile, _downloadFile, value);
 }
-function from_candid_LocalityResident_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _LocalityResident): LocalityResident {
-    return from_candid_record_n27(_uploadFile, _downloadFile, value);
+function from_candid_LocalityResident_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _LocalityResident): LocalityResident {
+    return from_candid_record_n31(_uploadFile, _downloadFile, value);
 }
-function from_candid_LocalityWithParishioners_n63(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _LocalityWithParishioners): LocalityWithParishioners {
-    return from_candid_record_n64(_uploadFile, _downloadFile, value);
+function from_candid_LocalityWithParishioners_n79(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _LocalityWithParishioners): LocalityWithParishioners {
+    return from_candid_record_n80(_uploadFile, _downloadFile, value);
 }
-function from_candid_PaginatedResult_10_n53(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PaginatedResult_10): PaginatedResult_10 {
-    return from_candid_record_n54(_uploadFile, _downloadFile, value);
+function from_candid_PaginatedResult_10_n69(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PaginatedResult_10): PaginatedResult_10 {
+    return from_candid_record_n70(_uploadFile, _downloadFile, value);
 }
-function from_candid_PaginatedResult_11_n35(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PaginatedResult_11): PaginatedResult_11 {
-    return from_candid_record_n36(_uploadFile, _downloadFile, value);
-}
-async function from_candid_PaginatedResult_1_n65(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PaginatedResult_1): Promise<PaginatedResult_1> {
-    return await from_candid_record_n66(_uploadFile, _downloadFile, value);
-}
-function from_candid_PaginatedResult_5_n60(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PaginatedResult_5): PaginatedResult_5 {
+function from_candid_PaginatedResult_11_n60(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PaginatedResult_11): PaginatedResult_11 {
     return from_candid_record_n61(_uploadFile, _downloadFile, value);
 }
-async function from_candid_Parishioner_n68(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Parishioner): Promise<Parishioner> {
-    return await from_candid_record_n69(_uploadFile, _downloadFile, value);
+function from_candid_PaginatedResult_12_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PaginatedResult_12): PaginatedResult_12 {
+    return from_candid_record_n40(_uploadFile, _downloadFile, value);
 }
-function from_candid_RelationType_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _RelationType): RelationType {
-    return from_candid_variant_n30(_uploadFile, _downloadFile, value);
+async function from_candid_PaginatedResult_1_n81(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PaginatedResult_1): Promise<PaginatedResult_1> {
+    return await from_candid_record_n82(_uploadFile, _downloadFile, value);
 }
-function from_candid_Sacraments_n70(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Sacraments): Sacraments {
-    return from_candid_record_n71(_uploadFile, _downloadFile, value);
+function from_candid_PaginatedResult_5_n76(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PaginatedResult_5): PaginatedResult_5 {
+    return from_candid_record_n77(_uploadFile, _downloadFile, value);
 }
-function from_candid_TransactionType_n58(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TransactionType): TransactionType {
-    return from_candid_variant_n59(_uploadFile, _downloadFile, value);
+async function from_candid_Parishioner_n84(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Parishioner): Promise<Parishioner> {
+    return await from_candid_record_n85(_uploadFile, _downloadFile, value);
 }
-function from_candid_UserRole_n48(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
-    return from_candid_variant_n49(_uploadFile, _downloadFile, value);
+function from_candid_RelationType_n33(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _RelationType): RelationType {
+    return from_candid_variant_n34(_uploadFile, _downloadFile, value);
+}
+function from_candid_Sacraments_n86(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Sacraments): Sacraments {
+    return from_candid_record_n87(_uploadFile, _downloadFile, value);
+}
+function from_candid_TransactionType_n74(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TransactionType): TransactionType {
+    return from_candid_variant_n75(_uploadFile, _downloadFile, value);
+}
+function from_candid_UserRole_n64(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+    return from_candid_variant_n65(_uploadFile, _downloadFile, value);
 }
 function from_candid__CaffeineStorageRefillResult_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: __CaffeineStorageRefillResult): _CaffeineStorageRefillResult {
     return from_candid_record_n5(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_RelationType]): RelationType | null {
-    return value.length === 0 ? null : from_candid_RelationType_n29(_uploadFile, _downloadFile, value[0]);
+function from_candid_opt_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_RelationType]): RelationType | null {
+    return value.length === 0 ? null : from_candid_RelationType_n33(_uploadFile, _downloadFile, value[0]);
 }
-function from_candid_opt_n42(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
+function from_candid_opt_n46(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n47(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
-    return value.length === 0 ? null : value[0];
-}
-function from_candid_opt_n50(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_CollectiveOffering]): CollectiveOffering | null {
-    return value.length === 0 ? null : value[0];
-}
-function from_candid_opt_n51(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_IndividualOffering]): IndividualOffering | null {
-    return value.length === 0 ? null : value[0];
-}
-function from_candid_opt_n52(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Letter]): Letter | null {
-    return value.length === 0 ? null : value[0];
+function from_candid_opt_n51(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_BaptismRecord]): BaptismRecord | null {
+    return value.length === 0 ? null : from_candid_BaptismRecord_n52(_uploadFile, _downloadFile, value[0]);
 }
 function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [boolean]): boolean | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n63(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n66(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_CollectiveOffering]): CollectiveOffering | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n67(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_IndividualOffering]): IndividualOffering | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n68(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Letter]): Letter | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
     return value.length === 0 ? null : value[0];
 }
-async function from_candid_opt_n72(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_ExternalBlob]): Promise<ExternalBlob | null> {
-    return value.length === 0 ? null : await from_candid_ExternalBlob_n73(_uploadFile, _downloadFile, value[0]);
+async function from_candid_opt_n88(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_ExternalBlob]): Promise<ExternalBlob | null> {
+    return value.length === 0 ? null : await from_candid_ExternalBlob_n89(_uploadFile, _downloadFile, value[0]);
 }
-function from_candid_record_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n31(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     relationType: [] | [_RelationType];
     name: string;
     isFamilyMember: boolean;
@@ -1582,12 +1728,12 @@ function from_candid_record_n27(_uploadFile: (file: ExternalBlob) => Promise<Uin
     isFamilyMember: boolean;
 } {
     return {
-        relationType: record_opt_to_undefined(from_candid_opt_n28(_uploadFile, _downloadFile, value.relationType)),
+        relationType: record_opt_to_undefined(from_candid_opt_n32(_uploadFile, _downloadFile, value.relationType)),
         name: value.name,
         isFamilyMember: value.isFamilyMember
     };
 }
-function from_candid_record_n36(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     data: Array<_Anniversary>;
     totalCount: bigint;
     pageSize: bigint;
@@ -1601,14 +1747,14 @@ function from_candid_record_n36(_uploadFile: (file: ExternalBlob) => Promise<Uin
     pageCount: bigint;
 } {
     return {
-        data: from_candid_vec_n37(_uploadFile, _downloadFile, value.data),
+        data: from_candid_vec_n41(_uploadFile, _downloadFile, value.data),
         totalCount: value.totalCount,
         pageSize: value.pageSize,
         currentPage: value.currentPage,
         pageCount: value.pageCount
     };
 }
-function from_candid_record_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     anniversaryType: _AnniversaryType;
     address: [] | [string];
     targetYear: bigint;
@@ -1628,26 +1774,14 @@ function from_candid_record_n39(_uploadFile: (file: ExternalBlob) => Promise<Uin
     firstName: string;
 } {
     return {
-        anniversaryType: from_candid_AnniversaryType_n40(_uploadFile, _downloadFile, value.anniversaryType),
-        address: record_opt_to_undefined(from_candid_opt_n42(_uploadFile, _downloadFile, value.address)),
+        anniversaryType: from_candid_AnniversaryType_n44(_uploadFile, _downloadFile, value.anniversaryType),
+        address: record_opt_to_undefined(from_candid_opt_n46(_uploadFile, _downloadFile, value.address)),
         targetYear: value.targetYear,
         parishionerId: value.parishionerId,
         anniversaryNumber: value.anniversaryNumber,
         lastName: value.lastName,
         eventYear: value.eventYear,
         firstName: value.firstName
-    };
-}
-function from_candid_record_n46(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    year: bigint;
-    anniversaries: Array<_Anniversary>;
-}): {
-    year: bigint;
-    anniversaries: Array<Anniversary>;
-} {
-    return {
-        year: value.year,
-        anniversaries: from_candid_vec_n37(_uploadFile, _downloadFile, value.anniversaries)
     };
 }
 function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -1662,7 +1796,100 @@ function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint
         topped_up_amount: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.topped_up_amount))
     };
 }
-function from_candid_record_n54(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n50(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    year: bigint;
+    anniversaries: Array<_Anniversary>;
+}): {
+    year: bigint;
+    anniversaries: Array<Anniversary>;
+} {
+    return {
+        year: value.year,
+        anniversaries: from_candid_vec_n41(_uploadFile, _downloadFile, value.anniversaries)
+    };
+}
+function from_candid_record_n53(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: bigint;
+    personFullName: string;
+    birthDate: string;
+    createdAt: bigint;
+    birthPlace: string;
+    baptismDate: bigint;
+    annotations: _BaptismAnnotations;
+    actNumber: string;
+    baptismPlace: string;
+    mother: _ParentsData;
+    father: _ParentsData;
+}): {
+    id: bigint;
+    personFullName: string;
+    birthDate: string;
+    createdAt: bigint;
+    birthPlace: string;
+    baptismDate: bigint;
+    annotations: BaptismAnnotations;
+    actNumber: string;
+    baptismPlace: string;
+    mother: ParentsData;
+    father: ParentsData;
+} {
+    return {
+        id: value.id,
+        personFullName: value.personFullName,
+        birthDate: value.birthDate,
+        createdAt: value.createdAt,
+        birthPlace: value.birthPlace,
+        baptismDate: value.baptismDate,
+        annotations: from_candid_BaptismAnnotations_n54(_uploadFile, _downloadFile, value.annotations),
+        actNumber: value.actNumber,
+        baptismPlace: value.baptismPlace,
+        mother: value.mother,
+        father: value.father
+    };
+}
+function from_candid_record_n55(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    profession: [] | [string];
+    marriage: [] | [string];
+    confirmation: [] | [string];
+    generalNotes: [] | [string];
+    ordination: [] | [string];
+}): {
+    profession?: string;
+    marriage?: string;
+    confirmation?: string;
+    generalNotes?: string;
+    ordination?: string;
+} {
+    return {
+        profession: record_opt_to_undefined(from_candid_opt_n46(_uploadFile, _downloadFile, value.profession)),
+        marriage: record_opt_to_undefined(from_candid_opt_n46(_uploadFile, _downloadFile, value.marriage)),
+        confirmation: record_opt_to_undefined(from_candid_opt_n46(_uploadFile, _downloadFile, value.confirmation)),
+        generalNotes: record_opt_to_undefined(from_candid_opt_n46(_uploadFile, _downloadFile, value.generalNotes)),
+        ordination: record_opt_to_undefined(from_candid_opt_n46(_uploadFile, _downloadFile, value.ordination))
+    };
+}
+function from_candid_record_n61(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    data: Array<_BaptismRecord>;
+    totalCount: bigint;
+    pageSize: bigint;
+    currentPage: bigint;
+    pageCount: bigint;
+}): {
+    data: Array<BaptismRecord>;
+    totalCount: bigint;
+    pageSize: bigint;
+    currentPage: bigint;
+    pageCount: bigint;
+} {
+    return {
+        data: from_candid_vec_n62(_uploadFile, _downloadFile, value.data),
+        totalCount: value.totalCount,
+        pageSize: value.pageSize,
+        currentPage: value.currentPage,
+        pageCount: value.pageCount
+    };
+}
+function from_candid_record_n70(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     data: Array<_BudgetTransaction>;
     totalCount: bigint;
     pageSize: bigint;
@@ -1676,14 +1903,14 @@ function from_candid_record_n54(_uploadFile: (file: ExternalBlob) => Promise<Uin
     pageCount: bigint;
 } {
     return {
-        data: from_candid_vec_n55(_uploadFile, _downloadFile, value.data),
+        data: from_candid_vec_n71(_uploadFile, _downloadFile, value.data),
         totalCount: value.totalCount,
         pageSize: value.pageSize,
         currentPage: value.currentPage,
         pageCount: value.pageCount
     };
 }
-function from_candid_record_n57(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n73(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     uid: _UniqueId;
     relatedParishioner: [] | [bigint];
     type: _TransactionType;
@@ -1705,15 +1932,15 @@ function from_candid_record_n57(_uploadFile: (file: ExternalBlob) => Promise<Uin
     return {
         uid: value.uid,
         relatedParishioner: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.relatedParishioner)),
-        type: from_candid_TransactionType_n58(_uploadFile, _downloadFile, value.type),
+        type: from_candid_TransactionType_n74(_uploadFile, _downloadFile, value.type),
         description: value.description,
         timestamp: value.timestamp,
         category: value.category,
         amount: value.amount,
-        relatedLocality: record_opt_to_undefined(from_candid_opt_n42(_uploadFile, _downloadFile, value.relatedLocality))
+        relatedLocality: record_opt_to_undefined(from_candid_opt_n46(_uploadFile, _downloadFile, value.relatedLocality))
     };
 }
-function from_candid_record_n61(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n77(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     data: Array<_LocalityWithParishioners>;
     totalCount: bigint;
     pageSize: bigint;
@@ -1727,14 +1954,14 @@ function from_candid_record_n61(_uploadFile: (file: ExternalBlob) => Promise<Uin
     pageCount: bigint;
 } {
     return {
-        data: from_candid_vec_n62(_uploadFile, _downloadFile, value.data),
+        data: from_candid_vec_n78(_uploadFile, _downloadFile, value.data),
         totalCount: value.totalCount,
         pageSize: value.pageSize,
         currentPage: value.currentPage,
         pageCount: value.pageCount
     };
 }
-function from_candid_record_n64(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n80(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     residents: Array<_LocalityResident>;
     tasks: Array<string>;
     name: string;
@@ -1750,7 +1977,7 @@ function from_candid_record_n64(_uploadFile: (file: ExternalBlob) => Promise<Uin
     phone: string;
 } {
     return {
-        residents: from_candid_vec_n25(_uploadFile, _downloadFile, value.residents),
+        residents: from_candid_vec_n29(_uploadFile, _downloadFile, value.residents),
         tasks: value.tasks,
         name: value.name,
         contactPerson: value.contactPerson,
@@ -1758,7 +1985,7 @@ function from_candid_record_n64(_uploadFile: (file: ExternalBlob) => Promise<Uin
         phone: value.phone
     };
 }
-async function from_candid_record_n66(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+async function from_candid_record_n82(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     data: Array<_Parishioner>;
     totalCount: bigint;
     pageSize: bigint;
@@ -1772,14 +1999,14 @@ async function from_candid_record_n66(_uploadFile: (file: ExternalBlob) => Promi
     pageCount: bigint;
 }> {
     return {
-        data: await from_candid_vec_n67(_uploadFile, _downloadFile, value.data),
+        data: await from_candid_vec_n83(_uploadFile, _downloadFile, value.data),
         totalCount: value.totalCount,
         pageSize: value.pageSize,
         currentPage: value.currentPage,
         pageCount: value.pageCount
     };
 }
-async function from_candid_record_n69(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+async function from_candid_record_n85(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     uid: bigint;
     birthYear: [] | [bigint];
     profession: [] | [string];
@@ -1811,20 +2038,20 @@ async function from_candid_record_n69(_uploadFile: (file: ExternalBlob) => Promi
     return {
         uid: value.uid,
         birthYear: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.birthYear)),
-        profession: record_opt_to_undefined(from_candid_opt_n42(_uploadFile, _downloadFile, value.profession)),
+        profession: record_opt_to_undefined(from_candid_opt_n46(_uploadFile, _downloadFile, value.profession)),
         offers: value.offers,
-        email: record_opt_to_undefined(from_candid_opt_n42(_uploadFile, _downloadFile, value.email)),
-        pastoralNotes: record_opt_to_undefined(from_candid_opt_n42(_uploadFile, _downloadFile, value.pastoralNotes)),
-        address: record_opt_to_undefined(from_candid_opt_n42(_uploadFile, _downloadFile, value.address)),
-        sacraments: from_candid_Sacraments_n70(_uploadFile, _downloadFile, value.sacraments),
-        phone: record_opt_to_undefined(from_candid_opt_n42(_uploadFile, _downloadFile, value.phone)),
-        photo: record_opt_to_undefined(await from_candid_opt_n72(_uploadFile, _downloadFile, value.photo)),
+        email: record_opt_to_undefined(from_candid_opt_n46(_uploadFile, _downloadFile, value.email)),
+        pastoralNotes: record_opt_to_undefined(from_candid_opt_n46(_uploadFile, _downloadFile, value.pastoralNotes)),
+        address: record_opt_to_undefined(from_candid_opt_n46(_uploadFile, _downloadFile, value.address)),
+        sacraments: from_candid_Sacraments_n86(_uploadFile, _downloadFile, value.sacraments),
+        phone: record_opt_to_undefined(from_candid_opt_n46(_uploadFile, _downloadFile, value.phone)),
+        photo: record_opt_to_undefined(await from_candid_opt_n88(_uploadFile, _downloadFile, value.photo)),
         lastName: value.lastName,
-        family: from_candid_vec_n74(_uploadFile, _downloadFile, value.family),
+        family: from_candid_vec_n90(_uploadFile, _downloadFile, value.family),
         firstName: value.firstName
     };
 }
-function from_candid_record_n71(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n87(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     confirmationYear: [] | [bigint];
     funeralYear: [] | [bigint];
     marriageYear: [] | [bigint];
@@ -1848,7 +2075,7 @@ function from_candid_record_n71(_uploadFile: (file: ExternalBlob) => Promise<Uin
         baptismYear: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.baptismYear))
     };
 }
-function from_candid_record_n76(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n92(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     relationType: _RelationType;
     name: string;
     sacraments: _Sacraments;
@@ -1858,12 +2085,12 @@ function from_candid_record_n76(_uploadFile: (file: ExternalBlob) => Promise<Uin
     sacraments: Sacraments;
 } {
     return {
-        relationType: from_candid_RelationType_n29(_uploadFile, _downloadFile, value.relationType),
+        relationType: from_candid_RelationType_n33(_uploadFile, _downloadFile, value.relationType),
         name: value.name,
-        sacraments: from_candid_Sacraments_n70(_uploadFile, _downloadFile, value.sacraments)
+        sacraments: from_candid_Sacraments_n86(_uploadFile, _downloadFile, value.sacraments)
     };
 }
-function from_candid_variant_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     other: null;
 } | {
     child: null;
@@ -1872,7 +2099,7 @@ function from_candid_variant_n30(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): RelationType {
     return "other" in value ? RelationType.other : "child" in value ? RelationType.child : "spouse" in value ? RelationType.spouse : value;
 }
-function from_candid_variant_n41(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n45(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     baptism: null;
 } | {
     marriage: null;
@@ -1881,7 +2108,7 @@ function from_candid_variant_n41(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): AnniversaryType {
     return "baptism" in value ? AnniversaryType.baptism : "marriage" in value ? AnniversaryType.marriage : "funeral" in value ? AnniversaryType.funeral : value;
 }
-function from_candid_variant_n49(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n65(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
 } | {
     user: null;
@@ -1890,33 +2117,45 @@ function from_candid_variant_n49(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): UserRole {
     return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
 }
-function from_candid_variant_n59(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n75(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     expense: null;
 } | {
     income: null;
 }): TransactionType {
     return "expense" in value ? TransactionType.expense : "income" in value ? TransactionType.income : value;
 }
-function from_candid_vec_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_LocalityResident>): Array<LocalityResident> {
-    return value.map((x)=>from_candid_LocalityResident_n26(_uploadFile, _downloadFile, x));
+function from_candid_vec_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_LocalityResident>): Array<LocalityResident> {
+    return value.map((x)=>from_candid_LocalityResident_n30(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n37(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Anniversary>): Array<Anniversary> {
-    return value.map((x)=>from_candid_Anniversary_n38(_uploadFile, _downloadFile, x));
+function from_candid_vec_n41(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Anniversary>): Array<Anniversary> {
+    return value.map((x)=>from_candid_Anniversary_n42(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n55(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_BudgetTransaction>): Array<BudgetTransaction> {
-    return value.map((x)=>from_candid_BudgetTransaction_n56(_uploadFile, _downloadFile, x));
+function from_candid_vec_n62(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_BaptismRecord>): Array<BaptismRecord> {
+    return value.map((x)=>from_candid_BaptismRecord_n52(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n62(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_LocalityWithParishioners>): Array<LocalityWithParishioners> {
-    return value.map((x)=>from_candid_LocalityWithParishioners_n63(_uploadFile, _downloadFile, x));
+function from_candid_vec_n71(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_BudgetTransaction>): Array<BudgetTransaction> {
+    return value.map((x)=>from_candid_BudgetTransaction_n72(_uploadFile, _downloadFile, x));
 }
-async function from_candid_vec_n67(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Parishioner>): Promise<Array<Parishioner>> {
-    return await Promise.all(value.map(async (x)=>await from_candid_Parishioner_n68(_uploadFile, _downloadFile, x)));
+function from_candid_vec_n78(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_LocalityWithParishioners>): Array<LocalityWithParishioners> {
+    return value.map((x)=>from_candid_LocalityWithParishioners_n79(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n74(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_FamilyMember>): Array<FamilyMember> {
-    return value.map((x)=>from_candid_FamilyMember_n75(_uploadFile, _downloadFile, x));
+async function from_candid_vec_n83(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Parishioner>): Promise<Array<Parishioner>> {
+    return await Promise.all(value.map(async (x)=>await from_candid_Parishioner_n84(_uploadFile, _downloadFile, x)));
 }
-function to_candid_AnniversaryType_n33(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AnniversaryType): _AnniversaryType {
-    return to_candid_variant_n34(_uploadFile, _downloadFile, value);
+function from_candid_vec_n90(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_FamilyMember>): Array<FamilyMember> {
+    return value.map((x)=>from_candid_FamilyMember_n91(_uploadFile, _downloadFile, x));
+}
+function to_candid_AnniversaryType_n37(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AnniversaryType): _AnniversaryType {
+    return to_candid_variant_n38(_uploadFile, _downloadFile, value);
+}
+function to_candid_BaptismAnnotations_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: BaptismAnnotations): _BaptismAnnotations {
+    return to_candid_record_n27(_uploadFile, _downloadFile, value);
+}
+function to_candid_BaptismRecordSortMode_n58(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: BaptismRecordSortMode): _BaptismRecordSortMode {
+    return to_candid_variant_n59(_uploadFile, _downloadFile, value);
+}
+function to_candid_BaptismRecord_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: BaptismRecord): _BaptismRecord {
+    return to_candid_record_n25(_uploadFile, _downloadFile, value);
 }
 function to_candid_BudgetTransaction_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: BudgetTransaction): _BudgetTransaction {
     return to_candid_record_n9(_uploadFile, _downloadFile, value);
@@ -1927,11 +2166,14 @@ async function to_candid_ExternalBlob_n16(_uploadFile: (file: ExternalBlob) => P
 function to_candid_FamilyMember_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: FamilyMember): _FamilyMember {
     return to_candid_record_n19(_uploadFile, _downloadFile, value);
 }
-function to_candid_GetAnniversariesPdfExportRequest_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: GetAnniversariesPdfExportRequest): _GetAnniversariesPdfExportRequest {
-    return to_candid_record_n44(_uploadFile, _downloadFile, value);
+function to_candid_GetAnniversariesPdfExportRequest_n47(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: GetAnniversariesPdfExportRequest): _GetAnniversariesPdfExportRequest {
+    return to_candid_record_n48(_uploadFile, _downloadFile, value);
 }
-function to_candid_GetAnniversariesRequest_n31(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: GetAnniversariesRequest): _GetAnniversariesRequest {
-    return to_candid_record_n32(_uploadFile, _downloadFile, value);
+function to_candid_GetAnniversariesRequest_n35(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: GetAnniversariesRequest): _GetAnniversariesRequest {
+    return to_candid_record_n36(_uploadFile, _downloadFile, value);
+}
+function to_candid_GetBaptismRegistryRequest_n56(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: GetBaptismRegistryRequest): _GetBaptismRegistryRequest {
+    return to_candid_record_n57(_uploadFile, _downloadFile, value);
 }
 async function to_candid_Parishioner_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Parishioner): Promise<_Parishioner> {
     return await to_candid_record_n13(_uploadFile, _downloadFile, value);
@@ -1954,7 +2196,7 @@ function to_candid__CaffeineStorageRefillInformation_n2(_uploadFile: (file: Exte
 function to_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CaffeineStorageRefillInformation | null): [] | [__CaffeineStorageRefillInformation] {
     return value === null ? candid_none() : candid_some(to_candid__CaffeineStorageRefillInformation_n2(_uploadFile, _downloadFile, value));
 }
-function to_candid_opt_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: bigint | null): [] | [bigint] {
+function to_candid_opt_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: bigint | null): [] | [bigint] {
     return value === null ? candid_none() : candid_some(value);
 }
 async function to_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -2041,6 +2283,66 @@ function to_candid_record_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8
         sacraments: to_candid_Sacraments_n14(_uploadFile, _downloadFile, value.sacraments)
     };
 }
+function to_candid_record_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: bigint;
+    personFullName: string;
+    birthDate: string;
+    createdAt: bigint;
+    birthPlace: string;
+    baptismDate: bigint;
+    annotations: BaptismAnnotations;
+    actNumber: string;
+    baptismPlace: string;
+    mother: ParentsData;
+    father: ParentsData;
+}): {
+    id: bigint;
+    personFullName: string;
+    birthDate: string;
+    createdAt: bigint;
+    birthPlace: string;
+    baptismDate: bigint;
+    annotations: _BaptismAnnotations;
+    actNumber: string;
+    baptismPlace: string;
+    mother: _ParentsData;
+    father: _ParentsData;
+} {
+    return {
+        id: value.id,
+        personFullName: value.personFullName,
+        birthDate: value.birthDate,
+        createdAt: value.createdAt,
+        birthPlace: value.birthPlace,
+        baptismDate: value.baptismDate,
+        annotations: to_candid_BaptismAnnotations_n26(_uploadFile, _downloadFile, value.annotations),
+        actNumber: value.actNumber,
+        baptismPlace: value.baptismPlace,
+        mother: value.mother,
+        father: value.father
+    };
+}
+function to_candid_record_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    profession?: string;
+    marriage?: string;
+    confirmation?: string;
+    generalNotes?: string;
+    ordination?: string;
+}): {
+    profession: [] | [string];
+    marriage: [] | [string];
+    confirmation: [] | [string];
+    generalNotes: [] | [string];
+    ordination: [] | [string];
+} {
+    return {
+        profession: value.profession ? candid_some(value.profession) : candid_none(),
+        marriage: value.marriage ? candid_some(value.marriage) : candid_none(),
+        confirmation: value.confirmation ? candid_some(value.confirmation) : candid_none(),
+        generalNotes: value.generalNotes ? candid_some(value.generalNotes) : candid_none(),
+        ordination: value.ordination ? candid_some(value.ordination) : candid_none()
+    };
+}
 function to_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     proposed_top_up_amount?: bigint;
 }): {
@@ -2050,7 +2352,7 @@ function to_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
         proposed_top_up_amount: value.proposed_top_up_amount ? candid_some(value.proposed_top_up_amount) : candid_none()
     };
 }
-function to_candid_record_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function to_candid_record_n36(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     anniversaryType?: AnniversaryType;
     page?: bigint;
     year: bigint;
@@ -2062,13 +2364,13 @@ function to_candid_record_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8
     pageSize: [] | [bigint];
 } {
     return {
-        anniversaryType: value.anniversaryType ? candid_some(to_candid_AnniversaryType_n33(_uploadFile, _downloadFile, value.anniversaryType)) : candid_none(),
+        anniversaryType: value.anniversaryType ? candid_some(to_candid_AnniversaryType_n37(_uploadFile, _downloadFile, value.anniversaryType)) : candid_none(),
         page: value.page ? candid_some(value.page) : candid_none(),
         year: value.year,
         pageSize: value.pageSize ? candid_some(value.pageSize) : candid_none()
     };
 }
-function to_candid_record_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function to_candid_record_n48(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     anniversaryType?: AnniversaryType;
     year: bigint;
 }): {
@@ -2076,8 +2378,26 @@ function to_candid_record_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8
     year: bigint;
 } {
     return {
-        anniversaryType: value.anniversaryType ? candid_some(to_candid_AnniversaryType_n33(_uploadFile, _downloadFile, value.anniversaryType)) : candid_none(),
+        anniversaryType: value.anniversaryType ? candid_some(to_candid_AnniversaryType_n37(_uploadFile, _downloadFile, value.anniversaryType)) : candid_none(),
         year: value.year
+    };
+}
+function to_candid_record_n57(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    page?: bigint;
+    sortMode?: BaptismRecordSortMode;
+    pageSize?: bigint;
+    search?: string;
+}): {
+    page: [] | [bigint];
+    sortMode: [] | [_BaptismRecordSortMode];
+    pageSize: [] | [bigint];
+    search: [] | [string];
+} {
+    return {
+        page: value.page ? candid_some(value.page) : candid_none(),
+        sortMode: value.sortMode ? candid_some(to_candid_BaptismRecordSortMode_n58(_uploadFile, _downloadFile, value.sortMode)) : candid_none(),
+        pageSize: value.pageSize ? candid_some(value.pageSize) : candid_none(),
+        search: value.search ? candid_some(value.search) : candid_none()
     };
 }
 function to_candid_record_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -2151,7 +2471,7 @@ function to_candid_variant_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint
         guest: null
     } : value;
 }
-function to_candid_variant_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AnniversaryType): {
+function to_candid_variant_n38(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AnniversaryType): {
     baptism: null;
 } | {
     marriage: null;
@@ -2164,6 +2484,21 @@ function to_candid_variant_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint
         marriage: null
     } : value == AnniversaryType.funeral ? {
         funeral: null
+    } : value;
+}
+function to_candid_variant_n59(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: BaptismRecordSortMode): {
+    alphabetical: null;
+} | {
+    newestFirst: null;
+} | {
+    oldestFirst: null;
+} {
+    return value == BaptismRecordSortMode.alphabetical ? {
+        alphabetical: null
+    } : value == BaptismRecordSortMode.newestFirst ? {
+        newestFirst: null
+    } : value == BaptismRecordSortMode.oldestFirst ? {
+        oldestFirst: null
     } : value;
 }
 function to_candid_vec_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<FamilyMember>): Array<_FamilyMember> {

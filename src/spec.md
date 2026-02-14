@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the Correspondence (Korespondencja) printable letter PDF layout so the body text is left-aligned and the signature block is shifted slightly to the right.
+**Goal:** Add a consistent PDF export mode selection (export all vs export selected single record) across all non-Budget modules that support PDF export.
 
 **Planned changes:**
-- Update `generateLetterPDF` in `frontend/src/lib/pdfGenerator.ts` to render the main letter body text block left-aligned (not centered).
-- Adjust `generateLetterPDF` in `frontend/src/lib/pdfGenerator.ts` so the signature block ("Z ufnością w Boże miłosierdzie", "ks. Marek Michalczyk") is positioned slightly to the right of center (not centered).
-- Ensure these layout changes apply only to `generateLetterPDF` and do not affect other PDF generators.
+- Add a shared export control on each applicable non-Budget module page to choose between “Export all” and “Export selected”.
+- Implement/standardize single-record selection flow per module so “Export selected” exports exactly one explicitly selected record.
+- Preserve existing “export all” behavior per module, and keep Budget module export behavior unchanged.
+- Add localized, consistent labels and user prompts/toasts (including an error when “Export selected” is chosen without a selection).
 
-**User-visible outcome:** Generating a PDF from the Korespondencja page produces a letter with a left-aligned body text block and a signature block clearly shifted to the right, while other PDFs remain unchanged.
+**User-visible outcome:** In supported modules (e.g., Baptisms, Marriages, Funerals, Kartoteka/Parishioners, Localities, Events, Correspondence), users can choose to export either the whole current list to PDF or a single selected record to PDF; attempting single-record export without selecting a record shows a clear message. Budget exports work as before.
