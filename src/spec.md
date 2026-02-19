@@ -1,12 +1,14 @@
 # Specification
 
 ## Summary
-**Goal:** Add a consistent PDF export mode selection (export all vs export selected single record) across all non-Budget modules that support PDF export.
+**Goal:** Add collective offerings functionality to localities with automatic budget integration.
 
 **Planned changes:**
-- Add a shared export control on each applicable non-Budget module page to choose between “Export all” and “Export selected”.
-- Implement/standardize single-record selection flow per module so “Export selected” exports exactly one explicitly selected record.
-- Preserve existing “export all” behavior per module, and keep Budget module export behavior unchanged.
-- Add localized, consistent labels and user prompts/toasts (including an error when “Export selected” is chosen without a selection).
+- Add "Ofiary zbiorowe" (Collective Offerings) tab to expanded locality cards in the Miejscowości section
+- Create a form to add collective offerings with amount, date, and description fields
+- Store collective offerings in the backend linked to localities
+- Automatically create and synchronize budget transactions when collective offerings are added, edited, or deleted
+- Display collective offerings in the Budżet section with clear locality attribution
+- Allow editing and deleting collective offerings with automatic budget updates
 
-**User-visible outcome:** In supported modules (e.g., Baptisms, Marriages, Funerals, Kartoteka/Parishioners, Localities, Events, Correspondence), users can choose to export either the whole current list to PDF or a single selected record to PDF; attempting single-record export without selecting a record shows a clear message. Budget exports work as before.
+**User-visible outcome:** Users can record collective offerings from entire localities directly in the Miejscowości section, and these offerings automatically appear as income entries in the Budżet section with full synchronization between both views.

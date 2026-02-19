@@ -1,32 +1,50 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Parish record-keeping app (Internet Computer) with multiple modules (e.g., Chrzty, Śluby, Pogrzeby, Kartoteka, Miejscowości, Wydarzenia, Korespondencja) and PDF export features.",
+  "summary": "New project",
   "architectural_notes": [],
-  "known_issues": [],
+  "known_issues": [
+    "Build failures occurred when attempting to implement collective offerings feature - may need simplified approach"
+  ],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-add-a-consistent-ui-control-in-every-non-budget-module-that-supports-pdf-export-allowing-the-user-to-choose-between-exporting-1-the-entire-list-section-to-pdf-and-2-a-single-entry-record-to-pdf",
-      "title": "Add a consistent UI control in every non-Budget module that supports PDF export, allowing the user to choose between exporting (1) the entire list/section to PDF and (2) a single entry/record to PDF.",
+      "id": "feature-add-a-ofiary-zbiorowe-collective-offerings-tab-to-the-expanded-locality-card-in-the-miejscowo-ci-section",
+      "title": "Add a 'Ofiary zbiorowe' (Collective Offerings) tab to the expanded locality card in the Miejscowości section",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-single-record-selection-and-single-record-pdf-export-flows-for-the-listed-modules-e-g-baptisms-parishioners-card-index-localities-events-correspondence-using-existing-pdf-generators-where-available-where-a-module-only-has-an-export-all-pdf-today-add-a-reasonable-single-record-pdf-output-for-that-module-s-record-type",
-      "title": "Implement single-record selection and single-record PDF export flows for the listed modules (e.g., Baptisms, Parishioners/Card index, Localities, Events, Correspondence) using existing PDF generators where available; where a module only has an “export all” PDF today, add a reasonable single-record PDF output for that module’s record type.",
+      "id": "feature-create-a-form-in-the-collective-offerings-tab-to-add-new-collective-offerings-with-amount-date-and-description-fields",
+      "title": "Create a form in the Collective Offerings tab to add new collective offerings with amount, date, and description fields",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-ensure-all-new-export-mode-labels-and-user-facing-prompts-used-by-this-feature-are-consistent-clear-and-localized-in-the-same-way-as-the-existing-ui-for-the-application",
-      "title": "Ensure all new export mode labels and user-facing prompts used by this feature are consistent, clear, and localized in the same way as the existing UI for the application.",
+      "id": "feature-automatically-create-a-budget-transaction-entry-when-a-collective-offering-is-added-or-edited-in-miejscowo-ci",
+      "title": "Automatically create a budget transaction entry when a collective offering is added or edited in Miejscowości",
       "reqIds": [
-        "REQ-3"
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-display-collective-offerings-in-the-budzet-section-with-clear-indication-of-their-source-locality",
+      "title": "Display collective offerings in the Budzet section with clear indication of their source locality",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-allow-editing-and-deleting-collective-offerings-from-the-locality-card-with-automatic-budget-synchronization",
+      "title": "Allow editing and deleting collective offerings from the locality card with automatic budget synchronization",
+      "reqIds": [
+        "REQ-6"
       ],
       "version": 1
     }
@@ -34,18 +52,20 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add option in Chrzty PDF (świadectwo chrztu) to toggle showing/hiding the parish stamp area (miejsce na pieczęć parafialną).",
+      "summary": "Add 'Ofiary zbiorowe' (collective offerings) tab to Miejscowości section, with automatic synchronization to Budżet section",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-2",
-      "summary": "Add PDF export mode selection (export entire section vs single entry) in all modules except Budżet (e.g., Chrzty, Śluby, Pogrzeby, Kartoteka, Miejscowości, Wydarzenia, Korespondencja).",
-      "reqIds": [],
+      "id": "AR-4",
+      "summary": "Store collective offerings in the backend with locality ID, amount, date, description, and timestamps",
+      "reqIds": [
+        "REQ-3"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Add PDF export mode selection (all records vs single record) across modules except Budget",
+  "projectName": "Parish Manager",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

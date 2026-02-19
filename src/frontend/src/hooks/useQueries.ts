@@ -125,6 +125,7 @@ export function useUpdateParishioner() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['parishioners'] });
       queryClient.invalidateQueries({ queryKey: ['localities'] });
+      queryClient.invalidateQueries({ queryKey: ['localitiesWithParishioners'] });
       queryClient.invalidateQueries({ queryKey: ['budgetTransactions'] });
       queryClient.invalidateQueries({ queryKey: ['individualOfferings'] });
       queryClient.invalidateQueries({ queryKey: ['budgetBalance'] });
@@ -145,6 +146,7 @@ export function useDeleteParishioner() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['parishioners'] });
       queryClient.invalidateQueries({ queryKey: ['localities'] });
+      queryClient.invalidateQueries({ queryKey: ['localitiesWithParishioners'] });
       queryClient.invalidateQueries({ queryKey: ['budgetTransactions'] });
       queryClient.invalidateQueries({ queryKey: ['individualOfferings'] });
       queryClient.invalidateQueries({ queryKey: ['budgetBalance'] });
@@ -195,6 +197,7 @@ export function useAddLocality() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['localities'] });
+      queryClient.invalidateQueries({ queryKey: ['localitiesWithParishioners'] });
     },
   });
 }
@@ -210,6 +213,7 @@ export function useUpdateLocality() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['localities'] });
+      queryClient.invalidateQueries({ queryKey: ['localitiesWithParishioners'] });
     },
   });
 }
@@ -225,6 +229,7 @@ export function useDeleteLocality() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['localities'] });
+      queryClient.invalidateQueries({ queryKey: ['localitiesWithParishioners'] });
     },
   });
 }
@@ -604,14 +609,18 @@ export function useGetPaginatedCollectiveOfferings(page: number = 1, pageSize: n
   });
 }
 
-export function useGetCollectiveOfferingsByLocality() {
-  const { actor } = useActor();
+export function useGetCollectiveOfferingsByLocality(locality: string) {
+  const { actor, isFetching } = useActor();
 
-  return useMutation({
-    mutationFn: async (locality: string) => {
+  return useQuery<CollectiveOffering[]>({
+    queryKey: ['collectiveOfferings', 'locality', locality],
+    queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
       return actor.getCollectiveOfferingsByLocality(locality);
     },
+    enabled: !!actor && !isFetching && !!locality,
+    staleTime: 30000,
+    gcTime: 300000,
   });
 }
 
@@ -682,14 +691,18 @@ export function useGetPaginatedIndividualOfferings(page: number = 1, pageSize: n
   });
 }
 
-export function useGetIndividualOfferingsByParishioner() {
-  const { actor } = useActor();
+export function useGetIndividualOfferingsByParishioner(parishionerId: bigint) {
+  const { actor, isFetching } = useActor();
 
-  return useMutation({
-    mutationFn: async (parishionerId: bigint) => {
+  return useQuery<IndividualOffering[]>({
+    queryKey: ['individualOfferings', 'parishioner', parishionerId.toString()],
+    queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
       return actor.getIndividualOfferingsByParishioner(parishionerId);
     },
+    enabled: !!actor && !isFetching,
+    staleTime: 30000,
+    gcTime: 300000,
   });
 }
 
@@ -749,9 +762,9 @@ export function useGetAllLetters() {
   const { actor, isFetching } = useActor();
 
   return useQuery<Letter[]>({
-    queryKey: ['letters', 'all'],
+    queryKey: ['letters'],
     queryFn: async () => {
-      if (!actor) return [];
+      if (!actor) throw new Error('Actor not available');
       return actor.getAllLetters();
     },
     enabled: !!actor && !isFetching,
@@ -805,55 +818,41 @@ export function useDeleteLetter() {
   });
 }
 
-// Anniversaries - using PaginatedResult_12 type alias
-type PaginatedResult_12 = PaginatedResult_1; // Reuse existing paginated result type
-
-export function useGetAnniversariesForYearPaginated(
-  year: number,
-  page: number = 1,
-  pageSize: number = 20,
-  anniversaryType: AnniversaryType | null = null
-) {
+// Anniversaries
+export function useGetAnniversariesForYearPaginated(request: GetAnniversariesRequest) {
   const { actor, isFetching } = useActor();
 
-  const request: GetAnniversariesRequest = {
-    year: BigInt(year),
-    anniversaryType: anniversaryType || undefined,
-    page: BigInt(page),
-    pageSize: BigInt(pageSize),
-  };
-
   return useQuery({
-    queryKey: ['anniversaries', 'paginated', year, anniversaryType, page, pageSize],
+    queryKey: ['anniversaries', 'paginated', request.year.toString(), request.anniversaryType, request.page?.toString(), request.pageSize?.toString()],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      return actor.getAnniversariesForYearPaginated(request);
+      return actor.getAnniversariesForYearPaginated({
+        year: BigInt(request.year),
+        anniversaryType: request.anniversaryType,
+        page: request.page ? BigInt(request.page) : undefined,
+        pageSize: request.pageSize ? BigInt(request.pageSize) : undefined,
+      });
     },
     enabled: !!actor && !isFetching,
-    staleTime: 60000,
+    staleTime: 30000,
     gcTime: 300000,
   });
 }
 
-export function useGetAnniversariesForYearPdfExport(
-  year: number,
-  anniversaryType: AnniversaryType | null = null
-) {
+export function useGetAnniversariesForYearPdfExport(request: GetAnniversariesPdfExportRequest) {
   const { actor, isFetching } = useActor();
 
-  const request: GetAnniversariesPdfExportRequest = {
-    year: BigInt(year),
-    anniversaryType: anniversaryType || undefined,
-  };
-
   return useQuery<AnniversaryPdfExport>({
-    queryKey: ['anniversaries', 'pdfExport', year, anniversaryType],
+    queryKey: ['anniversaries', 'pdfExport', request.year.toString(), request.anniversaryType],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      return actor.getAnniversariesForYearPdfExport(request);
+      return actor.getAnniversariesForYearPdfExport({
+        year: BigInt(request.year),
+        anniversaryType: request.anniversaryType,
+      });
     },
     enabled: !!actor && !isFetching,
-    staleTime: 60000,
+    staleTime: 30000,
     gcTime: 300000,
   });
 }
@@ -862,20 +861,20 @@ export function useGetAnniversariesForYearPdfExport(
 export function useGetBaptismRegistry(
   page: number = 1,
   pageSize: number = 20,
-  search: string = '',
-  sortMode: BaptismRecordSortMode = BaptismRecordSortMode.newestFirst
+  search?: string,
+  sortMode?: BaptismRecordSortMode
 ) {
   const { actor, isFetching } = useActor();
 
   return useQuery<PaginatedResult_11>({
-    queryKey: ['baptismRegistry', page, pageSize, search, sortMode],
+    queryKey: ['baptismRegistry', 'paginated', page, pageSize, search, sortMode],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
       return actor.getBaptismRegistry({
         page: BigInt(page),
         pageSize: BigInt(pageSize),
         search: search || undefined,
-        sortMode,
+        sortMode: sortMode || undefined,
       });
     },
     enabled: !!actor && !isFetching,

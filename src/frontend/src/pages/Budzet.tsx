@@ -3,7 +3,7 @@ import { useGetPaginatedBudgetTransactionsByDateRange, useGetAllBudgetTransactio
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, TrendingUp, TrendingDown, Edit, Trash2, Download, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Edit, Trash2, Download, ChevronLeft, ChevronRight, Calendar, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import BudgetDialog from '../components/BudgetDialog';
 import { TransactionType } from '../backend';
@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { generateParishPDF } from '../lib/pdfGenerator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 export default function Budzet() {
   const currentDate = new Date();
@@ -51,7 +52,7 @@ export default function Budzet() {
   const deleteTransaction = useDeleteBudgetTransaction();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<{ tid: bigint; data: BudgetTransaction } | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<BudgetTransaction | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<bigint | null>(null);
 
@@ -87,7 +88,7 @@ export default function Budzet() {
   };
 
   const handleEdit = (transaction: BudgetTransaction) => {
-    setEditingTransaction({ tid: transaction.uid, data: transaction });
+    setEditingTransaction(transaction);
     setDialogOpen(true);
   };
 
@@ -113,7 +114,7 @@ export default function Budzet() {
   const handleSave = async (data: BudgetTransaction) => {
     try {
       if (editingTransaction) {
-        await updateTransaction.mutateAsync({ uid: editingTransaction.tid, transaction: data });
+        await updateTransaction.mutateAsync({ uid: editingTransaction.uid, transaction: data });
         toast.success('Transakcja została zaktualizowana');
       } else {
         await addTransaction.mutateAsync(data);
@@ -415,7 +416,7 @@ export default function Budzet() {
                     className="flex items-start justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                   >
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         {transaction.type === TransactionType.income ? (
                           <TrendingUp className="h-4 w-4 text-green-600" />
                         ) : (
@@ -427,13 +428,14 @@ export default function Budzet() {
                         <span className="text-xs text-muted-foreground">
                           {new Date(Number(transaction.timestamp) / 1000000).toLocaleDateString('pl-PL')}
                         </span>
+                        {transaction.relatedLocality && (
+                          <Badge variant="secondary" className="text-xs">
+                            <MapPin className="h-3 w-3 mr-1" />
+                            {transaction.relatedLocality}
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-sm text-muted-foreground">{transaction.description}</p>
-                      {transaction.relatedLocality && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Miejscowość: {transaction.relatedLocality}
-                        </p>
-                      )}
                     </div>
                     <div className="flex items-center gap-3">
                       <span
@@ -455,7 +457,6 @@ export default function Budzet() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteClick(transaction.uid)}
-                          className="text-destructive hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -465,11 +466,12 @@ export default function Budzet() {
                 ))}
               </div>
 
+              {/* Pagination */}
               <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Pokaż</span>
+                  <span className="text-sm text-muted-foreground">Wyświetl:</span>
                   <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-                    <SelectTrigger className="w-20">
+                    <SelectTrigger className="w-[100px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -479,10 +481,9 @@ export default function Budzet() {
                       <SelectItem value="100">100</SelectItem>
                     </SelectContent>
                   </Select>
-                  <span className="text-sm text-muted-foreground">
-                    na stronę (Łącznie: {totalCount})
-                  </span>
+                  <span className="text-sm text-muted-foreground">na stronę</span>
                 </div>
+
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
@@ -492,7 +493,7 @@ export default function Budzet() {
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <span className="text-sm text-muted-foreground px-2">
+                  <span className="text-sm text-muted-foreground px-4">
                     Strona {currentPage} z {pageCount}
                   </span>
                   <Button
@@ -513,7 +514,7 @@ export default function Budzet() {
       <BudgetDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        transaction={editingTransaction?.data || null}
+        transaction={editingTransaction}
         onSave={handleSave}
       />
 
@@ -527,7 +528,7 @@ export default function Budzet() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleDeleteConfirm}>
               Usuń
             </AlertDialogAction>
           </AlertDialogFooter>

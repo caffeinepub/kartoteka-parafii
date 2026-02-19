@@ -46,9 +46,12 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
 
   const [offeringDialogOpen, setOfferingDialogOpen] = useState(false);
   const [editingOffering, setEditingOffering] = useState<IndividualOffering | null>(null);
-  const [parishionerOfferings, setParishionerOfferings] = useState<IndividualOffering[]>([]);
 
-  const getOfferingsByParishioner = useGetIndividualOfferingsByParishioner();
+  // Use the query hook with the parishioner's ID
+  const { data: parishionerOfferings = [], refetch: refetchOfferings } = useGetIndividualOfferingsByParishioner(
+    parishioner?.uid || BigInt(0)
+  );
+  
   const addIndividualOffering = useAddIndividualOffering();
   const updateIndividualOffering = useUpdateIndividualOffering();
   const deleteIndividualOffering = useDeleteIndividualOffering();
@@ -56,13 +59,8 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
   useEffect(() => {
     if (parishioner) {
       setFormData(parishioner);
-
-      // Load individual offerings from backend
-      getOfferingsByParishioner.mutateAsync(parishioner.uid).then((offerings) => {
-        setParishionerOfferings(offerings);
-      }).catch(() => {
-        setParishionerOfferings([]);
-      });
+      // Refetch offerings when parishioner changes
+      refetchOfferings();
     } else {
       setFormData({
         uid: BigInt(0),
@@ -85,7 +83,6 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
         offers: [],
         pastoralNotes: undefined,
       });
-      setParishionerOfferings([]);
     }
   }, [parishioner, open]);
 
@@ -154,10 +151,7 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
       await deleteIndividualOffering.mutateAsync(id);
       toast.success('Ofiara została usunięta');
       // Reload offerings
-      if (parishioner) {
-        const offerings = await getOfferingsByParishioner.mutateAsync(parishioner.uid);
-        setParishionerOfferings(offerings);
-      }
+      await refetchOfferings();
     } catch (error) {
       toast.error('Błąd podczas usuwania ofiary');
       console.error(error);
@@ -175,10 +169,7 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
       }
       setOfferingDialogOpen(false);
       // Reload offerings
-      if (parishioner) {
-        const offerings = await getOfferingsByParishioner.mutateAsync(parishioner.uid);
-        setParishionerOfferings(offerings);
-      }
+      await refetchOfferings();
     } catch (error) {
       toast.error('Błąd podczas zapisywania ofiary');
       console.error(error);
@@ -478,9 +469,6 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                               }
                             />
                           </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 mt-3">
                           <div className="space-y-2">
                             <Label className="text-xs">Rok Komunii Świętej</Label>
                             <Input
@@ -501,9 +489,7 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                             <Input
                               type="number"
                               placeholder="np. 2010"
-                              value={
-                                member.sacraments.confirmationYear ? Number(member.sacraments.confirmationYear) : ''
-                              }
+                              value={member.sacraments.confirmationYear ? Number(member.sacraments.confirmationYear) : ''}
                               onChange={(e) =>
                                 updateFamilyMemberSacrament(
                                   index,
@@ -513,14 +499,11 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                               }
                             />
                           </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 mt-3">
                           <div className="space-y-2">
                             <Label className="text-xs">Rok małżeństwa</Label>
                             <Input
                               type="number"
-                              placeholder="np. 2018"
+                              placeholder="np. 2015"
                               value={member.sacraments.marriageYear ? Number(member.sacraments.marriageYear) : ''}
                               onChange={(e) =>
                                 updateFamilyMemberSacrament(
@@ -535,7 +518,7 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                             <Label className="text-xs">Rok pogrzebu</Label>
                             <Input
                               type="number"
-                              placeholder="np. 2023"
+                              placeholder="np. 2020"
                               value={member.sacraments.funeralYear ? Number(member.sacraments.funeralYear) : ''}
                               onChange={(e) =>
                                 updateFamilyMemberSacrament(
@@ -554,48 +537,46 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
               </TabsContent>
 
               <TabsContent value="offers" className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
-                    Ofiary są automatycznie synchronizowane z budżetem
-                  </p>
-                  {!isNewParishioner && (
-                    <Button type="button" onClick={handleAddOffering} variant="outline" size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Dodaj ofiarę
-                    </Button>
-                  )}
-                </div>
                 {isNewParishioner ? (
                   <div className="text-center py-8 text-sm text-muted-foreground">
                     Zapisz parafianina, aby móc dodawać ofiary
                   </div>
-                ) : parishionerOfferings.length === 0 ? (
-                  <div className="text-center py-8 text-sm text-muted-foreground">
-                    Brak ofiar dla tego parafianina
-                  </div>
                 ) : (
-                  <div className="space-y-2">
-                    {parishionerOfferings
-                      .sort((a, b) => Number(b.timestamp) - Number(a.timestamp))
-                      .map((offering) => {
-                        const date = new Date(Number(offering.timestamp) / 1000000);
-                        return (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        Ofiary indywidualne od tego parafianina
+                      </p>
+                      <Button type="button" onClick={handleAddOffering} variant="outline" size="sm">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Dodaj ofiarę
+                      </Button>
+                    </div>
+                    {parishionerOfferings.length === 0 ? (
+                      <div className="text-center py-8 text-sm text-muted-foreground">
+                        Brak ofiar
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {parishionerOfferings.map((offering) => (
                           <div
-                            key={Number(offering.id)}
-                            className="flex items-center justify-between p-4 bg-muted/30 rounded-lg"
+                            key={offering.id.toString()}
+                            className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors"
                           >
                             <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-1">
-                                <p className="text-sm font-medium">
-                                  {format(date, 'PPP', { locale: pl })}
-                                </p>
-                                <p className="text-lg font-bold text-primary">
-                                  {Number(offering.amount)} zł
-                                </p>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-semibold text-green-600">
+                                  {Number(offering.amount).toLocaleString('pl-PL')} zł
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(Number(offering.timestamp) / 1000000).toLocaleDateString('pl-PL')}
+                                </span>
                               </div>
-                              <p className="text-sm text-muted-foreground">{offering.description}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {offering.description || 'Brak opisu'}
+                              </p>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-1">
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -614,14 +595,15 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                               </Button>
                             </div>
                           </div>
-                        );
-                      })}
-                  </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </TabsContent>
             </Tabs>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 pt-4 border-t border-border">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Anuluj
               </Button>
@@ -631,12 +613,12 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
         </DialogContent>
       </Dialog>
 
-      {!isNewParishioner && parishioner && (
+      {parishioner && (
         <IndividualOfferingDialog
           open={offeringDialogOpen}
           onOpenChange={setOfferingDialogOpen}
           offering={editingOffering}
-          parishionerId={Number(parishioner.uid)}
+          parishionerId={parishioner.uid}
           onSave={handleSaveOffering}
         />
       )}

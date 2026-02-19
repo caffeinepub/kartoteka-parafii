@@ -15,7 +15,7 @@ interface IndividualOfferingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   offering: IndividualOffering | null;
-  parishionerId: number;
+  parishionerId: bigint;
   onSave: (data: IndividualOffering) => void;
 }
 
@@ -31,7 +31,7 @@ export default function IndividualOfferingDialog({
     amount: BigInt(0),
     year: BigInt(new Date().getFullYear()),
     description: '',
-    parishionerId: BigInt(parishionerId),
+    parishionerId: parishionerId,
     timestamp: BigInt(Date.now() * 1000000),
   });
 
@@ -50,7 +50,7 @@ export default function IndividualOfferingDialog({
         amount: BigInt(0),
         year: BigInt(now.getFullYear()),
         description: '',
-        parishionerId: BigInt(parishionerId),
+        parishionerId: parishionerId,
         timestamp: BigInt(now.getTime() * 1000000),
       });
       setSelectedDate(now);

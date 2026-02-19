@@ -2,16 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-consistent-ui-control-in-every-non-budget-module-that-supports-pdf-export-allowing-the-user-to-choose-between-exporting-1-the-entire-list-section-to-pdf-and-2-a-single-entry-record-to-pdf",
-      "featureTitle": "Add a consistent UI control in every non-Budget module that supports PDF export, allowing the user to choose between exporting (1) the entire list/section to PDF and (2) a single entry/record to PDF.",
+      "featureId": "feature-add-a-ofiary-zbiorowe-collective-offerings-tab-to-the-expanded-locality-card-in-the-miejscowo-ci-section",
+      "featureTitle": "Add a 'Ofiary zbiorowe' (Collective Offerings) tab to the expanded locality card in the Miejscowości section",
       "files": [
-        "frontend/src/components/ExportPdfModeControl.tsx",
-        "frontend/src/pages/BaptismsRegistry.tsx",
-        "frontend/src/pages/FunkcjeParafialne.tsx",
-        "frontend/src/pages/Kartoteka.tsx",
-        "frontend/src/pages/Korespondencja.tsx",
-        "frontend/src/pages/Miejscowosci.tsx",
-        "frontend/src/pages/Wydarzenia.tsx"
+        "frontend/src/pages/Miejscowosci.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -28,16 +22,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-single-record-selection-and-single-record-pdf-export-flows-for-the-listed-modules-e-g-baptisms-parishioners-card-index-localities-events-correspondence-using-existing-pdf-generators-where-available-where-a-module-only-has-an-export-all-pdf-today-add-a-reasonable-single-record-pdf-output-for-that-module-s-record-type",
-      "featureTitle": "Implement single-record selection and single-record PDF export flows for the listed modules (e.g., Baptisms, Parishioners/Card index, Localities, Events, Correspondence) using existing PDF generators where available; where a module only has an “export all” PDF today, add a reasonable single-record PDF output for that module’s record type.",
+      "featureId": "feature-create-a-form-in-the-collective-offerings-tab-to-add-new-collective-offerings-with-amount-date-and-description-fields",
+      "featureTitle": "Create a form in the Collective Offerings tab to add new collective offerings with amount, date, and description fields",
       "files": [
-        "frontend/src/lib/pdfGenerator.ts",
-        "frontend/src/pages/BaptismsRegistry.tsx",
-        "frontend/src/pages/FunkcjeParafialne.tsx",
-        "frontend/src/pages/Kartoteka.tsx",
-        "frontend/src/pages/Korespondencja.tsx",
-        "frontend/src/pages/Miejscowosci.tsx",
-        "frontend/src/pages/Wydarzenia.tsx"
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/Miejscowosci.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -54,16 +43,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-all-new-export-mode-labels-and-user-facing-prompts-used-by-this-feature-are-consistent-clear-and-localized-in-the-same-way-as-the-existing-ui-for-the-application",
-      "featureTitle": "Ensure all new export mode labels and user-facing prompts used by this feature are consistent, clear, and localized in the same way as the existing UI for the application.",
+      "featureId": "feature-automatically-create-a-budget-transaction-entry-when-a-collective-offering-is-added-or-edited-in-miejscowo-ci",
+      "featureTitle": "Automatically create a budget transaction entry when a collective offering is added or edited in Miejscowości",
       "files": [
-        "frontend/src/components/ExportPdfModeControl.tsx",
-        "frontend/src/pages/BaptismsRegistry.tsx",
-        "frontend/src/pages/FunkcjeParafialne.tsx",
-        "frontend/src/pages/Kartoteka.tsx",
-        "frontend/src/pages/Korespondencja.tsx",
-        "frontend/src/pages/Miejscowosci.tsx",
-        "frontend/src/pages/Wydarzenia.tsx"
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/Miejscowosci.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -75,7 +59,48 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-3"
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-display-collective-offerings-in-the-budzet-section-with-clear-indication-of-their-source-locality",
+      "featureTitle": "Display collective offerings in the Budzet section with clear indication of their source locality",
+      "files": [
+        "frontend/src/pages/Budzet.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "blob-storage@4.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-allow-editing-and-deleting-collective-offerings-from-the-locality-card-with-automatic-budget-synchronization",
+      "featureTitle": "Allow editing and deleting collective offerings from the locality card with automatic budget synchronization",
+      "files": [
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/Miejscowosci.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "blob-storage@4.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-6"
       ],
       "confidence": "high"
     }

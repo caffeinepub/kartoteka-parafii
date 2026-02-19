@@ -1,85 +1,127 @@
 {
   "kind": "build_request",
-  "title": "Add PDF export mode selection (all records vs single record) across modules except Budget",
+  "title": "Add collective offerings tab to localities with budget integration",
+  "projectName": "Parish Manager",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add a consistent UI control in every non-Budget module that supports PDF export, allowing the user to choose between exporting (1) the entire list/section to PDF and (2) a single entry/record to PDF.",
+      "text": "Add a 'Ofiary zbiorowe' (Collective Offerings) tab to the expanded locality card in the Miejscowości section",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-18"
         ],
         "quotes": [
-          "dodaj wybór eksportu PDF (całość / pojedynczy wpis) we wszystkich modułach oprócz Budżetu, czyli m.in. Chrzty, Śluby, Pogrzeby, Kartoteka, Miejscowości, Wydarzenia i Korespondencja. Tak – dodaj funkcję wyboru eksportu PDF (całość / pojedynczy wpis) we wszystkich modułach oprócz Budżetu."
+          "do sekcji Miejscowości - do dodanej miejscowości w sekcji Miejscowości - należy dodać zakładkę: \"Ofiary zbiorowe\""
         ]
       },
       "acceptanceCriteria": [
-        "In each applicable module page, there is an export control (e.g., a dropdown/menu attached to the existing PDF export button) with two choices: “Export all” and “Export selected”.",
-        "“Export all” generates a PDF for the currently viewed dataset of that module (consistent with the module’s existing export behavior).",
-        "“Export selected” generates a PDF for exactly one record, based on the user’s explicit selection of a record within that module’s UI.",
-        "If no record is selected and the user chooses “Export selected”, the UI prevents export and shows a clear error/toast indicating a selection is required.",
-        "The control is not added to the Budget module (Budżet page), and Budget export behavior remains unchanged."
+        "When a locality card is expanded, a new 'Ofiary zbiorowe' tab is visible alongside the residents list",
+        "The tab displays a list of collective offerings associated with that locality"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Implement single-record selection and single-record PDF export flows for the listed modules (e.g., Baptisms, Parishioners/Card index, Localities, Events, Correspondence) using existing PDF generators where available; where a module only has an “export all” PDF today, add a reasonable single-record PDF output for that module’s record type.",
+      "text": "Create a form in the Collective Offerings tab to add new collective offerings with amount, date, and description fields",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-18"
         ],
         "quotes": [
-          "dodaj wybór eksportu PDF (całość / pojedynczy wpis) we wszystkich modułach oprócz Budżetu, czyli m.in. Chrzty, Śluby, Pogrzeby, Kartoteka, Miejscowości, Wydarzenia i Korespondencja."
+          "tutaj będziemy dodawać ofiary od całej miejscowości, które wpływają do Budżetu Parafii"
         ]
       },
       "acceptanceCriteria": [
-        "Baptisms: users can still export a single baptism certificate PDF for a record, and additionally can export the entire baptisms registry list to PDF from the module-level export control.",
-        "Localities: users can export a PDF for a single locality (e.g., the locality currently selected / invoked from a row), and can export a PDF covering the full localities list from the module-level export control.",
-        "Events: users can export a PDF for a single event and a PDF for the full events list.",
-        "Correspondence: users can export a PDF for a single letter and a PDF for the full letters list.",
-        "Kartoteka (parishioners): users can export a PDF for a single parishioner and a PDF for the full parishioners list.",
-        "Any other non-Budget module that currently has a PDF export button also offers the same two export modes (all vs single)."
+        "Users can input an offering amount, date, and optional description",
+        "The form validates that amount is a positive number",
+        "Submission creates a new collective offering record linked to the locality"
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Ensure all new export mode labels and user-facing prompts used by this feature are consistent, clear, and localized in the same way as the existing UI for the application.",
-      "target": "frontend",
+      "text": "Store collective offerings in the backend with locality ID, amount, date, description, and timestamps",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-18"
         ]
       },
       "acceptanceCriteria": [
-        "New menu items, button titles, and toasts introduced for this feature use consistent terminology across modules.",
-        "No existing PDF export actions regress (still work as before) after adding the mode selection UI."
+        "Backend defines a CollectiveOffering type with localityId, amount (Nat), date (Int), description (Text), createdAt, and updatedAt fields",
+        "Backend provides createCollectiveOffering, updateCollectiveOffering, deleteCollectiveOffering, and getCollectiveOfferingsByLocality methods",
+        "All collective offerings are persisted across canister upgrades"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Automatically create a budget transaction entry when a collective offering is added or edited in Miejscowości",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-18"
+        ],
+        "quotes": [
+          "należy tak połączyć sekcje miejscowości z sekcją Budżet żeby po wpisaniu kwoty ofiary zbiorowej w sekcji Miejscowości - wyświetlała sie kwota w sekcji Budżet i od razu była odpowiednio rozliczana"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When a collective offering is created, a corresponding budget transaction is automatically created with type 'income', category 'Ofiary zbiorowe', and the same amount and date",
+        "The budget transaction description includes the locality name",
+        "When a collective offering is edited, the corresponding budget transaction is updated to match",
+        "When a collective offering is deleted, the corresponding budget transaction is also deleted"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Display collective offerings in the Budzet section with clear indication of their source locality",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-18"
+        ],
+        "quotes": [
+          "wyświetlała sie kwota w sekcji Budżet"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Budget transactions originating from collective offerings are clearly labeled with the locality name",
+        "Users can see in the budget view which transactions came from collective offerings",
+        "The budget totals correctly include collective offering amounts"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Allow editing and deleting collective offerings from the locality card with automatic budget synchronization",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-18"
+        ],
+        "quotes": [
+          "pełna spójność"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Users can edit existing collective offerings and see changes reflected in the budget",
+        "Users can delete collective offerings and the corresponding budget entry is removed",
+        "No orphaned budget transactions remain after collective offering deletion"
       ]
     }
   ],
   "constraints": [
-    "Do not modify or add export mode selection in the Budget module (frontend/src/pages/Budzet.tsx); keep its monthly/yearly report exports working exactly as they do now.",
-    "Do not edit files under frontend/src/components/ui or other frontend immutablePaths; compose existing UI components instead."
+    "Follow the same pattern used for individual offerings in Kartoteka section",
+    "Maintain single-actor backend architecture",
+    "Do not modify immutable frontend paths (useInternetIdentity, useActor, main.tsx, components/ui)"
   ],
   "nonGoals": [
-    "Adding third-party PDF libraries or backend-side PDF generation.",
-    "Changing the visual design of existing PDF templates beyond what is necessary to support single-record vs all-record exports.",
-    "Adding the previously discussed baptism certificate stamp/seal toggle (not requested in the latest user message)."
+    "Bulk import of collective offerings",
+    "Historical reporting or analytics beyond current budget display",
+    "Email notifications for new offerings"
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

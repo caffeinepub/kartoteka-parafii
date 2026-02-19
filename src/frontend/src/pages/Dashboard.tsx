@@ -24,16 +24,19 @@ export default function Dashboard() {
   const { data: balanceFromBackend = BigInt(0), isLoading: balanceLoading } = useGetOverallBudgetBalance();
   const { data: eventsData, isLoading: eventsLoading } = useGetPaginatedEvents(1, 100);
   
-  const anniversaryTypeFilter = anniversaryFilter === 'all' ? null : anniversaryFilter;
+  const anniversaryTypeFilter = anniversaryFilter === 'all' ? undefined : anniversaryFilter;
   
-  const { data: anniversariesData, isLoading: anniversariesLoading } = useGetAnniversariesForYearPaginated(
-    selectedYear,
-    anniversariesPage,
-    anniversariesPageSize,
-    anniversaryTypeFilter
-  );
+  const { data: anniversariesData, isLoading: anniversariesLoading } = useGetAnniversariesForYearPaginated({
+    year: BigInt(selectedYear),
+    anniversaryType: anniversaryTypeFilter,
+    page: BigInt(anniversariesPage),
+    pageSize: BigInt(anniversariesPageSize),
+  });
 
-  const { data: pdfExportData } = useGetAnniversariesForYearPdfExport(selectedYear, anniversaryTypeFilter);
+  const { data: pdfExportData } = useGetAnniversariesForYearPdfExport({
+    year: BigInt(selectedYear),
+    anniversaryType: anniversaryTypeFilter,
+  });
 
   // Calculate income and expense totals from ALL transactions without any exclusions
   const totalIncome = transactions
@@ -370,7 +373,7 @@ export default function Dashboard() {
                       key={`${anniversary.parishionerId}-${anniversary.anniversaryType}`}
                       className="flex items-start gap-3 pb-3 border-b border-border last:border-0"
                     >
-                      <CalendarDays className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                      <CalendarDays className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm text-foreground">
                           {anniversary.firstName} {anniversary.lastName}

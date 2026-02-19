@@ -13,8 +13,6 @@ import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 
-
-
 actor {
   include MixinStorage();
 
@@ -133,17 +131,17 @@ actor {
     photo : ?Storage.ExternalBlob;
   };
 
-  public type LocalityResident = {
-    name : Text;
-    isFamilyMember : Bool;
-    relationType : ?RelationType;
-  };
-
   public type Locality = {
     name : Text;
     contactPerson : Text;
     phone : Text;
     tasks : [Text];
+  };
+
+  public type LocalityResident = {
+    name : Text;
+    isFamilyMember : Bool;
+    relationType : ?RelationType;
   };
 
   public type LocalityWithParishioners = {
