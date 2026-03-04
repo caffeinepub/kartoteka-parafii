@@ -1,21 +1,26 @@
-import { useState, useCallback } from 'react';
-import { useInternetIdentity } from './hooks/useInternetIdentity';
-import { useGetCallerUserProfile } from './hooks/useQueries';
-import { ThemeProvider } from 'next-themes';
-import { Toaster } from '@/components/ui/sonner';
-import LoginPage from './pages/LoginPage';
-import ProfileSetupModal from './components/ProfileSetupModal';
-import MainLayout from './components/MainLayout';
-import StartupErrorBoundary from './components/StartupErrorBoundary';
-import UnhandledErrorListener from './components/UnhandledErrorListener';
+import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "next-themes";
+import { useCallback, useState } from "react";
+import MainLayout from "./components/MainLayout";
+import ProfileSetupModal from "./components/ProfileSetupModal";
+import StartupErrorBoundary from "./components/StartupErrorBoundary";
+import UnhandledErrorListener from "./components/UnhandledErrorListener";
+import { useInternetIdentity } from "./hooks/useInternetIdentity";
+import { useGetCallerUserProfile } from "./hooks/useQueries";
+import LoginPage from "./pages/LoginPage";
 
 function AppContent() {
   const { identity, loginStatus } = useInternetIdentity();
-  const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
+  const {
+    data: userProfile,
+    isLoading: profileLoading,
+    isFetched,
+  } = useGetCallerUserProfile();
   const [unhandledError, setUnhandledError] = useState<Error | null>(null);
 
   const isAuthenticated = !!identity;
-  const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null;
+  const showProfileSetup =
+    isAuthenticated && !profileLoading && isFetched && userProfile === null;
 
   const handleUnhandledError = useCallback((error: Error) => {
     setUnhandledError(error);
@@ -26,7 +31,7 @@ function AppContent() {
     throw unhandledError;
   }
 
-  if (loginStatus === 'initializing' || (isAuthenticated && profileLoading)) {
+  if (loginStatus === "initializing" || (isAuthenticated && profileLoading)) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="text-center">

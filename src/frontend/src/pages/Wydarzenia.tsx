@@ -1,27 +1,41 @@
-import { useState } from 'react';
-import { useGetPaginatedEvents, useUpdateEvent, useDeleteEvent } from '../hooks/useQueries';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Calendar, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { toast } from 'sonner';
-import EventDialog from '../components/EventDialog';
-import { generateParishPDF, generateSingleEventPDF } from '../lib/pdfGenerator';
-import type { Event } from '../backend';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { ExportPdfModeControl } from '../components/ExportPdfModeControl';
+} from "@/components/ui/select";
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import type { Event } from "../backend";
+import EventDialog from "../components/EventDialog";
+import { ExportPdfModeControl } from "../components/ExportPdfModeControl";
+import {
+  useDeleteEvent,
+  useGetPaginatedEvents,
+  useUpdateEvent,
+} from "../hooks/useQueries";
+import { generateParishPDF, generateSingleEventPDF } from "../lib/pdfGenerator";
 
 export default function Wydarzenia() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [selectedEventId, setSelectedEventId] = useState<bigint | null>(null);
-  
-  const { data: paginatedData, isLoading } = useGetPaginatedEvents(currentPage, pageSize);
+
+  const { data: paginatedData, isLoading } = useGetPaginatedEvents(
+    currentPage,
+    pageSize,
+  );
   const updateEvent = useUpdateEvent();
   const deleteEvent = useDeleteEvent();
 
@@ -43,16 +57,16 @@ export default function Wydarzenia() {
   };
 
   const handleDelete = async (event: Event) => {
-    if (!confirm('Czy na pewno chcesz usunąć to wydarzenie?')) return;
+    if (!confirm("Czy na pewno chcesz usunąć to wydarzenie?")) return;
 
     try {
       await deleteEvent.mutateAsync(event.uid);
-      toast.success('Wydarzenie zostało usunięte');
+      toast.success("Wydarzenie zostało usunięte");
       if (selectedEventId === event.uid) {
         setSelectedEventId(null);
       }
     } catch (error) {
-      toast.error('Błąd podczas usuwania wydarzenia');
+      toast.error("Błąd podczas usuwania wydarzenia");
       console.error(error);
     }
   };
@@ -61,11 +75,15 @@ export default function Wydarzenia() {
     try {
       const uid = editingEvent?.uid ?? BigInt(Date.now());
       await updateEvent.mutateAsync({ id: uid, event: { ...data, uid } });
-      toast.success(editingEvent ? 'Wydarzenie zostało zaktualizowane' : 'Wydarzenie zostało dodane');
+      toast.success(
+        editingEvent
+          ? "Wydarzenie zostało zaktualizowane"
+          : "Wydarzenie zostało dodane",
+      );
       setDialogOpen(false);
       setEditingEvent(null);
     } catch (error) {
-      toast.error('Błąd podczas zapisywania');
+      toast.error("Błąd podczas zapisywania");
       console.error(error);
     }
   };
@@ -76,25 +94,25 @@ export default function Wydarzenia() {
 
   const handleExportAll = () => {
     if (events.length === 0) {
-      toast.error('Brak wydarzeń do wyeksportowania');
+      toast.error("Brak wydarzeń do wyeksportowania");
       return;
     }
-    
-    let content = 'WYDARZENIA\n\n';
+
+    let content = "WYDARZENIA\n\n";
     content += `Liczba wydarzeń: ${events.length}\n\n`;
-    content += '─'.repeat(90) + '\n\n';
+    content += `${"─".repeat(90)}\n\n`;
 
     events.forEach((event, idx) => {
       const eventDate = new Date(Number(event.timestamp) / 1000000);
-      const formattedDate = eventDate.toLocaleDateString('pl-PL', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+      const formattedDate = eventDate.toLocaleDateString("pl-PL", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
 
-      content += `${(idx + 1).toString().padStart(3, ' ')}. ${event.title}\n`;
+      content += `${(idx + 1).toString().padStart(3, " ")}. ${event.title}\n`;
       content += `     Data: ${formattedDate}\n`;
       content += `     Opis: ${event.description}\n`;
       if (event.tasks.length > 0) {
@@ -103,30 +121,32 @@ export default function Wydarzenia() {
           content += `       ${taskIdx + 1}. ${task.description}\n`;
         });
       }
-      content += '\n';
+      content += "\n";
     });
 
     generateParishPDF({
-      title: 'WYDARZENIA',
+      title: "WYDARZENIA",
       content,
-      footer: 'Dokument wygenerowany automatycznie'
+      footer: "Dokument wygenerowany automatycznie",
     });
 
-    toast.success('PDF został wygenerowany - okno drukowania otworzy się automatycznie');
+    toast.success(
+      "PDF został wygenerowany - okno drukowania otworzy się automatycznie",
+    );
   };
 
   const handleExportSelected = () => {
-    const selectedEvent = events.find(e => e.uid === selectedEventId);
+    const selectedEvent = events.find((e) => e.uid === selectedEventId);
     if (selectedEvent) {
       generateSingleEventPDF(selectedEvent);
-      toast.success('PDF wydarzenia został wygenerowany');
+      toast.success("PDF wydarzenia został wygenerowany");
     }
   };
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pageCount) {
       setCurrentPage(newPage);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -135,9 +155,15 @@ export default function Wydarzenia() {
     setCurrentPage(1);
   };
 
-  const sortedEvents = [...events].sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
-  const upcomingEvents = sortedEvents.filter((e) => Number(e.timestamp) > Date.now() * 1000000);
-  const pastEvents = sortedEvents.filter((e) => Number(e.timestamp) <= Date.now() * 1000000);
+  const sortedEvents = [...events].sort(
+    (a, b) => Number(a.timestamp) - Number(b.timestamp),
+  );
+  const upcomingEvents = sortedEvents.filter(
+    (e) => Number(e.timestamp) > Date.now() * 1000000,
+  );
+  const pastEvents = sortedEvents.filter(
+    (e) => Number(e.timestamp) <= Date.now() * 1000000,
+  );
 
   if (isLoading) {
     return (
@@ -175,7 +201,10 @@ export default function Wydarzenia() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/50 p-4 rounded-lg">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Wyświetl:</span>
-          <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={handlePageSizeChange}
+          >
             <SelectTrigger className="w-[100px]">
               <SelectValue />
             </SelectTrigger>
@@ -218,7 +247,9 @@ export default function Wydarzenia() {
           {upcomingEvents.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground">Brak nadchodzących wydarzeń</p>
+                <p className="text-muted-foreground">
+                  Brak nadchodzących wydarzeń
+                </p>
               </CardContent>
             </Card>
           ) : (
@@ -229,7 +260,7 @@ export default function Wydarzenia() {
                   <Card
                     key={Number(event.uid)}
                     className={`hover:shadow-lg transition-all cursor-pointer ${
-                      isSelected ? 'ring-2 ring-primary' : ''
+                      isSelected ? "ring-2 ring-primary" : ""
                     }`}
                     onClick={() => handleCardClick(event)}
                   >
@@ -241,11 +272,13 @@ export default function Wydarzenia() {
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <p className="text-sm text-muted-foreground">
-                        {new Date(Number(event.timestamp) / 1000000).toLocaleDateString('pl-PL', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
+                        {new Date(
+                          Number(event.timestamp) / 1000000,
+                        ).toLocaleDateString("pl-PL", {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
                         })}
                       </p>
                       <p className="text-sm">{event.description}</p>
@@ -254,19 +287,34 @@ export default function Wydarzenia() {
                           <p className="text-sm font-medium mb-1">Zadania:</p>
                           <ul className="text-sm space-y-1">
                             {event.tasks.map((task, taskIdx) => (
-                              <li key={taskIdx} className="text-muted-foreground">
+                              <li
+                                key={`task-${taskIdx}-${task.description}`}
+                                className="text-muted-foreground"
+                              >
                                 • {task.description}
                               </li>
                             ))}
                           </ul>
                         </div>
                       )}
-                      <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(event)}>
+                      <div
+                        className="flex gap-2 pt-2"
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(event)}
+                        >
                           <Edit className="h-3 w-3 mr-1" />
                           Edytuj
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleDelete(event)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(event)}
+                        >
                           <Trash2 className="h-3 w-3 mr-1" />
                           Usuń
                         </Button>
@@ -289,7 +337,7 @@ export default function Wydarzenia() {
                   <Card
                     key={Number(event.uid)}
                     className={`opacity-75 cursor-pointer transition-all ${
-                      isSelected ? 'ring-2 ring-primary' : ''
+                      isSelected ? "ring-2 ring-primary" : ""
                     }`}
                     onClick={() => handleCardClick(event)}
                   >
@@ -301,10 +349,20 @@ export default function Wydarzenia() {
                     </CardHeader>
                     <CardContent className="space-y-2">
                       <p className="text-sm text-muted-foreground">
-                        {new Date(Number(event.timestamp) / 1000000).toLocaleDateString('pl-PL')}
+                        {new Date(
+                          Number(event.timestamp) / 1000000,
+                        ).toLocaleDateString("pl-PL")}
                       </p>
-                      <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(event)}>
+                      <div
+                        className="flex gap-2"
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(event)}
+                        >
                           <Trash2 className="h-3 w-3 mr-1" />
                           Usuń
                         </Button>

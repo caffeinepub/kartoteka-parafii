@@ -12,7 +12,9 @@ import AccessControl "authorization/access-control";
 import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -52,20 +54,14 @@ actor {
     let pageCount = if (totalCount > 0) {
       let quotient = (totalCount + validPageSize - 1) / validPageSize;
       if (quotient == 0) { 1 } else { quotient };
-    } else {
-      1;
-    };
+    } else { 1 };
 
-    let safeStartIndex = if ((validPage - 1) * validPageSize >= totalCount) {
-      0;
-    } else {
+    let safeStartIndex = if ((validPage - 1) * validPageSize >= totalCount) { 0 } else {
       (validPage - 1) * validPageSize;
     };
     let startIndex = if (safeStartIndex > totalCount) {
       if (totalCount > 0) { totalCount - 1 } else { 0 };
-    } else {
-      safeStartIndex;
-    };
+    } else { safeStartIndex };
 
     let endIndex = Int.max(Int.abs(startIndex) + Int.abs(validPageSize - 1), 0);
 
@@ -317,6 +313,8 @@ actor {
     birthPlace : Text;
     father : ParentsData;
     mother : ParentsData;
+    godfather : ?ParentsData;
+    godmother : ?ParentsData;
     annotations : BaptismAnnotations;
     createdAt : Int;
   };
@@ -394,7 +392,6 @@ actor {
   let letters = Map.empty<Nat, Letter>();
   var nextLetterNumber = 1;
 
-  // New state for Baptism registry
   var baptismRegistry = Map.empty<Nat, BaptismRecord>();
 
   let accessControlState = AccessControl.initState();

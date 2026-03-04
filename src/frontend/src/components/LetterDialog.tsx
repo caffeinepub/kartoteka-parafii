@@ -1,10 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import type { Letter } from '../backend';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useEffect, useState } from "react";
+import type { Letter } from "../backend";
 
 interface LetterDialogProps {
   open: boolean;
@@ -13,9 +19,14 @@ interface LetterDialogProps {
   editingLetter?: Letter | null;
 }
 
-export default function LetterDialog({ open, onOpenChange, onSave, editingLetter }: LetterDialogProps) {
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
+export default function LetterDialog({
+  open,
+  onOpenChange,
+  onSave,
+  editingLetter,
+}: LetterDialogProps) {
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
 
   useEffect(() => {
     if (open && editingLetter) {
@@ -24,14 +35,14 @@ export default function LetterDialog({ open, onOpenChange, onSave, editingLetter
       setBody(editingLetter.body);
     } else if (!open) {
       // Clear form when dialog closes
-      setTitle('');
-      setBody('');
+      setTitle("");
+      setBody("");
     }
   }, [open, editingLetter]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!title.trim()) {
       return;
     }
@@ -40,8 +51,8 @@ export default function LetterDialog({ open, onOpenChange, onSave, editingLetter
   };
 
   const isEditMode = !!editingLetter;
-  const dialogTitle = isEditMode ? 'Edytuj pismo' : 'Nowe pismo';
-  const submitButtonText = isEditMode ? 'Zapisz zmiany' : 'Utwórz pismo';
+  const dialogTitle = isEditMode ? "Edytuj pismo" : "Nowe pismo";
+  const submitButtonText = isEditMode ? "Zapisz zmiany" : "Utwórz pismo";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -50,7 +61,8 @@ export default function LetterDialog({ open, onOpenChange, onSave, editingLetter
           <DialogTitle>{dialogTitle}</DialogTitle>
           {isEditMode && editingLetter && (
             <p className="text-sm text-muted-foreground mt-2">
-              Numer pisma: KP-{editingLetter.year.toString()}-{editingLetter.number.toString().padStart(3, '0')}
+              Numer pisma: KP-{editingLetter.year.toString()}-
+              {editingLetter.number.toString().padStart(3, "0")}
             </p>
           )}
         </DialogHeader>
@@ -78,17 +90,20 @@ export default function LetterDialog({ open, onOpenChange, onSave, editingLetter
               className="font-serif"
             />
             <p className="text-xs text-muted-foreground">
-              Treść zostanie sformatowana w stylu EB Garamond w eksportowanym PDF
+              Treść zostanie sformatowana w stylu EB Garamond w eksportowanym
+              PDF
             </p>
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Anuluj
             </Button>
-            <Button type="submit">
-              {submitButtonText}
-            </Button>
+            <Button type="submit">{submitButtonText}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

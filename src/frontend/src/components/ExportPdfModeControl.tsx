@@ -1,21 +1,21 @@
-import { useState } from 'react';
-import { Download, FileText, Files } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { toast } from 'sonner';
+} from "@/components/ui/dropdown-menu";
+import { Download, FileText, Files } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface ExportPdfModeControlProps {
   onExportAll: () => void | Promise<void>;
   onExportSelected: () => void | Promise<void>;
   hasSelection: boolean;
   isLoading?: boolean;
-  variant?: 'default' | 'outline' | 'ghost';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
+  variant?: "default" | "outline" | "ghost";
+  size?: "default" | "sm" | "lg" | "icon";
   className?: string;
 }
 
@@ -29,9 +29,9 @@ export function ExportPdfModeControl({
   onExportSelected,
   hasSelection,
   isLoading = false,
-  variant = 'outline',
-  size = 'sm',
-  className = '',
+  variant = "outline",
+  size = "sm",
+  className = "",
 }: ExportPdfModeControlProps) {
   const [isExporting, setIsExporting] = useState(false);
 
@@ -40,8 +40,8 @@ export function ExportPdfModeControl({
     try {
       await onExportAll();
     } catch (error) {
-      console.error('Export all error:', error);
-      toast.error('Błąd podczas eksportu PDF');
+      console.error("Export all error:", error);
+      toast.error("Błąd podczas eksportu PDF");
     } finally {
       setIsExporting(false);
     }
@@ -49,7 +49,9 @@ export function ExportPdfModeControl({
 
   const handleExportSelected = async () => {
     if (!hasSelection) {
-      toast.error('Nie wybrano żadnego rekordu. Proszę zaznaczyć rekord do eksportu.');
+      toast.error(
+        "Nie wybrano żadnego rekordu. Proszę zaznaczyć rekord do eksportu.",
+      );
       return;
     }
 
@@ -57,8 +59,8 @@ export function ExportPdfModeControl({
     try {
       await onExportSelected();
     } catch (error) {
-      console.error('Export selected error:', error);
-      toast.error('Błąd podczas eksportu PDF');
+      console.error("Export selected error:", error);
+      toast.error("Błąd podczas eksportu PDF");
     } finally {
       setIsExporting(false);
     }
@@ -82,7 +84,10 @@ export function ExportPdfModeControl({
           <Files className="h-4 w-4 mr-2" />
           Eksportuj wszystko
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleExportSelected} disabled={isExporting || !hasSelection}>
+        <DropdownMenuItem
+          onClick={handleExportSelected}
+          disabled={isExporting || !hasSelection}
+        >
           <FileText className="h-4 w-4 mr-2" />
           Eksportuj zaznaczone
         </DropdownMenuItem>

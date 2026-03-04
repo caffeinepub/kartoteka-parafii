@@ -1,11 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2 } from 'lucide-react';
-import type { ParishFunctionAssignment } from '../backend';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import type { ParishFunctionAssignment } from "../backend";
 
 interface FunctionAssignmentDialogProps {
   open: boolean;
@@ -14,13 +19,18 @@ interface FunctionAssignmentDialogProps {
   onSave: (data: ParishFunctionAssignment) => void;
 }
 
-export default function FunctionAssignmentDialog({ open, onOpenChange, assignment, onSave }: FunctionAssignmentDialogProps) {
+export default function FunctionAssignmentDialog({
+  open,
+  onOpenChange,
+  assignment,
+  onSave,
+}: FunctionAssignmentDialogProps) {
   const [formData, setFormData] = useState<ParishFunctionAssignment>({
     uid: BigInt(0),
-    title: '',
-    description: '',
+    title: "",
+    description: "",
     assignedParishioner: BigInt(0),
-    address: '',
+    address: "",
     contacts: [],
   });
 
@@ -30,14 +40,14 @@ export default function FunctionAssignmentDialog({ open, onOpenChange, assignmen
     } else {
       setFormData({
         uid: BigInt(0),
-        title: '',
-        description: '',
+        title: "",
+        description: "",
         assignedParishioner: BigInt(0),
-        address: '',
+        address: "",
         contacts: [],
       });
     }
-  }, [assignment, open]);
+  }, [assignment]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +57,7 @@ export default function FunctionAssignmentDialog({ open, onOpenChange, assignmen
   const handleAddContact = () => {
     setFormData({
       ...formData,
-      contacts: [...formData.contacts, ''],
+      contacts: [...formData.contacts, ""],
     });
   };
 
@@ -72,7 +82,9 @@ export default function FunctionAssignmentDialog({ open, onOpenChange, assignmen
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{assignment ? 'Edytuj przypisanie' : 'Dodaj przypisanie'}</DialogTitle>
+          <DialogTitle>
+            {assignment ? "Edytuj przypisanie" : "Dodaj przypisanie"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -81,7 +93,9 @@ export default function FunctionAssignmentDialog({ open, onOpenChange, assignmen
             <Input
               id="title"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               required
             />
           </div>
@@ -91,7 +105,9 @@ export default function FunctionAssignmentDialog({ open, onOpenChange, assignmen
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               required
               rows={3}
             />
@@ -102,7 +118,9 @@ export default function FunctionAssignmentDialog({ open, onOpenChange, assignmen
             <Input
               id="address"
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, address: e.target.value })
+              }
               required
             />
           </div>
@@ -129,10 +147,15 @@ export default function FunctionAssignmentDialog({ open, onOpenChange, assignmen
             ) : (
               <div className="space-y-2">
                 {formData.contacts.map((contact, index) => (
-                  <div key={index} className="flex gap-2">
+                  <div
+                    key={`contact-${index}-${contact}`}
+                    className="flex gap-2"
+                  >
                     <Input
                       value={contact}
-                      onChange={(e) => handleContactChange(index, e.target.value)}
+                      onChange={(e) =>
+                        handleContactChange(index, e.target.value)
+                      }
                       placeholder={`Kontakt ${index + 1}`}
                       className="flex-1"
                     />
@@ -152,7 +175,11 @@ export default function FunctionAssignmentDialog({ open, onOpenChange, assignmen
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Anuluj
             </Button>
             <Button type="submit">Zapisz</Button>

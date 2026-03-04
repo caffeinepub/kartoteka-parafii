@@ -1,9 +1,14 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import type { Locality } from '../backend';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useEffect, useState } from "react";
+import type { Locality } from "../backend";
 
 interface LocalityDialogProps {
   open: boolean;
@@ -12,29 +17,34 @@ interface LocalityDialogProps {
   onSave: (data: Locality) => void;
 }
 
-export default function LocalityDialog({ open, onOpenChange, locality, onSave }: LocalityDialogProps) {
+export default function LocalityDialog({
+  open,
+  onOpenChange,
+  locality,
+  onSave,
+}: LocalityDialogProps) {
   const [formData, setFormData] = useState<Locality>({
-    name: '',
-    contactPerson: '',
-    phone: '',
+    name: "",
+    contactPerson: "",
+    phone: "",
     tasks: [],
   });
 
-  const [newTask, setNewTask] = useState('');
+  const [newTask, setNewTask] = useState("");
 
   useEffect(() => {
     if (locality) {
       setFormData(locality);
     } else {
       setFormData({
-        name: '',
-        contactPerson: '',
-        phone: '',
+        name: "",
+        contactPerson: "",
+        phone: "",
         tasks: [],
       });
     }
-    setNewTask('');
-  }, [locality, open]);
+    setNewTask("");
+  }, [locality]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,19 +54,24 @@ export default function LocalityDialog({ open, onOpenChange, locality, onSave }:
   const addTask = () => {
     if (newTask.trim()) {
       setFormData({ ...formData, tasks: [...formData.tasks, newTask.trim()] });
-      setNewTask('');
+      setNewTask("");
     }
   };
 
   const removeTask = (index: number) => {
-    setFormData({ ...formData, tasks: formData.tasks.filter((_, i) => i !== index) });
+    setFormData({
+      ...formData,
+      tasks: formData.tasks.filter((_, i) => i !== index),
+    });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{locality ? 'Edytuj miejscowość' : 'Dodaj miejscowość'}</DialogTitle>
+          <DialogTitle>
+            {locality ? "Edytuj miejscowość" : "Dodaj miejscowość"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -65,7 +80,9 @@ export default function LocalityDialog({ open, onOpenChange, locality, onSave }:
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               required
               disabled={!!locality}
             />
@@ -76,7 +93,9 @@ export default function LocalityDialog({ open, onOpenChange, locality, onSave }:
             <Input
               id="contactPerson"
               value={formData.contactPerson}
-              onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, contactPerson: e.target.value })
+              }
               required
             />
           </div>
@@ -86,7 +105,9 @@ export default function LocalityDialog({ open, onOpenChange, locality, onSave }:
             <Input
               id="phone"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
               required
             />
           </div>
@@ -98,7 +119,12 @@ export default function LocalityDialog({ open, onOpenChange, locality, onSave }:
                 value={newTask}
                 onChange={(e) => setNewTask(e.target.value)}
                 placeholder="Dodaj zadanie..."
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTask())}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addTask();
+                  }
+                }}
               />
               <Button type="button" onClick={addTask} variant="outline">
                 Dodaj
@@ -107,9 +133,17 @@ export default function LocalityDialog({ open, onOpenChange, locality, onSave }:
             {formData.tasks.length > 0 && (
               <ul className="space-y-2 mt-2">
                 {formData.tasks.map((task, index) => (
-                  <li key={index} className="flex items-center justify-between bg-muted p-2 rounded">
+                  <li
+                    key={`task-${index}-${task}`}
+                    className="flex items-center justify-between bg-muted p-2 rounded"
+                  >
                     <span className="text-sm">{task}</span>
-                    <Button type="button" onClick={() => removeTask(index)} variant="ghost" size="sm">
+                    <Button
+                      type="button"
+                      onClick={() => removeTask(index)}
+                      variant="ghost"
+                      size="sm"
+                    >
                       Usuń
                     </Button>
                   </li>
@@ -119,7 +153,11 @@ export default function LocalityDialog({ open, onOpenChange, locality, onSave }:
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Anuluj
             </Button>
             <Button type="submit">Zapisz</Button>

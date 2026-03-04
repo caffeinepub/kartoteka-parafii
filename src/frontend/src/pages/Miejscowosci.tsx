@@ -1,27 +1,3 @@
-import { useState } from 'react';
-import { Plus, Edit, Trash2, ChevronLeft, ChevronRight, Users, User, DollarSign } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
-import {
-  useGetPaginatedLocalitiesWithParishioners,
-  useAddLocality,
-  useUpdateLocality,
-  useDeleteLocality,
-  useGetCollectiveOfferingsByLocality,
-  useAddCollectiveOffering,
-  useUpdateCollectiveOffering,
-  useDeleteCollectiveOffering,
-} from '../hooks/useQueries';
-import type { Locality, LocalityWithParishioners, RelationType, CollectiveOffering } from '../backend';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,49 +7,92 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { generateLocalitiesListPDF, generateSingleLocalityPDF } from '../lib/pdfGenerator';
-import { ExportPdfModeControl } from '../components/ExportPdfModeControl';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import CollectiveOfferingDialog from '../components/CollectiveOfferingDialog';
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  ChevronLeft,
+  ChevronRight,
+  DollarSign,
+  Edit,
+  Plus,
+  Trash2,
+  User,
+  Users,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import type {
+  CollectiveOffering,
+  Locality,
+  LocalityWithParishioners,
+  RelationType,
+} from "../backend";
+import CollectiveOfferingDialog from "../components/CollectiveOfferingDialog";
+import { ExportPdfModeControl } from "../components/ExportPdfModeControl";
+import {
+  useAddCollectiveOffering,
+  useAddLocality,
+  useDeleteCollectiveOffering,
+  useDeleteLocality,
+  useGetCollectiveOfferingsByLocality,
+  useGetPaginatedLocalitiesWithParishioners,
+  useUpdateCollectiveOffering,
+  useUpdateLocality,
+} from "../hooks/useQueries";
+import {
+  generateLocalitiesListPDF,
+  generateSingleLocalityPDF,
+} from "../lib/pdfGenerator";
 
 export default function Miejscowosci() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLocality, setEditingLocality] = useState<Locality | null>(null);
-  const [selectedLocalityName, setSelectedLocalityName] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('residents');
+  const [selectedLocalityName, setSelectedLocalityName] = useState<
+    string | null
+  >(null);
+  const [activeTab, setActiveTab] = useState<string>("residents");
 
   const [formData, setFormData] = useState({
-    name: '',
-    contactPerson: '',
-    phone: '',
+    name: "",
+    contactPerson: "",
+    phone: "",
     tasks: [] as string[],
   });
 
   // Collective offerings state
   const [offeringDialogOpen, setOfferingDialogOpen] = useState(false);
-  const [editingOffering, setEditingOffering] = useState<CollectiveOffering | null>(null);
-  const [deleteOfferingDialogOpen, setDeleteOfferingDialogOpen] = useState(false);
+  const [editingOffering, setEditingOffering] =
+    useState<CollectiveOffering | null>(null);
+  const [deleteOfferingDialogOpen, setDeleteOfferingDialogOpen] =
+    useState(false);
   const [offeringToDelete, setOfferingToDelete] = useState<bigint | null>(null);
 
-  const { data: paginatedData, isLoading } = useGetPaginatedLocalitiesWithParishioners(
-    currentPage,
-    pageSize
-  );
+  const { data: paginatedData, isLoading } =
+    useGetPaginatedLocalitiesWithParishioners(currentPage, pageSize);
   const addLocality = useAddLocality();
   const updateLocality = useUpdateLocality();
   const deleteLocality = useDeleteLocality();
@@ -88,7 +107,7 @@ export default function Miejscowosci() {
 
   const handleAdd = () => {
     setEditingLocality(null);
-    setFormData({ name: '', contactPerson: '', phone: '', tasks: [] });
+    setFormData({ name: "", contactPerson: "", phone: "", tasks: [] });
     setDialogOpen(true);
   };
 
@@ -110,23 +129,24 @@ export default function Miejscowosci() {
   };
 
   const handleDelete = async (locality: LocalityWithParishioners) => {
-    if (!confirm(`Czy na pewno chcesz usunąć miejscowość: ${locality.name}?`)) return;
+    if (!confirm(`Czy na pewno chcesz usunąć miejscowość: ${locality.name}?`))
+      return;
 
     try {
       await deleteLocality.mutateAsync(locality.name);
-      toast.success('Miejscowość została usunięta');
+      toast.success("Miejscowość została usunięta");
       if (selectedLocalityName === locality.name) {
         setSelectedLocalityName(null);
       }
     } catch (error) {
-      toast.error('Błąd podczas usuwania miejscowości');
+      toast.error("Błąd podczas usuwania miejscowości");
       console.error(error);
     }
   };
 
   const handleSave = async () => {
     if (!formData.name || !formData.contactPerson || !formData.phone) {
-      toast.error('Wypełnij wszystkie wymagane pola');
+      toast.error("Wypełnij wszystkie wymagane pola");
       return;
     }
 
@@ -143,16 +163,16 @@ export default function Miejscowosci() {
           name: editingLocality.name,
           locality: localityData,
         });
-        toast.success('Miejscowość została zaktualizowana');
+        toast.success("Miejscowość została zaktualizowana");
       } else {
         await addLocality.mutateAsync(localityData);
-        toast.success('Miejscowość została dodana');
+        toast.success("Miejscowość została dodana");
       }
 
       setDialogOpen(false);
-      setFormData({ name: '', contactPerson: '', phone: '', tasks: [] });
+      setFormData({ name: "", contactPerson: "", phone: "", tasks: [] });
     } catch (error) {
-      toast.error('Błąd podczas zapisywania miejscowości');
+      toast.error("Błąd podczas zapisywania miejscowości");
       console.error(error);
     }
   };
@@ -160,7 +180,7 @@ export default function Miejscowosci() {
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pageCount) {
       setCurrentPage(newPage);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -170,28 +190,32 @@ export default function Miejscowosci() {
   };
 
   const handleCardClick = (locality: LocalityWithParishioners) => {
-    setSelectedLocalityName(locality.name === selectedLocalityName ? null : locality.name);
-    setActiveTab('residents');
+    setSelectedLocalityName(
+      locality.name === selectedLocalityName ? null : locality.name,
+    );
+    setActiveTab("residents");
   };
 
   const handleExportAll = () => {
     generateLocalitiesListPDF(localities);
-    toast.success('Lista miejscowości została wygenerowana');
+    toast.success("Lista miejscowości została wygenerowana");
   };
 
   const handleExportSelected = () => {
-    const selectedLocality = localities.find(l => l.name === selectedLocalityName);
+    const selectedLocality = localities.find(
+      (l) => l.name === selectedLocalityName,
+    );
     if (selectedLocality) {
       generateSingleLocalityPDF(selectedLocality);
-      toast.success('Karta miejscowości została wygenerowana');
+      toast.success("Karta miejscowości została wygenerowana");
     }
   };
 
   const getRelationTypeLabel = (relationType: RelationType): string => {
-    if (relationType === 'spouse') return 'Małżonek/ka';
-    if (relationType === 'child') return 'Dziecko';
-    if (relationType === 'other') return 'Inny';
-    return '';
+    if (relationType === "spouse") return "Małżonek/ka";
+    if (relationType === "child") return "Dziecko";
+    if (relationType === "other") return "Inny";
+    return "";
   };
 
   // Collective offerings handlers
@@ -216,11 +240,11 @@ export default function Miejscowosci() {
 
     try {
       await deleteOffering.mutateAsync(offeringToDelete);
-      toast.success('Ofiara zbiorowa została usunięta, budżet zaktualizowany');
+      toast.success("Ofiara zbiorowa została usunięta, budżet zaktualizowany");
       setDeleteOfferingDialogOpen(false);
       setOfferingToDelete(null);
     } catch (error: any) {
-      toast.error(error?.message || 'Błąd podczas usuwania ofiary');
+      toast.error(error?.message || "Błąd podczas usuwania ofiary");
       console.error(error);
     }
   };
@@ -228,15 +252,20 @@ export default function Miejscowosci() {
   const handleSaveOffering = async (data: CollectiveOffering) => {
     try {
       if (editingOffering) {
-        await updateOffering.mutateAsync({ id: editingOffering.id, offering: data });
-        toast.success('Ofiara zbiorowa została zaktualizowana, budżet zsynchronizowany');
+        await updateOffering.mutateAsync({
+          id: editingOffering.id,
+          offering: data,
+        });
+        toast.success(
+          "Ofiara zbiorowa została zaktualizowana, budżet zsynchronizowany",
+        );
       } else {
         await addOffering.mutateAsync(data);
-        toast.success('Ofiara zbiorowa została dodana, budżet zaktualizowany');
+        toast.success("Ofiara zbiorowa została dodana, budżet zaktualizowany");
       }
       setOfferingDialogOpen(false);
     } catch (error: any) {
-      toast.error(error?.message || 'Błąd podczas zapisywania ofiary');
+      toast.error(error?.message || "Błąd podczas zapisywania ofiary");
       console.error(error);
     }
   };
@@ -257,7 +286,9 @@ export default function Miejscowosci() {
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Miejscowości</h1>
-          <p className="text-muted-foreground mt-1">{totalCount} miejscowości</p>
+          <p className="text-muted-foreground mt-1">
+            {totalCount} miejscowości
+          </p>
         </div>
         <div className="flex gap-2">
           <ExportPdfModeControl
@@ -277,7 +308,10 @@ export default function Miejscowosci() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/50 p-4 rounded-lg">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Wyświetl:</span>
-          <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={handlePageSizeChange}
+          >
             <SelectTrigger className="w-[100px]">
               <SelectValue />
             </SelectTrigger>
@@ -317,14 +351,16 @@ export default function Miejscowosci() {
       {localities.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">Brak miejscowości do wyświetlenia</p>
+            <p className="text-muted-foreground">
+              Brak miejscowości do wyświetlenia
+            </p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {localities.map((locality) => {
             const isSelected = selectedLocalityName === locality.name;
-            
+
             return (
               <LocalityCard
                 key={locality.name}
@@ -351,7 +387,7 @@ export default function Miejscowosci() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingLocality ? 'Edytuj miejscowość' : 'Dodaj miejscowość'}
+              {editingLocality ? "Edytuj miejscowość" : "Dodaj miejscowość"}
             </DialogTitle>
           </DialogHeader>
 
@@ -361,7 +397,9 @@ export default function Miejscowosci() {
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 disabled={!!editingLocality}
               />
             </div>
@@ -371,7 +409,9 @@ export default function Miejscowosci() {
               <Input
                 id="contactPerson"
                 value={formData.contactPerson}
-                onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, contactPerson: e.target.value })
+                }
               />
             </div>
 
@@ -380,7 +420,9 @@ export default function Miejscowosci() {
               <Input
                 id="phone"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
               />
             </div>
 
@@ -388,11 +430,11 @@ export default function Miejscowosci() {
               <Label htmlFor="tasks">Zadania (po jednym w linii)</Label>
               <Textarea
                 id="tasks"
-                value={formData.tasks.join('\n')}
+                value={formData.tasks.join("\n")}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    tasks: e.target.value.split('\n').filter((t) => t.trim()),
+                    tasks: e.target.value.split("\n").filter((t) => t.trim()),
                   })
                 }
                 rows={5}
@@ -421,12 +463,18 @@ export default function Miejscowosci() {
       )}
 
       {/* Delete Offering Confirmation Dialog */}
-      <AlertDialog open={deleteOfferingDialogOpen} onOpenChange={setDeleteOfferingDialogOpen}>
+      <AlertDialog
+        open={deleteOfferingDialogOpen}
+        onOpenChange={setDeleteOfferingDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Czy na pewno chcesz usunąć tę ofiarę?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Czy na pewno chcesz usunąć tę ofiarę?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Ta operacja usunie ofiarę zbiorową oraz powiązaną transakcję budżetową. Nie można tego cofnąć.
+              Ta operacja usunie ofiarę zbiorową oraz powiązaną transakcję
+              budżetową. Nie można tego cofnąć.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -469,14 +517,13 @@ function LocalityCard({
   getRelationTypeLabel: (relationType: RelationType) => string;
   deleteLocalityPending: boolean;
 }) {
-  const { data: offerings = [], isLoading: offeringsLoading } = useGetCollectiveOfferingsByLocality(
-    locality.name
-  );
+  const { data: offerings = [], isLoading: offeringsLoading } =
+    useGetCollectiveOfferingsByLocality(locality.name);
 
   return (
     <Card
       className={`hover:shadow-lg transition-all cursor-pointer ${
-        isSelected ? 'ring-2 ring-primary' : ''
+        isSelected ? "ring-2 ring-primary" : ""
       }`}
       onClick={() => onCardClick(locality)}
     >
@@ -487,7 +534,9 @@ function LocalityCard({
         <p className="text-sm text-muted-foreground">
           Osoba kontaktowa: {locality.contactPerson}
         </p>
-        <p className="text-sm text-muted-foreground">Telefon: {locality.phone}</p>
+        <p className="text-sm text-muted-foreground">
+          Telefon: {locality.phone}
+        </p>
         <p className="text-sm text-muted-foreground">
           Parafianie: {Number(locality.totalParishioners)}
         </p>
@@ -502,7 +551,11 @@ function LocalityCard({
 
         {/* Expanded content with tabs when selected */}
         {isSelected && (
-          <div className="mt-4 pt-4 border-t border-border" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="mt-4 pt-4 border-t border-border"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
             <Tabs value={activeTab} onValueChange={onTabChange}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="residents">
@@ -525,17 +578,21 @@ function LocalityCard({
                     <div className="space-y-2">
                       {locality.residents.map((resident, index) => (
                         <div
-                          key={index}
+                          key={`resident-${index}-${resident.name}`}
                           className="flex items-start gap-2 text-sm"
                         >
                           <User className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
                           <div className="flex-1">
                             <span className="font-medium">{resident.name}</span>
-                            {resident.isFamilyMember && resident.relationType && (
-                              <Badge variant="secondary" className="ml-2 text-xs">
-                                {getRelationTypeLabel(resident.relationType)}
-                              </Badge>
-                            )}
+                            {resident.isFamilyMember &&
+                              resident.relationType && (
+                                <Badge
+                                  variant="secondary"
+                                  className="ml-2 text-xs"
+                                >
+                                  {getRelationTypeLabel(resident.relationType)}
+                                </Badge>
+                              )}
                           </div>
                         </div>
                       ))}
@@ -546,11 +603,7 @@ function LocalityCard({
 
               <TabsContent value="offerings" className="mt-4">
                 <div className="space-y-3">
-                  <Button
-                    size="sm"
-                    onClick={onAddOffering}
-                    className="w-full"
-                  >
+                  <Button size="sm" onClick={onAddOffering} className="w-full">
                     <Plus className="h-4 w-4 mr-2" />
                     Dodaj ofiarę zbiorową
                   </Button>
@@ -575,14 +628,19 @@ function LocalityCard({
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
                                 <span className="font-semibold text-green-600">
-                                  {Number(offering.amount).toLocaleString('pl-PL')} zł
+                                  {Number(offering.amount).toLocaleString(
+                                    "pl-PL",
+                                  )}{" "}
+                                  zł
                                 </span>
                                 <span className="text-xs text-muted-foreground">
-                                  {new Date(Number(offering.timestamp) / 1000000).toLocaleDateString('pl-PL')}
+                                  {new Date(
+                                    Number(offering.timestamp) / 1000000,
+                                  ).toLocaleDateString("pl-PL")}
                                 </span>
                               </div>
                               <p className="text-xs text-muted-foreground">
-                                {offering.description || 'Brak opisu'}
+                                {offering.description || "Brak opisu"}
                               </p>
                             </div>
                             <div className="flex gap-1 ml-2">
@@ -612,7 +670,11 @@ function LocalityCard({
           </div>
         )}
 
-        <div className="flex gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex gap-2 mt-4"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
           <Button variant="outline" size="sm" onClick={() => onEdit(locality)}>
             <Edit className="h-4 w-4 mr-1" />
             Edytuj

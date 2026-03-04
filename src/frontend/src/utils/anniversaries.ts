@@ -1,4 +1,4 @@
-import type { Parishioner, AnniversaryType, Anniversary } from '../backend';
+import type { Anniversary, AnniversaryType, Parishioner } from "../backend";
 
 export interface AnniversarySummary {
   type: AnniversaryType;
@@ -14,7 +14,7 @@ export interface AnniversarySummary {
  */
 export function getParishionerAnniversarySummary(
   parishioner: Parishioner,
-  currentYear: number
+  currentYear: number,
 ): AnniversarySummary | null {
   const { sacraments } = parishioner;
 
@@ -24,10 +24,10 @@ export function getParishionerAnniversarySummary(
     const anniversaryNumber = currentYear - eventYear;
     if (anniversaryNumber >= 1) {
       return {
-        type: 'funeral' as AnniversaryType,
+        type: "funeral" as AnniversaryType,
         eventYear,
         anniversaryNumber,
-        label: getAnniversaryLabel('funeral' as AnniversaryType),
+        label: getAnniversaryLabel("funeral" as AnniversaryType),
       };
     }
   }
@@ -38,10 +38,10 @@ export function getParishionerAnniversarySummary(
     const anniversaryNumber = currentYear - eventYear;
     if (anniversaryNumber >= 1) {
       return {
-        type: 'marriage' as AnniversaryType,
+        type: "marriage" as AnniversaryType,
         eventYear,
         anniversaryNumber,
-        label: getAnniversaryLabel('marriage' as AnniversaryType),
+        label: getAnniversaryLabel("marriage" as AnniversaryType),
       };
     }
   }
@@ -52,10 +52,10 @@ export function getParishionerAnniversarySummary(
     const anniversaryNumber = currentYear - eventYear;
     if (anniversaryNumber >= 1) {
       return {
-        type: 'baptism' as AnniversaryType,
+        type: "baptism" as AnniversaryType,
         eventYear,
         anniversaryNumber,
-        label: getAnniversaryLabel('baptism' as AnniversaryType),
+        label: getAnniversaryLabel("baptism" as AnniversaryType),
       };
     }
   }
@@ -68,14 +68,14 @@ export function getParishionerAnniversarySummary(
  */
 export function getAnniversaryLabel(type: AnniversaryType): string {
   switch (type) {
-    case 'baptism':
-      return 'Chrzest';
-    case 'marriage':
-      return 'Małżeństwo';
-    case 'funeral':
-      return 'Pogrzeb';
+    case "baptism":
+      return "Chrzest";
+    case "marriage":
+      return "Małżeństwo";
+    case "funeral":
+      return "Pogrzeb";
     default:
-      return '';
+      return "";
   }
 }
 

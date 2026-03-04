@@ -1,36 +1,72 @@
-import { useState } from 'react';
-import { useGetPaginatedParishioners, useUpdateParishioner, useDeleteParishioner, useGetPaginatedIndividualOfferings } from '../hooks/useQueries';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Search, Grid, List, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { toast } from 'sonner';
-import ParishionerDialog from '../components/ParishionerDialog';
-import type { Parishioner } from '../backend';
-import { generateParishPDF, generateSingleParishionerPDF } from '../lib/pdfGenerator';
-import { getParishionerAnniversarySummary } from '../utils/anniversaries';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { ExportPdfModeControl } from '../components/ExportPdfModeControl';
+} from "@/components/ui/select";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  Grid,
+  List,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import type { Parishioner } from "../backend";
+import { ExportPdfModeControl } from "../components/ExportPdfModeControl";
+import ParishionerDetailCard from "../components/ParishionerDetailCard";
+import ParishionerDialog from "../components/ParishionerDialog";
+import {
+  useDeleteParishioner,
+  useGetPaginatedIndividualOfferings,
+  useGetPaginatedParishioners,
+  useUpdateParishioner,
+} from "../hooks/useQueries";
+import {
+  generateParishPDF,
+  generateSingleParishionerPDF,
+} from "../lib/pdfGenerator";
+import { getParishionerAnniversarySummary } from "../utils/anniversaries";
 
-type ViewMode = 'card' | 'list';
+type ViewMode = "card" | "list";
 
 export default function Kartoteka() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [viewMode, setViewMode] = useState<ViewMode>('card');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>("card");
+  const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingParishioner, setEditingParishioner] = useState<Parishioner | null>(null);
-  const [selectedParishionerId, setSelectedParishionerId] = useState<bigint | null>(null);
+  const [editingParishioner, setEditingParishioner] =
+    useState<Parishioner | null>(null);
+  const [selectedParishionerId, setSelectedParishionerId] = useState<
+    bigint | null
+  >(null);
+  const [detailViewOpen, setDetailViewOpen] = useState(false);
+  const [viewingParishioner, setViewingParishioner] =
+    useState<Parishioner | null>(null);
 
-  const { data: paginatedData, isLoading } = useGetPaginatedParishioners(currentPage, pageSize);
-  const { data: offeringsPaginatedData } = useGetPaginatedIndividualOfferings(1, 1000);
+  const { data: paginatedData, isLoading } = useGetPaginatedParishioners(
+    currentPage,
+    pageSize,
+  );
+  const { data: offeringsPaginatedData } = useGetPaginatedIndividualOfferings(
+    1,
+    1000,
+  );
   const updateParishioner = useUpdateParishioner();
   const deleteParishioner = useDeleteParishioner();
 
@@ -58,19 +94,20 @@ export default function Kartoteka() {
   const handleEdit = (parishioner: Parishioner) => {
     setEditingParishioner(parishioner);
     setDialogOpen(true);
+    setDetailViewOpen(false);
   };
 
   const handleDelete = async (parishioner: Parishioner) => {
-    if (!confirm('Czy na pewno chcesz usunąć tego parafianina?')) return;
+    if (!confirm("Czy na pewno chcesz usunąć tego parafianina?")) return;
 
     try {
       await deleteParishioner.mutateAsync(parishioner.uid);
-      toast.success('Parafianin został usunięty');
+      toast.success("Parafianin został usunięty");
       if (selectedParishionerId === parishioner.uid) {
         setSelectedParishionerId(null);
       }
     } catch (error) {
-      toast.error('Błąd podczas usuwania parafianina');
+      toast.error("Błąd podczas usuwania parafianina");
       console.error(error);
     }
   };
@@ -78,12 +115,26 @@ export default function Kartoteka() {
   const handleSave = async (data: Parishioner) => {
     try {
       const uid = editingParishioner?.uid ?? BigInt(Date.now());
-      await updateParishioner.mutateAsync({ id: uid, parishioner: { ...data, uid } });
-      toast.success(editingParishioner ? 'Parafianin został zaktualizowany' : 'Parafianin został dodany');
+      await updateParishioner.mutateAsync({
+        id: uid,
+        parishioner: { ...data, uid },
+      });
+      toast.success(
+        editingParishioner
+          ? "Parafianin został zaktualizowany"
+          : "Parafianin został dodany",
+      );
       setDialogOpen(false);
       setEditingParishioner(null);
+
+      // If we were viewing this parishioner, reopen the detail view with updated data
+      if (viewingParishioner && viewingParishioner.uid === uid) {
+        const updatedParishioner = { ...data, uid };
+        setViewingParishioner(updatedParishioner);
+        setDetailViewOpen(true);
+      }
     } catch (error) {
-      toast.error('Błąd podczas zapisywania');
+      toast.error("Błąd podczas zapisywania");
       console.error(error);
     }
   };
@@ -91,7 +142,7 @@ export default function Kartoteka() {
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pageCount) {
       setCurrentPage(newPage);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -100,22 +151,29 @@ export default function Kartoteka() {
     setCurrentPage(1);
   };
 
-  const handleCardClick = (parishioner: Parishioner) => {
-    setSelectedParishionerId(parishioner.uid === selectedParishionerId ? null : parishioner.uid);
+  const _handleCardClick = (parishioner: Parishioner) => {
+    setSelectedParishionerId(
+      parishioner.uid === selectedParishionerId ? null : parishioner.uid,
+    );
+  };
+
+  const handleViewDetails = (parishioner: Parishioner) => {
+    setViewingParishioner(parishioner);
+    setDetailViewOpen(true);
   };
 
   const exportParishionersPDF = async () => {
-    toast.info('Generowanie PDF...');
-    
+    toast.info("Generowanie PDF...");
+
     setTimeout(() => {
-      let content = '';
-      
+      let content = "";
+
       content += `LICZBA PARAFIAN: ${totalCount}\n\n`;
-      content += '─'.repeat(90) + '\n\n';
+      content += `${"─".repeat(90)}\n\n`;
 
       parishioners.forEach((p, idx) => {
-        content += `${(idx + 1).toString().padStart(3, ' ')}. ${p.firstName} ${p.lastName}\n`;
-        
+        content += `${(idx + 1).toString().padStart(3, " ")}. ${p.firstName} ${p.lastName}\n`;
+
         if (p.birthYear) {
           content += `     Rok urodzenia: ${Number(p.birthYear)}\n`;
         }
@@ -131,45 +189,49 @@ export default function Kartoteka() {
         if (p.profession) {
           content += `     Zawód: ${p.profession}\n`;
         }
-        
+
         const parishionerOfferings = individualOfferings.filter(
-          o => o.parishionerId === p.uid
+          (o) => o.parishionerId === p.uid,
         );
-        
+
         if (parishionerOfferings.length > 0) {
           content += `     Ofiary (${parishionerOfferings.length}):\n`;
-          parishionerOfferings.forEach((offer) => {
+          for (const offer of parishionerOfferings) {
             content += `       • ${Number(offer.year)}: ${Number(offer.amount)} zł - ${offer.description}\n`;
-          });
+          }
         }
-        
+
         if (p.family.length > 0) {
           content += `     Rodzina: ${p.family.length} osób\n`;
         }
-        
-        content += '\n';
+
+        content += "\n";
       });
 
       generateParishPDF({
-        title: 'KARTOTEKA PARAFIAN',
+        title: "KARTOTEKA PARAFIAN",
         content,
-        footer: 'Dokument wygenerowany automatycznie'
+        footer: "Dokument wygenerowany automatycznie",
       });
 
-      toast.success('Kartoteka została wygenerowana - okno drukowania otworzy się automatycznie');
+      toast.success(
+        "Kartoteka została wygenerowana - okno drukowania otworzy się automatycznie",
+      );
     }, 100);
   };
 
   const exportSelectedParishionerPDF = () => {
-    const selectedParishioner = parishioners.find(p => p.uid === selectedParishionerId);
+    const selectedParishioner = parishioners.find(
+      (p) => p.uid === selectedParishionerId,
+    );
     if (!selectedParishioner) return;
 
     const parishionerOfferings = individualOfferings.filter(
-      o => o.parishionerId === selectedParishioner.uid
+      (o) => o.parishionerId === selectedParishioner.uid,
     );
 
     generateSingleParishionerPDF(selectedParishioner, parishionerOfferings);
-    toast.success('Karta parafianina została wygenerowana');
+    toast.success("Karta parafianina została wygenerowana");
   };
 
   if (isLoading) {
@@ -187,8 +249,12 @@ export default function Kartoteka() {
     <div className="p-6 space-y-6">
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Kartoteka Parafian</h1>
-          <p className="text-muted-foreground mt-1">{totalCount} zarejestrowanych osób</p>
+          <h1 className="text-3xl font-bold text-foreground">
+            Kartoteka Parafian
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {totalCount} zarejestrowanych osób
+          </p>
         </div>
         <div className="flex gap-2">
           <ExportPdfModeControl
@@ -216,16 +282,16 @@ export default function Kartoteka() {
         </div>
         <div className="flex gap-2">
           <Button
-            variant={viewMode === 'card' ? 'default' : 'outline'}
+            variant={viewMode === "card" ? "default" : "outline"}
             size="icon"
-            onClick={() => setViewMode('card')}
+            onClick={() => setViewMode("card")}
           >
             <Grid className="h-4 w-4" />
           </Button>
           <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
+            variant={viewMode === "list" ? "default" : "outline"}
             size="icon"
-            onClick={() => setViewMode('list')}
+            onClick={() => setViewMode("list")}
           >
             <List className="h-4 w-4" />
           </Button>
@@ -236,7 +302,10 @@ export default function Kartoteka() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/50 p-4 rounded-lg">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Wyświetl:</span>
-          <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={handlePageSizeChange}
+          >
             <SelectTrigger className="w-[100px]">
               <SelectValue />
             </SelectTrigger>
@@ -276,23 +345,30 @@ export default function Kartoteka() {
       {filteredParishioners.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">Brak parafian do wyświetlenia</p>
+            <p className="text-muted-foreground">
+              Brak parafian do wyświetlenia
+            </p>
           </CardContent>
         </Card>
-      ) : viewMode === 'card' ? (
+      ) : viewMode === "card" ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredParishioners.map((p) => {
-            const offerings = individualOfferings.filter(o => o.parishionerId === p.uid);
-            const anniversary = getParishionerAnniversarySummary(p, currentYear);
+            const offerings = individualOfferings.filter(
+              (o) => o.parishionerId === p.uid,
+            );
+            const anniversary = getParishionerAnniversarySummary(
+              p,
+              currentYear,
+            );
             const isSelected = selectedParishionerId === p.uid;
-            
+
             return (
               <Card
                 key={Number(p.uid)}
                 className={`hover:shadow-lg transition-all cursor-pointer ${
-                  isSelected ? 'ring-2 ring-primary' : ''
+                  isSelected ? "ring-2 ring-primary" : ""
                 }`}
-                onClick={() => handleCardClick(p)}
+                onClick={() => handleViewDetails(p)}
               >
                 <CardHeader>
                   <CardTitle className="text-lg">
@@ -301,33 +377,56 @@ export default function Kartoteka() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {p.birthYear && (
-                    <p className="text-sm text-muted-foreground">Rok urodzenia: {Number(p.birthYear)}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Rok urodzenia: {Number(p.birthYear)}
+                    </p>
                   )}
                   {p.address && (
-                    <p className="text-sm text-muted-foreground">Adres: {p.address}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Adres: {p.address}
+                    </p>
                   )}
                   {p.phone && (
-                    <p className="text-sm text-muted-foreground">Telefon: {p.phone}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Telefon: {p.phone}
+                    </p>
                   )}
                   {p.email && (
-                    <p className="text-sm text-muted-foreground">Email: {p.email}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Email: {p.email}
+                    </p>
                   )}
                   {p.profession && (
-                    <p className="text-sm text-muted-foreground">Zawód: {p.profession}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Zawód: {p.profession}
+                    </p>
                   )}
                   {offerings.length > 0 && (
-                    <p className="text-sm text-muted-foreground">Ofiary: {offerings.length}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Ofiary: {offerings.length}
+                    </p>
                   )}
                   {p.family.length > 0 && (
-                    <p className="text-sm text-muted-foreground">Rodzina: {p.family.length} osób</p>
+                    <p className="text-sm text-muted-foreground">
+                      Rodzina: {p.family.length} osób
+                    </p>
                   )}
                   {anniversary && (
                     <p className="text-sm font-medium text-primary mt-2">
-                      {anniversary.label}: {anniversary.eventYear} ({anniversary.anniversaryNumber}. rocznica)
+                      {anniversary.label}: {anniversary.eventYear} (
+                      {anniversary.anniversaryNumber}. rocznica)
                     </p>
                   )}
-                  <div className="flex gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(p)}>
+                  <div
+                    className="flex gap-2 mt-4"
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(p)}
+                    >
                       <Edit className="h-4 w-4 mr-1" />
                       Edytuj
                     </Button>
@@ -363,17 +462,35 @@ export default function Kartoteka() {
                 return (
                   <tr
                     key={Number(p.uid)}
-                    onClick={() => handleCardClick(p)}
+                    onClick={() => handleViewDetails(p)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ")
+                        handleViewDetails(p);
+                    }}
                     className={`border-t cursor-pointer transition-colors ${
-                      isSelected ? 'bg-muted' : 'hover:bg-muted/50'
+                      isSelected ? "bg-muted" : "hover:bg-muted/50"
                     }`}
                   >
-                    <td className="p-4">{p.firstName} {p.lastName}</td>
-                    <td className="p-4 text-muted-foreground">{p.address || '-'}</td>
-                    <td className="p-4 text-muted-foreground">{p.phone || '-'}</td>
-                    <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
+                    <td className="p-4">
+                      {p.firstName} {p.lastName}
+                    </td>
+                    <td className="p-4 text-muted-foreground">
+                      {p.address || "-"}
+                    </td>
+                    <td className="p-4 text-muted-foreground">
+                      {p.phone || "-"}
+                    </td>
+                    <td
+                      className="p-4 text-right"
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
+                    >
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(p)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(p)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
@@ -394,6 +511,25 @@ export default function Kartoteka() {
         </div>
       )}
 
+      {/* Detail View Dialog */}
+      <Dialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>
+        <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Karta parafianina</DialogTitle>
+          </DialogHeader>
+          {viewingParishioner && (
+            <ParishionerDetailCard
+              parishioner={viewingParishioner}
+              offerings={individualOfferings.filter(
+                (o) => o.parishionerId === viewingParishioner.uid,
+              )}
+              onEdit={() => handleEdit(viewingParishioner)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
       <ParishionerDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}

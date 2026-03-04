@@ -157,9 +157,11 @@ export const BaptismRecord = IDL.Record({
   'birthPlace' : IDL.Text,
   'baptismDate' : IDL.Int,
   'annotations' : BaptismAnnotations,
+  'godmother' : IDL.Opt(ParentsData),
   'actNumber' : IDL.Text,
   'baptismPlace' : IDL.Text,
   'mother' : ParentsData,
+  'godfather' : IDL.Opt(ParentsData),
   'father' : ParentsData,
 });
 export const Letter = IDL.Record({
@@ -689,9 +691,11 @@ export const idlFactory = ({ IDL }) => {
     'birthPlace' : IDL.Text,
     'baptismDate' : IDL.Int,
     'annotations' : BaptismAnnotations,
+    'godmother' : IDL.Opt(ParentsData),
     'actNumber' : IDL.Text,
     'baptismPlace' : IDL.Text,
     'mother' : ParentsData,
+    'godfather' : IDL.Opt(ParentsData),
     'father' : ParentsData,
   });
   const Letter = IDL.Record({

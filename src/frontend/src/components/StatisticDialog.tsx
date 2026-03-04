@@ -1,9 +1,14 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import type { StatisticEntry } from '../backend';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useEffect, useState } from "react";
+import type { StatisticEntry } from "../backend";
 
 interface StatisticDialogProps {
   open: boolean;
@@ -12,7 +17,12 @@ interface StatisticDialogProps {
   onSave: (data: StatisticEntry) => void;
 }
 
-export default function StatisticDialog({ open, onOpenChange, statistic, onSave }: StatisticDialogProps) {
+export default function StatisticDialog({
+  open,
+  onOpenChange,
+  statistic,
+  onSave,
+}: StatisticDialogProps) {
   const [formData, setFormData] = useState<StatisticEntry>({
     sundayAttendance: BigInt(0),
     communionCount: BigInt(0),
@@ -29,7 +39,7 @@ export default function StatisticDialog({ open, onOpenChange, statistic, onSave 
         timestamp: BigInt(Date.now() * 1000000),
       });
     }
-  }, [statistic, open]);
+  }, [statistic]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +50,9 @@ export default function StatisticDialog({ open, onOpenChange, statistic, onSave 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{statistic ? 'Edytuj wpis' : 'Dodaj wpis statystyczny'}</DialogTitle>
+          <DialogTitle>
+            {statistic ? "Edytuj wpis" : "Dodaj wpis statystyczny"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -49,9 +61,18 @@ export default function StatisticDialog({ open, onOpenChange, statistic, onSave 
             <Input
               id="date"
               type="date"
-              value={new Date(Number(formData.timestamp) / 1000000).toISOString().split('T')[0]}
+              value={
+                new Date(Number(formData.timestamp) / 1000000)
+                  .toISOString()
+                  .split("T")[0]
+              }
               onChange={(e) =>
-                setFormData({ ...formData, timestamp: BigInt(new Date(e.target.value).getTime() * 1000000) })
+                setFormData({
+                  ...formData,
+                  timestamp: BigInt(
+                    new Date(e.target.value).getTime() * 1000000,
+                  ),
+                })
               }
               required
             />
@@ -63,7 +84,12 @@ export default function StatisticDialog({ open, onOpenChange, statistic, onSave 
               id="sundayAttendance"
               type="number"
               value={Number(formData.sundayAttendance)}
-              onChange={(e) => setFormData({ ...formData, sundayAttendance: BigInt(e.target.value || 0) })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  sundayAttendance: BigInt(e.target.value || 0),
+                })
+              }
               required
             />
           </div>
@@ -74,13 +100,22 @@ export default function StatisticDialog({ open, onOpenChange, statistic, onSave 
               id="communionCount"
               type="number"
               value={Number(formData.communionCount)}
-              onChange={(e) => setFormData({ ...formData, communionCount: BigInt(e.target.value || 0) })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  communionCount: BigInt(e.target.value || 0),
+                })
+              }
               required
             />
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Anuluj
             </Button>
             <Button type="submit">Zapisz</Button>

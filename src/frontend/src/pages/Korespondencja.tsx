@@ -1,19 +1,24 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Plus, Search, Download, Trash2, Edit } from 'lucide-react';
-import { toast } from 'sonner';
-import LetterDialog from '../components/LetterDialog';
-import { generateLetterPDF, generateParishPDF } from '../lib/pdfGenerator';
-import { useGetAllLetters, useAddLetter, useUpdateLetter, useDeleteLetter } from '../hooks/useQueries';
-import type { Letter } from '../backend';
-import { ExportPdfModeControl } from '../components/ExportPdfModeControl';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Download, Edit, Plus, Search, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import type { Letter } from "../backend";
+import { ExportPdfModeControl } from "../components/ExportPdfModeControl";
+import LetterDialog from "../components/LetterDialog";
+import {
+  useAddLetter,
+  useDeleteLetter,
+  useGetAllLetters,
+  useUpdateLetter,
+} from "../hooks/useQueries";
+import { generateLetterPDF, generateParishPDF } from "../lib/pdfGenerator";
 
 export default function Korespondencja() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLetter, setEditingLetter] = useState<Letter | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedLetterId, setSelectedLetterId] = useState<bigint | null>(null);
 
   // Fetch letters from backend
@@ -33,17 +38,17 @@ export default function Korespondencja() {
   };
 
   const handleDelete = async (letter: Letter) => {
-    const letterNumber = `KP-${letter.year}-${letter.number.toString().padStart(3, '0')}`;
+    const letterNumber = `KP-${letter.year}-${letter.number.toString().padStart(3, "0")}`;
     if (!confirm(`Czy na pewno chcesz usunąć pismo ${letterNumber}?`)) return;
 
     try {
       await deleteLetterMutation.mutateAsync(letter.uid);
-      toast.success('Pismo zostało usunięte');
+      toast.success("Pismo zostało usunięte");
       if (selectedLetterId === letter.uid) {
         setSelectedLetterId(null);
       }
     } catch (error) {
-      toast.error('Błąd podczas usuwania pisma');
+      toast.error("Błąd podczas usuwania pisma");
       console.error(error);
     }
   };
@@ -57,7 +62,7 @@ export default function Korespondencja() {
           title: data.title,
           body: data.body,
         });
-        toast.success('Pismo zostało zaktualizowane');
+        toast.success("Pismo zostało zaktualizowane");
       } else {
         // Create new letter - add year parameter
         const currentYear = BigInt(new Date().getFullYear());
@@ -66,19 +71,23 @@ export default function Korespondencja() {
           body: data.body,
           year: currentYear,
         });
-        toast.success('Pismo zostało utworzone');
+        toast.success("Pismo zostało utworzone");
       }
-      
+
       setDialogOpen(false);
       setEditingLetter(null);
     } catch (error) {
-      toast.error(editingLetter ? 'Błąd podczas aktualizacji' : 'Błąd podczas zapisywania');
+      toast.error(
+        editingLetter
+          ? "Błąd podczas aktualizacji"
+          : "Błąd podczas zapisywania",
+      );
       console.error(error);
     }
   };
 
   const handleExportPDF = (letter: Letter) => {
-    const letterNumber = `KP-${letter.year}-${letter.number.toString().padStart(3, '0')}`;
+    const letterNumber = `KP-${letter.year}-${letter.number.toString().padStart(3, "0")}`;
     const letterForPDF = {
       uid: letter.uid,
       number: letterNumber,
@@ -87,18 +96,20 @@ export default function Korespondencja() {
       timestamp: letter.date || BigInt(0), // Use date field for timestamp
     };
     generateLetterPDF(letterForPDF);
-    toast.success('PDF został wygenerowany - okno drukowania otworzy się automatycznie');
+    toast.success(
+      "PDF został wygenerowany - okno drukowania otworzy się automatycznie",
+    );
   };
 
   const handleExportAll = () => {
     if (letters.length === 0) {
-      toast.error('Brak pism do wyeksportowania');
+      toast.error("Brak pism do wyeksportowania");
       return;
     }
 
-    let content = 'KORESPONDENCJA\n\n';
+    let content = "KORESPONDENCJA\n\n";
     content += `Liczba pism: ${letters.length}\n\n`;
-    content += '─'.repeat(90) + '\n\n';
+    content += `${"─".repeat(90)}\n\n`;
 
     const sortedLetters = [...letters].sort((a, b) => {
       if (a.year !== b.year) {
@@ -108,33 +119,33 @@ export default function Korespondencja() {
     });
 
     sortedLetters.forEach((letter, idx) => {
-      const letterNumber = `KP-${letter.year}-${letter.number.toString().padStart(3, '0')}`;
-      content += `${(idx + 1).toString().padStart(3, ' ')}. ${letterNumber}\n`;
+      const letterNumber = `KP-${letter.year}-${letter.number.toString().padStart(3, "0")}`;
+      content += `${(idx + 1).toString().padStart(3, " ")}. ${letterNumber}\n`;
       content += `     Tytuł: ${letter.title}\n`;
       content += `     Rok: ${Number(letter.year)}\n`;
-      content += '\n';
+      content += "\n";
     });
 
     generateParishPDF({
-      title: 'KORESPONDENCJA',
+      title: "KORESPONDENCJA",
       content,
-      footer: 'Dokument wygenerowany automatycznie'
+      footer: "Dokument wygenerowany automatycznie",
     });
 
-    toast.success('Lista korespondencji została wygenerowana');
+    toast.success("Lista korespondencji została wygenerowana");
   };
 
   const handleExportSelected = () => {
-    const selectedLetter = letters.find(l => l.uid === selectedLetterId);
+    const selectedLetter = letters.find((l) => l.uid === selectedLetterId);
     if (selectedLetter) {
       handleExportPDF(selectedLetter);
     }
   };
 
   // Filter letters based on search query
-  const filteredLetters = letters.filter(letter => {
+  const filteredLetters = letters.filter((letter) => {
     const query = searchQuery.toLowerCase();
-    const letterNumber = `KP-${letter.year}-${letter.number.toString().padStart(3, '0')}`;
+    const letterNumber = `KP-${letter.year}-${letter.number.toString().padStart(3, "0")}`;
     return (
       letterNumber.toLowerCase().includes(query) ||
       letter.title.toLowerCase().includes(query) ||
@@ -156,7 +167,9 @@ export default function Korespondencja() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Korespondencja</h1>
           <p className="text-muted-foreground mt-1">
-            {isLoading ? 'Ładowanie...' : `${letters.length} ${letters.length === 1 ? 'pismo' : 'pism'}`}
+            {isLoading
+              ? "Ładowanie..."
+              : `${letters.length} ${letters.length === 1 ? "pismo" : "pism"}`}
           </p>
         </div>
         <div className="flex gap-2">
@@ -199,22 +212,28 @@ export default function Korespondencja() {
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">
-              {searchQuery ? 'Nie znaleziono pism pasujących do wyszukiwania' : 'Brak pism do wyświetlenia'}
+              {searchQuery
+                ? "Nie znaleziono pism pasujących do wyszukiwania"
+                : "Brak pism do wyświetlenia"}
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-4">
           {sortedLetters.map((letter) => {
-            const letterNumber = `KP-${letter.year}-${letter.number.toString().padStart(3, '0')}`;
+            const letterNumber = `KP-${letter.year}-${letter.number.toString().padStart(3, "0")}`;
             const isSelected = selectedLetterId === letter.uid;
             return (
               <Card
                 key={letter.uid.toString()}
                 className={`hover:shadow-lg transition-all cursor-pointer ${
-                  isSelected ? 'ring-2 ring-primary' : ''
+                  isSelected ? "ring-2 ring-primary" : ""
                 }`}
-                onClick={() => setSelectedLetterId(letter.uid === selectedLetterId ? null : letter.uid)}
+                onClick={() =>
+                  setSelectedLetterId(
+                    letter.uid === selectedLetterId ? null : letter.uid,
+                  )
+                }
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -235,23 +254,31 @@ export default function Korespondencja() {
                   <div className="text-sm text-muted-foreground line-clamp-3 whitespace-pre-wrap">
                     {letter.body}
                   </div>
-                  <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                  <div
+                    className="flex gap-2 pt-2"
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleEdit(letter)}
                       disabled={updateLetterMutation.isPending}
                     >
                       <Edit className="h-3 w-3 mr-1" />
                       Edytuj
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleExportPDF(letter)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleExportPDF(letter)}
+                    >
                       <Download className="h-3 w-3 mr-1" />
                       Eksportuj do PDF (druk)
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleDelete(letter)}
                       disabled={deleteLetterMutation.isPending}
                     >

@@ -2,7 +2,11 @@
  * Utility functions for baptism record date conversions and payload normalization
  */
 
-import type { BaptismRecord, ParentsData, BaptismAnnotations } from '../backend';
+import type {
+  BaptismAnnotations,
+  BaptismRecord,
+  ParentsData,
+} from "../backend";
 
 /**
  * Convert ISO date string (YYYY-MM-DD) to nanosecond timestamp
@@ -17,7 +21,7 @@ export function dateToNanoseconds(dateString: string): bigint {
  */
 export function nanosecondsToDateString(timestamp: bigint): string {
   const date = new Date(Number(timestamp) / 1000000);
-  return date.toISOString().split('T')[0];
+  return date.toISOString().split("T")[0];
 }
 
 /**
@@ -25,7 +29,11 @@ export function nanosecondsToDateString(timestamp: bigint): string {
  */
 export function formatBaptismDate(timestamp: bigint): string {
   const date = new Date(Number(timestamp) / 1000000);
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 }
 
 /**
@@ -33,10 +41,10 @@ export function formatBaptismDate(timestamp: bigint): string {
  */
 export function createEmptyParentsData(): ParentsData {
   return {
-    fullName: '',
-    age: '',
-    religion: '',
-    residence: '',
+    fullName: "",
+    age: "",
+    religion: "",
+    residence: "",
   };
 }
 
@@ -72,16 +80,43 @@ export function buildBaptismRecordPayload(
     motherAge: string;
     motherReligion: string;
     motherResidence: string;
+    godfatherFullName?: string;
+    godfatherAge?: string;
+    godfatherReligion?: string;
+    godfatherResidence?: string;
+    godmotherFullName?: string;
+    godmotherAge?: string;
+    godmotherReligion?: string;
+    godmotherResidence?: string;
     confirmation?: string;
     marriage?: string;
     ordination?: string;
     profession?: string;
     generalNotes?: string;
   },
-  existingRecord?: BaptismRecord | null
+  existingRecord?: BaptismRecord | null,
 ): BaptismRecord {
   const baptismTimestamp = dateToNanoseconds(formData.baptismDate);
-  const createdAtTimestamp = existingRecord?.createdAt || BigInt(Date.now() * 1000000);
+  const createdAtTimestamp =
+    existingRecord?.createdAt || BigInt(Date.now() * 1000000);
+
+  const godfatherData = formData.godfatherFullName?.trim()
+    ? {
+        fullName: formData.godfatherFullName.trim(),
+        age: formData.godfatherAge?.trim() || "",
+        religion: formData.godfatherReligion?.trim() || "",
+        residence: formData.godfatherResidence?.trim() || "",
+      }
+    : undefined;
+
+  const godmotherData = formData.godmotherFullName?.trim()
+    ? {
+        fullName: formData.godmotherFullName.trim(),
+        age: formData.godmotherAge?.trim() || "",
+        religion: formData.godmotherReligion?.trim() || "",
+        residence: formData.godmotherResidence?.trim() || "",
+      }
+    : undefined;
 
   return {
     id: existingRecord?.id || BigInt(0),
@@ -103,6 +138,8 @@ export function buildBaptismRecordPayload(
       religion: formData.motherReligion.trim(),
       residence: formData.motherResidence.trim(),
     },
+    godfather: godfatherData,
+    godmother: godmotherData,
     annotations: {
       confirmation: formData.confirmation?.trim() || undefined,
       marriage: formData.marriage?.trim() || undefined,

@@ -1,22 +1,32 @@
-import { useState } from 'react';
-import { useGetPaginatedParishNotes, useUpdateParishNote, useDeleteParishNote } from '../hooks/useQueries';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Edit, Trash2, Download } from 'lucide-react';
-import { toast } from 'sonner';
-import NoteDialog from '../components/NoteDialog';
-import type { ParishNote } from '../backend';
-import { generateParishPDF } from '../lib/pdfGenerator';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Download, Edit, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import type { ParishNote } from "../backend";
+import NoteDialog from "../components/NoteDialog";
+import {
+  useDeleteParishNote,
+  useGetPaginatedParishNotes,
+  useUpdateParishNote,
+} from "../hooks/useQueries";
+import { generateParishPDF } from "../lib/pdfGenerator";
 
 export default function Uwagi() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
-  const { data: notesData, isLoading } = useGetPaginatedParishNotes(currentPage, pageSize);
+  const { data: notesData, isLoading } = useGetPaginatedParishNotes(
+    currentPage,
+    pageSize,
+  );
   const updateNote = useUpdateParishNote();
   const deleteNote = useDeleteParishNote();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingNote, setEditingNote] = useState<{ id: bigint; data: ParishNote } | null>(null);
+  const [editingNote, setEditingNote] = useState<{
+    id: bigint;
+    data: ParishNote;
+  } | null>(null);
 
   const notes = notesData?.data || [];
   const totalCount = Number(notesData?.totalCount || 0);
@@ -33,13 +43,13 @@ export default function Uwagi() {
   };
 
   const handleDelete = async (note: ParishNote) => {
-    if (!confirm('Czy na pewno chcesz usunąć tę notatkę?')) return;
+    if (!confirm("Czy na pewno chcesz usunąć tę notatkę?")) return;
 
     try {
       await deleteNote.mutateAsync(note.timestamp);
-      toast.success('Notatka została usunięta');
+      toast.success("Notatka została usunięta");
     } catch (error) {
-      toast.error('Błąd podczas usuwania notatki');
+      toast.error("Błąd podczas usuwania notatki");
       console.error(error);
     }
   };
@@ -48,49 +58,55 @@ export default function Uwagi() {
     try {
       if (editingNote) {
         await updateNote.mutateAsync({ id: editingNote.id, note: data });
-        toast.success('Notatka została zaktualizowana');
+        toast.success("Notatka została zaktualizowana");
       } else {
         const newId = data.timestamp;
         await updateNote.mutateAsync({ id: newId, note: data });
-        toast.success('Notatka została dodana');
+        toast.success("Notatka została dodana");
       }
       setDialogOpen(false);
       setEditingNote(null);
     } catch (error) {
-      toast.error('Błąd podczas zapisywania');
+      toast.error("Błąd podczas zapisywania");
       console.error(error);
     }
   };
 
   const exportNotesPDF = async () => {
-    toast.info('Generowanie PDF...');
-    
-    setTimeout(() => {
-      const sortedNotes = [...notes].sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
+    toast.info("Generowanie PDF...");
 
-      let content = '';
-      content += `NOTATKI PARAFIALNE\n\n`;
+    setTimeout(() => {
+      const sortedNotes = [...notes].sort(
+        (a, b) => Number(b.timestamp) - Number(a.timestamp),
+      );
+
+      let content = "";
+      content += "NOTATKI PARAFIALNE\n\n";
       content += `Łączna liczba notatek: ${totalCount}\n\n`;
-      content += '═'.repeat(90) + '\n\n';
+      content += `${"═".repeat(90)}\n\n`;
 
       sortedNotes.forEach((note, idx) => {
         const date = new Date(Number(note.timestamp) / 1000000);
-        content += `${(idx + 1).toString().padStart(3, ' ')}. ${note.title}\n`;
-        content += `     Data: ${date.toLocaleDateString('pl-PL')}\n`;
+        content += `${(idx + 1).toString().padStart(3, " ")}. ${note.title}\n`;
+        content += `     Data: ${date.toLocaleDateString("pl-PL")}\n`;
         content += `     Treść: ${note.content}\n\n`;
       });
 
       generateParishPDF({
-        title: 'NOTATKI PARAFIALNE',
+        title: "NOTATKI PARAFIALNE",
         content,
-        footer: 'Dokument wygenerowany automatycznie'
+        footer: "Dokument wygenerowany automatycznie",
       });
 
-      toast.success('PDF został wygenerowany - okno drukowania otworzy się automatycznie');
+      toast.success(
+        "PDF został wygenerowany - okno drukowania otworzy się automatycznie",
+      );
     }, 100);
   };
 
-  const sortedNotes = [...notes].sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
+  const sortedNotes = [...notes].sort(
+    (a, b) => Number(b.timestamp) - Number(a.timestamp),
+  );
 
   if (isLoading) {
     return (
@@ -109,7 +125,7 @@ export default function Uwagi() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Uwagi</h1>
           <p className="text-muted-foreground mt-1">
-            {totalCount} {totalCount === 1 ? 'notatka' : 'notatek'}
+            {totalCount} {totalCount === 1 ? "notatka" : "notatek"}
           </p>
         </div>
         <div className="flex gap-2">
@@ -127,18 +143,27 @@ export default function Uwagi() {
       {sortedNotes.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">Brak notatek do wyświetlenia</p>
+            <p className="text-muted-foreground">
+              Brak notatek do wyświetlenia
+            </p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {sortedNotes.map((note) => (
-            <Card key={note.timestamp.toString()} className="hover:shadow-lg transition-shadow">
+            <Card
+              key={note.timestamp.toString()}
+              className="hover:shadow-lg transition-shadow"
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-lg">{note.title}</CardTitle>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" onClick={() => handleEdit(note)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(note)}
+                    >
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
@@ -152,7 +177,9 @@ export default function Uwagi() {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(Number(note.timestamp) / 1000000).toLocaleDateString('pl-PL')}
+                  {new Date(
+                    Number(note.timestamp) / 1000000,
+                  ).toLocaleDateString("pl-PL")}
                 </p>
               </CardHeader>
               <CardContent>

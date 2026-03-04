@@ -1,15 +1,24 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
-import type { IndividualOffering } from '../backend';
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
+import { format } from "date-fns";
+import { pl } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import type { IndividualOffering } from "../backend";
 
 interface IndividualOfferingDialogProps {
   open: boolean;
@@ -30,7 +39,7 @@ export default function IndividualOfferingDialog({
     id: BigInt(0),
     amount: BigInt(0),
     year: BigInt(new Date().getFullYear()),
-    description: '',
+    description: "",
     parishionerId: parishionerId,
     timestamp: BigInt(Date.now() * 1000000),
   });
@@ -49,13 +58,13 @@ export default function IndividualOfferingDialog({
         id: BigInt(0),
         amount: BigInt(0),
         year: BigInt(now.getFullYear()),
-        description: '',
+        description: "",
         parishionerId: parishionerId,
         timestamp: BigInt(now.getTime() * 1000000),
       });
       setSelectedDate(now);
     }
-  }, [offering, parishionerId, open]);
+  }, [offering, parishionerId]);
 
   const handleDateChange = (date: Date | undefined) => {
     if (date) {
@@ -80,7 +89,7 @@ export default function IndividualOfferingDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {offering ? 'Edytuj ofiarę' : 'Dodaj ofiarę'}
+            {offering ? "Edytuj ofiarę" : "Dodaj ofiarę"}
           </DialogTitle>
         </DialogHeader>
 
@@ -93,7 +102,10 @@ export default function IndividualOfferingDialog({
               min="0"
               value={Number(formData.amount)}
               onChange={(e) =>
-                setFormData({ ...formData, amount: BigInt(e.target.value || 0) })
+                setFormData({
+                  ...formData,
+                  amount: BigInt(e.target.value || 0),
+                })
               }
               required
             />
@@ -108,7 +120,9 @@ export default function IndividualOfferingDialog({
                   className="w-full justify-start text-left font-normal"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedDate ? format(selectedDate, 'PPP', { locale: pl }) : 'Wybierz datę'}
+                  {selectedDate
+                    ? format(selectedDate, "PPP", { locale: pl })
+                    : "Wybierz datę"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -128,7 +142,9 @@ export default function IndividualOfferingDialog({
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               placeholder="Np. Ofiara na remont kościoła"
               required
               rows={3}
@@ -136,7 +152,11 @@ export default function IndividualOfferingDialog({
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Anuluj
             </Button>
             <Button type="submit">Zapisz</Button>

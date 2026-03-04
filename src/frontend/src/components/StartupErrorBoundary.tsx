@@ -1,6 +1,7 @@
-import React, { Component, ReactNode } from 'react';
-import { Button } from '@/components/ui/button';
-import { AlertCircle } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { AlertCircle } from "lucide-react";
+import type React from "react";
+import { Component, type ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -30,7 +31,7 @@ export default class StartupErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Startup Error Boundary caught an error:', error, errorInfo);
+    console.error("Startup Error Boundary caught an error:", error, errorInfo);
     this.setState({
       error,
       errorInfo,
@@ -56,7 +57,8 @@ export default class StartupErrorBoundary extends Component<Props, State> {
                     Application Error
                   </h1>
                   <p className="text-muted-foreground mb-4">
-                    The application encountered an error during startup. Please try reloading the page.
+                    The application encountered an error during startup. Please
+                    try reloading the page.
                   </p>
                 </div>
               </div>
@@ -64,9 +66,11 @@ export default class StartupErrorBoundary extends Component<Props, State> {
               {this.state.error && (
                 <div className="mb-6 space-y-4">
                   <div className="bg-muted/50 rounded-md p-4">
-                    <h2 className="text-sm font-semibold text-foreground mb-2">Error Message:</h2>
+                    <h2 className="text-sm font-semibold text-foreground mb-2">
+                      Error Message:
+                    </h2>
                     <p className="text-sm text-destructive font-mono break-words">
-                      {this.state.error.message || 'Unknown error'}
+                      {this.state.error.message || "Unknown error"}
                     </p>
                   </div>
 
@@ -81,7 +85,7 @@ export default class StartupErrorBoundary extends Component<Props, State> {
                     </details>
                   )}
 
-                  {this.state.errorInfo && this.state.errorInfo.componentStack && (
+                  {this.state.errorInfo?.componentStack && (
                     <details className="bg-muted/50 rounded-md p-4">
                       <summary className="text-sm font-semibold text-foreground cursor-pointer hover:text-primary">
                         Component Stack (click to expand)

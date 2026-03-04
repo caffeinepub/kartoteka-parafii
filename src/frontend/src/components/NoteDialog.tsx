@@ -1,10 +1,15 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import type { ParishNote } from '../backend';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useEffect, useState } from "react";
+import type { ParishNote } from "../backend";
 
 interface NoteDialogProps {
   open: boolean;
@@ -13,11 +18,16 @@ interface NoteDialogProps {
   onSave: (data: ParishNote) => void;
 }
 
-export default function NoteDialog({ open, onOpenChange, note, onSave }: NoteDialogProps) {
+export default function NoteDialog({
+  open,
+  onOpenChange,
+  note,
+  onSave,
+}: NoteDialogProps) {
   const [formData, setFormData] = useState<ParishNote>({
-    title: '',
+    title: "",
     timestamp: BigInt(Date.now() * 1000000),
-    content: '',
+    content: "",
   });
 
   useEffect(() => {
@@ -25,12 +35,12 @@ export default function NoteDialog({ open, onOpenChange, note, onSave }: NoteDia
       setFormData(note);
     } else {
       setFormData({
-        title: '',
+        title: "",
         timestamp: BigInt(Date.now() * 1000000),
-        content: '',
+        content: "",
       });
     }
-  }, [note, open]);
+  }, [note]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +51,7 @@ export default function NoteDialog({ open, onOpenChange, note, onSave }: NoteDia
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{note ? 'Edytuj notatkę' : 'Dodaj notatkę'}</DialogTitle>
+          <DialogTitle>{note ? "Edytuj notatkę" : "Dodaj notatkę"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -50,7 +60,9 @@ export default function NoteDialog({ open, onOpenChange, note, onSave }: NoteDia
             <Input
               id="title"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               required
             />
           </div>
@@ -60,9 +72,18 @@ export default function NoteDialog({ open, onOpenChange, note, onSave }: NoteDia
             <Input
               id="date"
               type="date"
-              value={new Date(Number(formData.timestamp) / 1000000).toISOString().split('T')[0]}
+              value={
+                new Date(Number(formData.timestamp) / 1000000)
+                  .toISOString()
+                  .split("T")[0]
+              }
               onChange={(e) =>
-                setFormData({ ...formData, timestamp: BigInt(new Date(e.target.value).getTime() * 1000000) })
+                setFormData({
+                  ...formData,
+                  timestamp: BigInt(
+                    new Date(e.target.value).getTime() * 1000000,
+                  ),
+                })
               }
               required
             />
@@ -73,14 +94,20 @@ export default function NoteDialog({ open, onOpenChange, note, onSave }: NoteDia
             <Textarea
               id="content"
               value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, content: e.target.value })
+              }
               required
               rows={8}
             />
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Anuluj
             </Button>
             <Button type="submit">Zapisz</Button>

@@ -158,9 +158,11 @@ export interface BaptismRecord {
     birthPlace: string;
     baptismDate: bigint;
     annotations: BaptismAnnotations;
+    godmother?: ParentsData;
     actNumber: string;
     baptismPlace: string;
     mother: ParentsData;
+    godfather?: ParentsData;
     father: ParentsData;
 }
 export interface Letter {

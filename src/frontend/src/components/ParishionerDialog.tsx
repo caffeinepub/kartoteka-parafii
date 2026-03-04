@@ -1,18 +1,33 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Edit, Trash2, Plus } from 'lucide-react';
-import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
-import { RelationType } from '../backend';
-import type { Parishioner, FamilyMember, IndividualOffering, Sacraments } from '../backend';
-import { useGetIndividualOfferingsByParishioner, useAddIndividualOffering, useUpdateIndividualOffering, useDeleteIndividualOffering } from '../hooks/useQueries';
-import { toast } from 'sonner';
-import IndividualOfferingDialog from './IndividualOfferingDialog';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { format } from "date-fns";
+import { pl } from "date-fns/locale";
+import { Edit, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { RelationType } from "../backend";
+import type {
+  FamilyMember,
+  IndividualOffering,
+  Parishioner,
+  Sacraments,
+} from "../backend";
+import {
+  useAddIndividualOffering,
+  useDeleteIndividualOffering,
+  useGetIndividualOfferingsByParishioner,
+  useUpdateIndividualOffering,
+} from "../hooks/useQueries";
+import IndividualOfferingDialog from "./IndividualOfferingDialog";
 
 interface ParishionerDialogProps {
   open: boolean;
@@ -21,11 +36,16 @@ interface ParishionerDialogProps {
   onSave: (data: Parishioner) => void;
 }
 
-export default function ParishionerDialog({ open, onOpenChange, parishioner, onSave }: ParishionerDialogProps) {
+export default function ParishionerDialog({
+  open,
+  onOpenChange,
+  parishioner,
+  onSave,
+}: ParishionerDialogProps) {
   const [formData, setFormData] = useState<Parishioner>({
     uid: BigInt(0),
-    firstName: '',
-    lastName: '',
+    firstName: "",
+    lastName: "",
     birthYear: undefined,
     profession: undefined,
     phone: undefined,
@@ -45,13 +65,13 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
   });
 
   const [offeringDialogOpen, setOfferingDialogOpen] = useState(false);
-  const [editingOffering, setEditingOffering] = useState<IndividualOffering | null>(null);
+  const [editingOffering, setEditingOffering] =
+    useState<IndividualOffering | null>(null);
 
   // Use the query hook with the parishioner's ID
-  const { data: parishionerOfferings = [], refetch: refetchOfferings } = useGetIndividualOfferingsByParishioner(
-    parishioner?.uid || BigInt(0)
-  );
-  
+  const { data: parishionerOfferings = [], refetch: refetchOfferings } =
+    useGetIndividualOfferingsByParishioner(parishioner?.uid || BigInt(0));
+
   const addIndividualOffering = useAddIndividualOffering();
   const updateIndividualOffering = useUpdateIndividualOffering();
   const deleteIndividualOffering = useDeleteIndividualOffering();
@@ -64,8 +84,8 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
     } else {
       setFormData({
         uid: BigInt(0),
-        firstName: '',
-        lastName: '',
+        firstName: "",
+        lastName: "",
         birthYear: undefined,
         profession: undefined,
         phone: undefined,
@@ -84,7 +104,7 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
         pastoralNotes: undefined,
       });
     }
-  }, [parishioner, open]);
+  }, [parishioner, refetchOfferings]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +117,7 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
       family: [
         ...formData.family,
         {
-          name: '',
+          name: "",
           relationType: RelationType.other,
           sacraments: {
             birthYear: undefined,
@@ -112,13 +132,21 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
     });
   };
 
-  const updateFamilyMember = (index: number, field: keyof FamilyMember, value: any) => {
+  const updateFamilyMember = (
+    index: number,
+    field: keyof FamilyMember,
+    value: any,
+  ) => {
     const newFamily = [...formData.family];
     newFamily[index] = { ...newFamily[index], [field]: value };
     setFormData({ ...formData, family: newFamily });
   };
 
-  const updateFamilyMemberSacrament = (index: number, field: keyof Sacraments, value: bigint | undefined) => {
+  const updateFamilyMemberSacrament = (
+    index: number,
+    field: keyof Sacraments,
+    value: bigint | undefined,
+  ) => {
     const newFamily = [...formData.family];
     newFamily[index] = {
       ...newFamily[index],
@@ -131,7 +159,10 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
   };
 
   const removeFamilyMember = (index: number) => {
-    setFormData({ ...formData, family: formData.family.filter((_, i) => i !== index) });
+    setFormData({
+      ...formData,
+      family: formData.family.filter((_, i) => i !== index),
+    });
   };
 
   const handleAddOffering = () => {
@@ -145,15 +176,15 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
   };
 
   const handleDeleteOffering = async (id: bigint) => {
-    if (!confirm('Czy na pewno chcesz usunąć tę ofiarę?')) return;
+    if (!confirm("Czy na pewno chcesz usunąć tę ofiarę?")) return;
 
     try {
       await deleteIndividualOffering.mutateAsync(id);
-      toast.success('Ofiara została usunięta');
+      toast.success("Ofiara została usunięta");
       // Reload offerings
       await refetchOfferings();
     } catch (error) {
-      toast.error('Błąd podczas usuwania ofiary');
+      toast.error("Błąd podczas usuwania ofiary");
       console.error(error);
     }
   };
@@ -161,17 +192,20 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
   const handleSaveOffering = async (data: IndividualOffering) => {
     try {
       if (editingOffering) {
-        await updateIndividualOffering.mutateAsync({ id: editingOffering.id, offering: data });
-        toast.success('Ofiara została zaktualizowana');
+        await updateIndividualOffering.mutateAsync({
+          id: editingOffering.id,
+          offering: data,
+        });
+        toast.success("Ofiara została zaktualizowana");
       } else {
         await addIndividualOffering.mutateAsync(data);
-        toast.success('Ofiara została dodana');
+        toast.success("Ofiara została dodana");
       }
       setOfferingDialogOpen(false);
       // Reload offerings
       await refetchOfferings();
     } catch (error) {
-      toast.error('Błąd podczas zapisywania ofiary');
+      toast.error("Błąd podczas zapisywania ofiary");
       console.error(error);
     }
   };
@@ -183,7 +217,9 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{parishioner ? 'Edytuj parafianina' : 'Dodaj parafianina'}</DialogTitle>
+            <DialogTitle>
+              {parishioner ? "Edytuj parafianina" : "Dodaj parafianina"}
+            </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -202,7 +238,9 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                     <Input
                       id="firstName"
                       value={formData.firstName}
-                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, firstName: e.target.value })
+                      }
                       required
                     />
                   </div>
@@ -211,7 +249,9 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                     <Input
                       id="lastName"
                       value={formData.lastName}
-                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, lastName: e.target.value })
+                      }
                       required
                     />
                   </div>
@@ -223,11 +263,15 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                     <Input
                       id="birthYear"
                       type="number"
-                      value={formData.birthYear ? Number(formData.birthYear) : ''}
+                      value={
+                        formData.birthYear ? Number(formData.birthYear) : ""
+                      }
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          birthYear: e.target.value ? BigInt(e.target.value) : undefined,
+                          birthYear: e.target.value
+                            ? BigInt(e.target.value)
+                            : undefined,
                         })
                       }
                     />
@@ -236,8 +280,13 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                     <Label htmlFor="profession">Zawód</Label>
                     <Input
                       id="profession"
-                      value={formData.profession || ''}
-                      onChange={(e) => setFormData({ ...formData, profession: e.target.value || undefined })}
+                      value={formData.profession || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          profession: e.target.value || undefined,
+                        })
+                      }
                     />
                   </div>
                 </div>
@@ -247,8 +296,13 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                     <Label htmlFor="phone">Telefon</Label>
                     <Input
                       id="phone"
-                      value={formData.phone || ''}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value || undefined })}
+                      value={formData.phone || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          phone: e.target.value || undefined,
+                        })
+                      }
                     />
                   </div>
                   <div className="space-y-2">
@@ -256,8 +310,13 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                     <Input
                       id="email"
                       type="email"
-                      value={formData.email || ''}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value || undefined })}
+                      value={formData.email || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          email: e.target.value || undefined,
+                        })
+                      }
                     />
                   </div>
                 </div>
@@ -266,8 +325,13 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                   <Label htmlFor="address">Adres</Label>
                   <Input
                     id="address"
-                    value={formData.address || ''}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value || undefined })}
+                    value={formData.address || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        address: e.target.value || undefined,
+                      })
+                    }
                   />
                 </div>
 
@@ -275,8 +339,13 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                   <Label htmlFor="pastoralNotes">Notatki duszpasterskie</Label>
                   <Textarea
                     id="pastoralNotes"
-                    value={formData.pastoralNotes || ''}
-                    onChange={(e) => setFormData({ ...formData, pastoralNotes: e.target.value || undefined })}
+                    value={formData.pastoralNotes || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        pastoralNotes: e.target.value || undefined,
+                      })
+                    }
                     rows={4}
                   />
                 </div>
@@ -290,13 +359,19 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                       id="baptismYear"
                       type="number"
                       placeholder="np. 2000"
-                      value={formData.sacraments.baptismYear ? Number(formData.sacraments.baptismYear) : ''}
+                      value={
+                        formData.sacraments.baptismYear
+                          ? Number(formData.sacraments.baptismYear)
+                          : ""
+                      }
                       onChange={(e) =>
                         setFormData({
                           ...formData,
                           sacraments: {
                             ...formData.sacraments,
-                            baptismYear: e.target.value ? BigInt(e.target.value) : undefined,
+                            baptismYear: e.target.value
+                              ? BigInt(e.target.value)
+                              : undefined,
                           },
                         })
                       }
@@ -308,13 +383,19 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                       id="communionYear"
                       type="number"
                       placeholder="np. 2008"
-                      value={formData.sacraments.communionYear ? Number(formData.sacraments.communionYear) : ''}
+                      value={
+                        formData.sacraments.communionYear
+                          ? Number(formData.sacraments.communionYear)
+                          : ""
+                      }
                       onChange={(e) =>
                         setFormData({
                           ...formData,
                           sacraments: {
                             ...formData.sacraments,
-                            communionYear: e.target.value ? BigInt(e.target.value) : undefined,
+                            communionYear: e.target.value
+                              ? BigInt(e.target.value)
+                              : undefined,
                           },
                         })
                       }
@@ -329,13 +410,19 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                       id="confirmationYear"
                       type="number"
                       placeholder="np. 2015"
-                      value={formData.sacraments.confirmationYear ? Number(formData.sacraments.confirmationYear) : ''}
+                      value={
+                        formData.sacraments.confirmationYear
+                          ? Number(formData.sacraments.confirmationYear)
+                          : ""
+                      }
                       onChange={(e) =>
                         setFormData({
                           ...formData,
                           sacraments: {
                             ...formData.sacraments,
-                            confirmationYear: e.target.value ? BigInt(e.target.value) : undefined,
+                            confirmationYear: e.target.value
+                              ? BigInt(e.target.value)
+                              : undefined,
                           },
                         })
                       }
@@ -347,13 +434,19 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                       id="marriageYear"
                       type="number"
                       placeholder="np. 2020"
-                      value={formData.sacraments.marriageYear ? Number(formData.sacraments.marriageYear) : ''}
+                      value={
+                        formData.sacraments.marriageYear
+                          ? Number(formData.sacraments.marriageYear)
+                          : ""
+                      }
                       onChange={(e) =>
                         setFormData({
                           ...formData,
                           sacraments: {
                             ...formData.sacraments,
-                            marriageYear: e.target.value ? BigInt(e.target.value) : undefined,
+                            marriageYear: e.target.value
+                              ? BigInt(e.target.value)
+                              : undefined,
                           },
                         })
                       }
@@ -367,13 +460,19 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                     id="funeralYear"
                     type="number"
                     placeholder="np. 2023"
-                    value={formData.sacraments.funeralYear ? Number(formData.sacraments.funeralYear) : ''}
+                    value={
+                      formData.sacraments.funeralYear
+                        ? Number(formData.sacraments.funeralYear)
+                        : ""
+                    }
                     onChange={(e) =>
                       setFormData({
                         ...formData,
                         sacraments: {
                           ...formData.sacraments,
-                          funeralYear: e.target.value ? BigInt(e.target.value) : undefined,
+                          funeralYear: e.target.value
+                            ? BigInt(e.target.value)
+                            : undefined,
                         },
                       })
                     }
@@ -386,7 +485,12 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                   <p className="text-sm text-muted-foreground">
                     Członkowie rodziny są wliczani do statystyk parafii
                   </p>
-                  <Button type="button" onClick={addFamilyMember} variant="outline" size="sm">
+                  <Button
+                    type="button"
+                    onClick={addFamilyMember}
+                    variant="outline"
+                    size="sm"
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Dodaj członka rodziny
                   </Button>
@@ -397,9 +501,14 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                   </div>
                 ) : (
                   formData.family.map((member, index) => (
-                    <div key={index} className="border border-border rounded-lg p-5 space-y-4 bg-muted/20">
+                    <div
+                      key={`family-${index}-${member.name}`}
+                      className="border border-border rounded-lg p-5 space-y-4 bg-muted/20"
+                    >
                       <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-sm">Członek rodziny #{index + 1}</h4>
+                        <h4 className="font-medium text-sm">
+                          Członek rodziny #{index + 1}
+                        </h4>
                         <Button
                           type="button"
                           onClick={() => removeFamilyMember(index)}
@@ -416,7 +525,9 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                           <Label>Imię i nazwisko</Label>
                           <Input
                             value={member.name}
-                            onChange={(e) => updateFamilyMember(index, 'name', e.target.value)}
+                            onChange={(e) =>
+                              updateFamilyMember(index, "name", e.target.value)
+                            }
                             placeholder="np. Jan Kowalski"
                           />
                         </div>
@@ -426,10 +537,16 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                             className="w-full h-10 px-3 rounded-md border border-input bg-background"
                             value={member.relationType}
                             onChange={(e) =>
-                              updateFamilyMember(index, 'relationType', e.target.value as RelationType)
+                              updateFamilyMember(
+                                index,
+                                "relationType",
+                                e.target.value as RelationType,
+                              )
                             }
                           >
-                            <option value={RelationType.spouse}>Małżonek</option>
+                            <option value={RelationType.spouse}>
+                              Małżonek
+                            </option>
                             <option value={RelationType.child}>Dziecko</option>
                             <option value={RelationType.other}>Inny</option>
                           </select>
@@ -437,19 +554,27 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                       </div>
 
                       <div className="pt-3 border-t border-border">
-                        <h5 className="text-sm font-medium mb-3 text-muted-foreground">Dane sakramentalne</h5>
+                        <h5 className="text-sm font-medium mb-3 text-muted-foreground">
+                          Dane sakramentalne
+                        </h5>
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label className="text-xs">Rok urodzenia</Label>
                             <Input
                               type="number"
                               placeholder="np. 1995"
-                              value={member.sacraments.birthYear ? Number(member.sacraments.birthYear) : ''}
+                              value={
+                                member.sacraments.birthYear
+                                  ? Number(member.sacraments.birthYear)
+                                  : ""
+                              }
                               onChange={(e) =>
                                 updateFamilyMemberSacrament(
                                   index,
-                                  'birthYear',
-                                  e.target.value ? BigInt(e.target.value) : undefined
+                                  "birthYear",
+                                  e.target.value
+                                    ? BigInt(e.target.value)
+                                    : undefined,
                                 )
                               }
                             />
@@ -459,27 +584,41 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                             <Input
                               type="number"
                               placeholder="np. 1995"
-                              value={member.sacraments.baptismYear ? Number(member.sacraments.baptismYear) : ''}
+                              value={
+                                member.sacraments.baptismYear
+                                  ? Number(member.sacraments.baptismYear)
+                                  : ""
+                              }
                               onChange={(e) =>
                                 updateFamilyMemberSacrament(
                                   index,
-                                  'baptismYear',
-                                  e.target.value ? BigInt(e.target.value) : undefined
+                                  "baptismYear",
+                                  e.target.value
+                                    ? BigInt(e.target.value)
+                                    : undefined,
                                 )
                               }
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-xs">Rok Komunii Świętej</Label>
+                            <Label className="text-xs">
+                              Rok Komunii Świętej
+                            </Label>
                             <Input
                               type="number"
                               placeholder="np. 2003"
-                              value={member.sacraments.communionYear ? Number(member.sacraments.communionYear) : ''}
+                              value={
+                                member.sacraments.communionYear
+                                  ? Number(member.sacraments.communionYear)
+                                  : ""
+                              }
                               onChange={(e) =>
                                 updateFamilyMemberSacrament(
                                   index,
-                                  'communionYear',
-                                  e.target.value ? BigInt(e.target.value) : undefined
+                                  "communionYear",
+                                  e.target.value
+                                    ? BigInt(e.target.value)
+                                    : undefined,
                                 )
                               }
                             />
@@ -489,12 +628,18 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                             <Input
                               type="number"
                               placeholder="np. 2010"
-                              value={member.sacraments.confirmationYear ? Number(member.sacraments.confirmationYear) : ''}
+                              value={
+                                member.sacraments.confirmationYear
+                                  ? Number(member.sacraments.confirmationYear)
+                                  : ""
+                              }
                               onChange={(e) =>
                                 updateFamilyMemberSacrament(
                                   index,
-                                  'confirmationYear',
-                                  e.target.value ? BigInt(e.target.value) : undefined
+                                  "confirmationYear",
+                                  e.target.value
+                                    ? BigInt(e.target.value)
+                                    : undefined,
                                 )
                               }
                             />
@@ -504,12 +649,18 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                             <Input
                               type="number"
                               placeholder="np. 2015"
-                              value={member.sacraments.marriageYear ? Number(member.sacraments.marriageYear) : ''}
+                              value={
+                                member.sacraments.marriageYear
+                                  ? Number(member.sacraments.marriageYear)
+                                  : ""
+                              }
                               onChange={(e) =>
                                 updateFamilyMemberSacrament(
                                   index,
-                                  'marriageYear',
-                                  e.target.value ? BigInt(e.target.value) : undefined
+                                  "marriageYear",
+                                  e.target.value
+                                    ? BigInt(e.target.value)
+                                    : undefined,
                                 )
                               }
                             />
@@ -519,12 +670,18 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                             <Input
                               type="number"
                               placeholder="np. 2020"
-                              value={member.sacraments.funeralYear ? Number(member.sacraments.funeralYear) : ''}
+                              value={
+                                member.sacraments.funeralYear
+                                  ? Number(member.sacraments.funeralYear)
+                                  : ""
+                              }
                               onChange={(e) =>
                                 updateFamilyMemberSacrament(
                                   index,
-                                  'funeralYear',
-                                  e.target.value ? BigInt(e.target.value) : undefined
+                                  "funeralYear",
+                                  e.target.value
+                                    ? BigInt(e.target.value)
+                                    : undefined,
                                 )
                               }
                             />
@@ -547,7 +704,12 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                       <p className="text-sm text-muted-foreground">
                         Ofiary indywidualne od tego parafianina
                       </p>
-                      <Button type="button" onClick={handleAddOffering} variant="outline" size="sm">
+                      <Button
+                        type="button"
+                        onClick={handleAddOffering}
+                        variant="outline"
+                        size="sm"
+                      >
                         <Plus className="h-4 w-4 mr-2" />
                         Dodaj ofiarę
                       </Button>
@@ -566,14 +728,19 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
                                 <span className="font-semibold text-green-600">
-                                  {Number(offering.amount).toLocaleString('pl-PL')} zł
+                                  {Number(offering.amount).toLocaleString(
+                                    "pl-PL",
+                                  )}{" "}
+                                  zł
                                 </span>
                                 <span className="text-xs text-muted-foreground">
-                                  {new Date(Number(offering.timestamp) / 1000000).toLocaleDateString('pl-PL')}
+                                  {new Date(
+                                    Number(offering.timestamp) / 1000000,
+                                  ).toLocaleDateString("pl-PL")}
                                 </span>
                               </div>
                               <p className="text-xs text-muted-foreground">
-                                {offering.description || 'Brak opisu'}
+                                {offering.description || "Brak opisu"}
                               </p>
                             </div>
                             <div className="flex gap-1">
@@ -589,7 +756,9 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleDeleteOffering(offering.id)}
+                                onClick={() =>
+                                  handleDeleteOffering(offering.id)
+                                }
                               >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
@@ -604,7 +773,11 @@ export default function ParishionerDialog({ open, onOpenChange, parishioner, onS
             </Tabs>
 
             <div className="flex justify-end gap-2 pt-4 border-t border-border">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
                 Anuluj
               </Button>
               <Button type="submit">Zapisz</Button>

@@ -1,47 +1,62 @@
-import { useState } from 'react';
-import {
-  useGetPaginatedParishFunctionAssignments,
-  useGetPaginatedParishFunctionLocalityAssignments,
-  useUpdateParishFunctionAssignment,
-  useUpdateParishFunctionLocalityAssignment,
-  useDeleteParishFunctionAssignment,
-  useDeleteParishFunctionLocalityAssignment,
-} from '../hooks/useQueries';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { toast } from 'sonner';
-import FunctionAssignmentDialog from '../components/FunctionAssignmentDialog';
-import FunctionLocalityDialog from '../components/FunctionLocalityDialog';
-import { generateParishPDF, generateSingleParishFunctionAssignmentPDF, generateSingleParishFunctionLocalityAssignmentPDF } from '../lib/pdfGenerator';
-import type { ParishFunctionAssignment, ParishFunctionLocalityAssignment } from '../backend';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { ExportPdfModeControl } from '../components/ExportPdfModeControl';
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChevronLeft, ChevronRight, Edit, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import type {
+  ParishFunctionAssignment,
+  ParishFunctionLocalityAssignment,
+} from "../backend";
+import { ExportPdfModeControl } from "../components/ExportPdfModeControl";
+import FunctionAssignmentDialog from "../components/FunctionAssignmentDialog";
+import FunctionLocalityDialog from "../components/FunctionLocalityDialog";
+import {
+  useDeleteParishFunctionAssignment,
+  useDeleteParishFunctionLocalityAssignment,
+  useGetPaginatedParishFunctionAssignments,
+  useGetPaginatedParishFunctionLocalityAssignments,
+  useUpdateParishFunctionAssignment,
+  useUpdateParishFunctionLocalityAssignment,
+} from "../hooks/useQueries";
+import {
+  generateParishPDF,
+  generateSingleParishFunctionAssignmentPDF,
+  generateSingleParishFunctionLocalityAssignmentPDF,
+} from "../lib/pdfGenerator";
 
 export default function FunkcjeParafialne() {
   const [currentPageIndividual, setCurrentPageIndividual] = useState(1);
   const [pageSizeIndividual, setPageSizeIndividual] = useState(20);
   const [currentPageLocality, setCurrentPageLocality] = useState(1);
   const [pageSizeLocality, setPageSizeLocality] = useState(20);
-  const [activeTab, setActiveTab] = useState<'individual' | 'locality'>('individual');
-  const [selectedIndividualId, setSelectedIndividualId] = useState<bigint | null>(null);
-  const [selectedLocalityId, setSelectedLocalityId] = useState<bigint | null>(null);
+  const [activeTab, setActiveTab] = useState<"individual" | "locality">(
+    "individual",
+  );
+  const [selectedIndividualId, setSelectedIndividualId] = useState<
+    bigint | null
+  >(null);
+  const [selectedLocalityId, setSelectedLocalityId] = useState<bigint | null>(
+    null,
+  );
 
-  const { data: individualPaginatedData, isLoading: loadingIndividual } = useGetPaginatedParishFunctionAssignments(
-    currentPageIndividual,
-    pageSizeIndividual
-  );
-  const { data: localityPaginatedData, isLoading: loadingLocality } = useGetPaginatedParishFunctionLocalityAssignments(
-    currentPageLocality,
-    pageSizeLocality
-  );
+  const { data: individualPaginatedData, isLoading: loadingIndividual } =
+    useGetPaginatedParishFunctionAssignments(
+      currentPageIndividual,
+      pageSizeIndividual,
+    );
+  const { data: localityPaginatedData, isLoading: loadingLocality } =
+    useGetPaginatedParishFunctionLocalityAssignments(
+      currentPageLocality,
+      pageSizeLocality,
+    );
 
   const updateIndividual = useUpdateParishFunctionAssignment();
   const deleteIndividual = useDeleteParishFunctionAssignment();
@@ -51,8 +66,10 @@ export default function FunkcjeParafialne() {
 
   const [individualDialogOpen, setIndividualDialogOpen] = useState(false);
   const [localityDialogOpen, setLocalityDialogOpen] = useState(false);
-  const [editingIndividual, setEditingIndividual] = useState<ParishFunctionAssignment | null>(null);
-  const [editingLocality, setEditingLocality] = useState<ParishFunctionLocalityAssignment | null>(null);
+  const [editingIndividual, setEditingIndividual] =
+    useState<ParishFunctionAssignment | null>(null);
+  const [editingLocality, setEditingLocality] =
+    useState<ParishFunctionLocalityAssignment | null>(null);
 
   const individualAssignments = individualPaginatedData?.data || [];
   const localityAssignments = localityPaginatedData?.data || [];
@@ -71,17 +88,19 @@ export default function FunkcjeParafialne() {
     setIndividualDialogOpen(true);
   };
 
-  const handleDeleteIndividual = async (assignment: ParishFunctionAssignment) => {
-    if (!confirm('Czy na pewno chcesz usunąć to przypisanie?')) return;
+  const handleDeleteIndividual = async (
+    assignment: ParishFunctionAssignment,
+  ) => {
+    if (!confirm("Czy na pewno chcesz usunąć to przypisanie?")) return;
 
     try {
       await deleteIndividual.mutateAsync(assignment.uid);
-      toast.success('Przypisanie zostało usunięte');
+      toast.success("Przypisanie zostało usunięte");
       if (selectedIndividualId === assignment.uid) {
         setSelectedIndividualId(null);
       }
     } catch (error) {
-      toast.error('Błąd podczas usuwania');
+      toast.error("Błąd podczas usuwania");
       console.error(error);
     }
   };
@@ -89,12 +108,19 @@ export default function FunkcjeParafialne() {
   const handleSaveIndividual = async (data: ParishFunctionAssignment) => {
     try {
       const uid = editingIndividual?.uid ?? BigInt(Date.now());
-      await updateIndividual.mutateAsync({ id: uid, assignment: { ...data, uid } });
-      toast.success(editingIndividual ? 'Przypisanie zostało zaktualizowane' : 'Przypisanie zostało dodane');
+      await updateIndividual.mutateAsync({
+        id: uid,
+        assignment: { ...data, uid },
+      });
+      toast.success(
+        editingIndividual
+          ? "Przypisanie zostało zaktualizowane"
+          : "Przypisanie zostało dodane",
+      );
       setIndividualDialogOpen(false);
       setEditingIndividual(null);
     } catch (error) {
-      toast.error('Błąd podczas zapisywania');
+      toast.error("Błąd podczas zapisywania");
       console.error(error);
     }
   };
@@ -109,17 +135,19 @@ export default function FunkcjeParafialne() {
     setLocalityDialogOpen(true);
   };
 
-  const handleDeleteLocality = async (assignment: ParishFunctionLocalityAssignment) => {
-    if (!confirm('Czy na pewno chcesz usunąć to przypisanie?')) return;
+  const handleDeleteLocality = async (
+    assignment: ParishFunctionLocalityAssignment,
+  ) => {
+    if (!confirm("Czy na pewno chcesz usunąć to przypisanie?")) return;
 
     try {
       await deleteLocality.mutateAsync(assignment.uid);
-      toast.success('Przypisanie zostało usunięte');
+      toast.success("Przypisanie zostało usunięte");
       if (selectedLocalityId === assignment.uid) {
         setSelectedLocalityId(null);
       }
     } catch (error) {
-      toast.error('Błąd podczas usuwania');
+      toast.error("Błąd podczas usuwania");
       console.error(error);
     }
   };
@@ -127,77 +155,91 @@ export default function FunkcjeParafialne() {
   const handleSaveLocality = async (data: ParishFunctionLocalityAssignment) => {
     try {
       const uid = editingLocality?.uid ?? BigInt(Date.now());
-      await updateLocality.mutateAsync({ id: uid, assignment: { ...data, uid } });
-      toast.success(editingLocality ? 'Przypisanie zostało zaktualizowane' : 'Przypisanie zostało dodane');
+      await updateLocality.mutateAsync({
+        id: uid,
+        assignment: { ...data, uid },
+      });
+      toast.success(
+        editingLocality
+          ? "Przypisanie zostało zaktualizowane"
+          : "Przypisanie zostało dodane",
+      );
       setLocalityDialogOpen(false);
       setEditingLocality(null);
     } catch (error) {
-      toast.error('Błąd podczas zapisywania');
+      toast.error("Błąd podczas zapisywania");
       console.error(error);
     }
   };
 
   const handleExportAll = () => {
-    if (individualAssignments.length === 0 && localityAssignments.length === 0) {
-      toast.error('Brak danych do wyeksportowania');
+    if (
+      individualAssignments.length === 0 &&
+      localityAssignments.length === 0
+    ) {
+      toast.error("Brak danych do wyeksportowania");
       return;
     }
 
-    let content = 'FUNKCJE PARAFIALNE\n\n';
-    content += '─'.repeat(90) + '\n\n';
+    let content = "FUNKCJE PARAFIALNE\n\n";
+    content += `${"─".repeat(90)}\n\n`;
 
     if (individualAssignments.length > 0) {
       content += `PRZYPISANIA INDYWIDUALNE (${individualAssignments.length}):\n\n`;
       individualAssignments.forEach((assignment, idx) => {
-        content += `${(idx + 1).toString().padStart(3, ' ')}. ${assignment.title}\n`;
+        content += `${(idx + 1).toString().padStart(3, " ")}. ${assignment.title}\n`;
         content += `     Opis: ${assignment.description}\n`;
         content += `     Adres: ${assignment.address}\n`;
         if (assignment.contacts.length > 0) {
-          content += `     Kontakty:\n`;
-          assignment.contacts.forEach(contact => {
+          content += "     Kontakty:\n";
+          for (const contact of assignment.contacts) {
             content += `       • ${contact}\n`;
-          });
+          }
         }
-        content += '\n';
+        content += "\n";
       });
     }
 
     if (localityAssignments.length > 0) {
       content += `\nPRZYPISANIA WEDŁUG MIEJSCOWOŚCI (${localityAssignments.length}):\n\n`;
       localityAssignments.forEach((assignment, idx) => {
-        content += `${(idx + 1).toString().padStart(3, ' ')}. ${assignment.localityName}\n`;
+        content += `${(idx + 1).toString().padStart(3, " ")}. ${assignment.localityName}\n`;
         content += `     Opis: ${assignment.description}\n`;
         if (assignment.contacts.length > 0) {
-          content += `     Kontakty:\n`;
-          assignment.contacts.forEach(contact => {
+          content += "     Kontakty:\n";
+          for (const contact of assignment.contacts) {
             content += `       • ${contact}\n`;
-          });
+          }
         }
-        content += '\n';
+        content += "\n";
       });
     }
 
     generateParishPDF({
-      title: 'FUNKCJE PARAFIALNE',
+      title: "FUNKCJE PARAFIALNE",
       content,
-      footer: 'Dokument wygenerowany automatycznie'
+      footer: "Dokument wygenerowany automatycznie",
     });
 
-    toast.success('PDF został wygenerowany');
+    toast.success("PDF został wygenerowany");
   };
 
   const handleExportSelected = () => {
-    if (activeTab === 'individual') {
-      const selected = individualAssignments.find(a => a.uid === selectedIndividualId);
+    if (activeTab === "individual") {
+      const selected = individualAssignments.find(
+        (a) => a.uid === selectedIndividualId,
+      );
       if (selected) {
         generateSingleParishFunctionAssignmentPDF(selected);
-        toast.success('PDF przypisania został wygenerowany');
+        toast.success("PDF przypisania został wygenerowany");
       }
     } else {
-      const selected = localityAssignments.find(a => a.uid === selectedLocalityId);
+      const selected = localityAssignments.find(
+        (a) => a.uid === selectedLocalityId,
+      );
       if (selected) {
         generateSingleParishFunctionLocalityAssignmentPDF(selected);
-        toast.success('PDF przypisania został wygenerowany');
+        toast.success("PDF przypisania został wygenerowany");
       }
     }
   };
@@ -205,18 +247,21 @@ export default function FunkcjeParafialne() {
   const handlePageChangeIndividual = (newPage: number) => {
     if (newPage >= 1 && newPage <= pageCountIndividual) {
       setCurrentPageIndividual(newPage);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const handlePageChangeLocality = (newPage: number) => {
     if (newPage >= 1 && newPage <= pageCountLocality) {
       setCurrentPageLocality(newPage);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
-  const hasSelection = activeTab === 'individual' ? selectedIndividualId !== null : selectedLocalityId !== null;
+  const hasSelection =
+    activeTab === "individual"
+      ? selectedIndividualId !== null
+      : selectedLocalityId !== null;
 
   if (loadingIndividual || loadingLocality) {
     return (
@@ -233,8 +278,12 @@ export default function FunkcjeParafialne() {
     <div className="p-6 space-y-6">
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Funkcje Parafialne</h1>
-          <p className="text-muted-foreground mt-1">Zarządzanie funkcjami i obowiązkami</p>
+          <h1 className="text-3xl font-bold text-foreground">
+            Funkcje Parafialne
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Zarządzanie funkcjami i obowiązkami
+          </p>
         </div>
         <ExportPdfModeControl
           onExportAll={handleExportAll}
@@ -244,10 +293,20 @@ export default function FunkcjeParafialne() {
         />
       </header>
 
-      <Tabs defaultValue="individual" className="w-full" onValueChange={(value) => setActiveTab(value as 'individual' | 'locality')}>
+      <Tabs
+        defaultValue="individual"
+        className="w-full"
+        onValueChange={(value) =>
+          setActiveTab(value as "individual" | "locality")
+        }
+      >
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="individual">Indywidualne ({totalIndividual})</TabsTrigger>
-          <TabsTrigger value="locality">Według miejscowości ({totalLocality})</TabsTrigger>
+          <TabsTrigger value="individual">
+            Indywidualne ({totalIndividual})
+          </TabsTrigger>
+          <TabsTrigger value="locality">
+            Według miejscowości ({totalLocality})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="individual" className="space-y-4">
@@ -279,7 +338,9 @@ export default function FunkcjeParafialne() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handlePageChangeIndividual(currentPageIndividual - 1)}
+                onClick={() =>
+                  handlePageChangeIndividual(currentPageIndividual - 1)
+                }
                 disabled={currentPageIndividual === 1}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -290,7 +351,9 @@ export default function FunkcjeParafialne() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handlePageChangeIndividual(currentPageIndividual + 1)}
+                onClick={() =>
+                  handlePageChangeIndividual(currentPageIndividual + 1)
+                }
                 disabled={currentPageIndividual === pageCountIndividual}
               >
                 <ChevronRight className="h-4 w-4" />
@@ -308,7 +371,9 @@ export default function FunkcjeParafialne() {
           {individualAssignments.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground">Brak przypisań indywidualnych</p>
+                <p className="text-muted-foreground">
+                  Brak przypisań indywidualnych
+                </p>
               </CardContent>
             </Card>
           ) : (
@@ -319,27 +384,43 @@ export default function FunkcjeParafialne() {
                   <Card
                     key={Number(assignment.uid)}
                     className={`cursor-pointer transition-all ${
-                      isSelected ? 'ring-2 ring-primary' : ''
+                      isSelected ? "ring-2 ring-primary" : ""
                     }`}
-                    onClick={() => setSelectedIndividualId(assignment.uid === selectedIndividualId ? null : assignment.uid)}
+                    onClick={() =>
+                      setSelectedIndividualId(
+                        assignment.uid === selectedIndividualId
+                          ? null
+                          : assignment.uid,
+                      )
+                    }
                   >
                     <CardHeader>
-                      <CardTitle className="text-lg">{assignment.title}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {assignment.title}
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       <p className="text-sm">{assignment.description}</p>
-                      <p className="text-sm text-muted-foreground">Adres: {assignment.address}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Adres: {assignment.address}
+                      </p>
                       {assignment.contacts.length > 0 && (
                         <div>
                           <p className="text-sm font-medium">Kontakty:</p>
                           <ul className="text-sm text-muted-foreground">
                             {assignment.contacts.map((contact, cIdx) => (
-                              <li key={cIdx}>• {contact}</li>
+                              <li key={`contact-${cIdx}-${contact}`}>
+                                • {contact}
+                              </li>
                             ))}
                           </ul>
                         </div>
                       )}
-                      <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className="flex gap-2 pt-2"
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                      >
                         <Button
                           variant="outline"
                           size="sm"
@@ -348,7 +429,11 @@ export default function FunkcjeParafialne() {
                           <Edit className="h-3 w-3 mr-1" />
                           Edytuj
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleDeleteIndividual(assignment)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteIndividual(assignment)}
+                        >
                           <Trash2 className="h-3 w-3 mr-1" />
                           Usuń
                         </Button>
@@ -390,7 +475,9 @@ export default function FunkcjeParafialne() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handlePageChangeLocality(currentPageLocality - 1)}
+                onClick={() =>
+                  handlePageChangeLocality(currentPageLocality - 1)
+                }
                 disabled={currentPageLocality === 1}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -401,7 +488,9 @@ export default function FunkcjeParafialne() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handlePageChangeLocality(currentPageLocality + 1)}
+                onClick={() =>
+                  handlePageChangeLocality(currentPageLocality + 1)
+                }
                 disabled={currentPageLocality === pageCountLocality}
               >
                 <ChevronRight className="h-4 w-4" />
@@ -419,7 +508,9 @@ export default function FunkcjeParafialne() {
           {localityAssignments.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground">Brak przypisań według miejscowości</p>
+                <p className="text-muted-foreground">
+                  Brak przypisań według miejscowości
+                </p>
               </CardContent>
             </Card>
           ) : (
@@ -430,12 +521,20 @@ export default function FunkcjeParafialne() {
                   <Card
                     key={Number(assignment.uid)}
                     className={`cursor-pointer transition-all ${
-                      isSelected ? 'ring-2 ring-primary' : ''
+                      isSelected ? "ring-2 ring-primary" : ""
                     }`}
-                    onClick={() => setSelectedLocalityId(assignment.uid === selectedLocalityId ? null : assignment.uid)}
+                    onClick={() =>
+                      setSelectedLocalityId(
+                        assignment.uid === selectedLocalityId
+                          ? null
+                          : assignment.uid,
+                      )
+                    }
                   >
                     <CardHeader>
-                      <CardTitle className="text-lg">{assignment.localityName}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {assignment.localityName}
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       <p className="text-sm">{assignment.description}</p>
@@ -444,17 +543,31 @@ export default function FunkcjeParafialne() {
                           <p className="text-sm font-medium">Kontakty:</p>
                           <ul className="text-sm text-muted-foreground">
                             {assignment.contacts.map((contact, cIdx) => (
-                              <li key={cIdx}>• {contact}</li>
+                              <li key={`contact-${cIdx}-${contact}`}>
+                                • {contact}
+                              </li>
                             ))}
                           </ul>
                         </div>
                       )}
-                      <div className="flex gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
-                        <Button variant="outline" size="sm" onClick={() => handleEditLocality(assignment)}>
+                      <div
+                        className="flex gap-2 pt-2"
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditLocality(assignment)}
+                        >
                           <Edit className="h-3 w-3 mr-1" />
                           Edytuj
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleDeleteLocality(assignment)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteLocality(assignment)}
+                        >
                           <Trash2 className="h-3 w-3 mr-1" />
                           Usuń
                         </Button>

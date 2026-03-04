@@ -1,25 +1,50 @@
-import { useState } from 'react';
-import { Menu, X, Moon, Sun, Home, Users, MapPin, Wallet, Calendar, Briefcase, BarChart3, FileText, Mail, BookOpen } from 'lucide-react';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { useGetCallerUserProfile } from '../hooks/useQueries';
-import { useQueryClient } from '@tanstack/react-query';
-import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
-import Dashboard from '../pages/Dashboard';
-import Kartoteka from '../pages/Kartoteka';
-import Miejscowosci from '../pages/Miejscowosci';
-import Budzet from '../pages/Budzet';
-import Wydarzenia from '../pages/Wydarzenia';
-import FunkcjeParafialne from '../pages/FunkcjeParafialne';
-import Statystyki from '../pages/Statystyki';
-import Uwagi from '../pages/Uwagi';
-import Korespondencja from '../pages/Korespondencja';
-import BaptismsRegistry from '../pages/BaptismsRegistry';
+import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  BarChart3,
+  BookOpen,
+  Briefcase,
+  Calendar,
+  FileText,
+  Home,
+  Mail,
+  MapPin,
+  Menu,
+  Moon,
+  Sun,
+  Users,
+  Wallet,
+  X,
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import { useState } from "react";
+import { useInternetIdentity } from "../hooks/useInternetIdentity";
+import { useGetCallerUserProfile } from "../hooks/useQueries";
+import BaptismsRegistry from "../pages/BaptismsRegistry";
+import Budzet from "../pages/Budzet";
+import Dashboard from "../pages/Dashboard";
+import FunkcjeParafialne from "../pages/FunkcjeParafialne";
+import Kartoteka from "../pages/Kartoteka";
+import Korespondencja from "../pages/Korespondencja";
+import Miejscowosci from "../pages/Miejscowosci";
+import Statystyki from "../pages/Statystyki";
+import Uwagi from "../pages/Uwagi";
+import Wydarzenia from "../pages/Wydarzenia";
 
-type Section = 'dashboard' | 'kartoteka' | 'miejscowosci' | 'budzet' | 'wydarzenia' | 'funkcje' | 'statystyki' | 'uwagi' | 'korespondencja' | 'chrzty';
+type Section =
+  | "dashboard"
+  | "kartoteka"
+  | "miejscowosci"
+  | "budzet"
+  | "wydarzenia"
+  | "funkcje"
+  | "statystyki"
+  | "uwagi"
+  | "korespondencja"
+  | "chrzty";
 
 export default function MainLayout() {
-  const [currentSection, setCurrentSection] = useState<Section>('dashboard');
+  const [currentSection, setCurrentSection] = useState<Section>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { clear } = useInternetIdentity();
   const { data: userProfile } = useGetCallerUserProfile();
@@ -32,39 +57,39 @@ export default function MainLayout() {
   };
 
   const menuItems = [
-    { id: 'dashboard' as Section, label: 'Dashboard', icon: Home },
-    { id: 'kartoteka' as Section, label: 'Kartoteka', icon: Users },
-    { id: 'miejscowosci' as Section, label: 'Miejscowości', icon: MapPin },
-    { id: 'budzet' as Section, label: 'Budżet', icon: Wallet },
-    { id: 'wydarzenia' as Section, label: 'Wydarzenia', icon: Calendar },
-    { id: 'funkcje' as Section, label: 'Funkcje parafialne', icon: Briefcase },
-    { id: 'statystyki' as Section, label: 'Statystyki', icon: BarChart3 },
-    { id: 'uwagi' as Section, label: 'Uwagi', icon: FileText },
-    { id: 'korespondencja' as Section, label: 'Korespondencja', icon: Mail },
-    { id: 'chrzty' as Section, label: 'Chrzty', icon: BookOpen },
+    { id: "dashboard" as Section, label: "Dashboard", icon: Home },
+    { id: "kartoteka" as Section, label: "Kartoteka", icon: Users },
+    { id: "miejscowosci" as Section, label: "Miejscowości", icon: MapPin },
+    { id: "budzet" as Section, label: "Budżet", icon: Wallet },
+    { id: "wydarzenia" as Section, label: "Wydarzenia", icon: Calendar },
+    { id: "funkcje" as Section, label: "Funkcje parafialne", icon: Briefcase },
+    { id: "statystyki" as Section, label: "Statystyki", icon: BarChart3 },
+    { id: "uwagi" as Section, label: "Uwagi", icon: FileText },
+    { id: "korespondencja" as Section, label: "Korespondencja", icon: Mail },
+    { id: "chrzty" as Section, label: "Chrzty", icon: BookOpen },
   ];
 
   const renderSection = () => {
     switch (currentSection) {
-      case 'dashboard':
+      case "dashboard":
         return <Dashboard />;
-      case 'kartoteka':
+      case "kartoteka":
         return <Kartoteka />;
-      case 'miejscowosci':
+      case "miejscowosci":
         return <Miejscowosci />;
-      case 'budzet':
+      case "budzet":
         return <Budzet />;
-      case 'wydarzenia':
+      case "wydarzenia":
         return <Wydarzenia />;
-      case 'funkcje':
+      case "funkcje":
         return <FunkcjeParafialne />;
-      case 'statystyki':
+      case "statystyki":
         return <Statystyki />;
-      case 'uwagi':
+      case "uwagi":
         return <Uwagi />;
-      case 'korespondencja':
+      case "korespondencja":
         return <Korespondencja />;
-      case 'chrzty':
+      case "chrzty":
         return <BaptismsRegistry />;
       default:
         return <Dashboard />;
@@ -86,7 +111,9 @@ export default function MainLayout() {
               <h1 className="text-lg font-bold text-foreground leading-tight">
                 Parafia Św. Jana Chrzciciela
               </h1>
-              <p className="text-xs text-muted-foreground mt-0.5">Zbrosza Duża</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Zbrosza Duża
+              </p>
             </div>
           </div>
         </div>
@@ -98,11 +125,12 @@ export default function MainLayout() {
               return (
                 <li key={item.id}>
                   <button
+                    type="button"
                     onClick={() => setCurrentSection(item.id)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                       currentSection === item.id
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-foreground hover:bg-accent hover:text-accent-foreground'
+                        ? "bg-primary text-primary-foreground"
+                        : "text-foreground hover:bg-accent hover:text-accent-foreground"
                     }`}
                   >
                     <Icon className="h-5 w-5" />
@@ -118,22 +146,31 @@ export default function MainLayout() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">
-                {userProfile?.name || 'Użytkownik'}
+                {userProfile?.name || "Użytkownik"}
               </p>
               <p className="text-xs text-muted-foreground truncate">
-                {userProfile?.role || 'Pracownik'}
+                {userProfile?.role || "Pracownik"}
               </p>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="ml-2"
             >
-              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
             </Button>
           </div>
-          <Button onClick={handleLogout} variant="outline" className="w-full" size="sm">
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="w-full"
+            size="sm"
+          >
             Wyloguj
           </Button>
         </div>
@@ -148,14 +185,20 @@ export default function MainLayout() {
               alt="Logo Parafii"
               className="w-8 h-8 object-contain"
             />
-            <h1 className="text-base font-bold text-foreground">Parafia Zbrosza Duża</h1>
+            <h1 className="text-base font-bold text-foreground">
+              Parafia Zbrosza Duża
+            </h1>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {mobileMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </Button>
         </div>
 
@@ -169,14 +212,15 @@ export default function MainLayout() {
                   return (
                     <li key={item.id}>
                       <button
+                        type="button"
                         onClick={() => {
                           setCurrentSection(item.id);
                           setMobileMenuOpen(false);
                         }}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                           currentSection === item.id
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-foreground hover:bg-accent'
+                            ? "bg-primary text-primary-foreground"
+                            : "text-foreground hover:bg-accent"
                         }`}
                       >
                         <Icon className="h-5 w-5" />
@@ -188,15 +232,24 @@ export default function MainLayout() {
               </ul>
             </nav>
             <div className="p-4 border-t border-border flex items-center gap-2">
-              <Button onClick={handleLogout} variant="outline" className="flex-1" size="sm">
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="flex-1"
+                size="sm"
+              >
                 Wyloguj
               </Button>
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               >
-                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>

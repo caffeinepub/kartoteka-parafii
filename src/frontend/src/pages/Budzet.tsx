@@ -1,13 +1,3 @@
-import { useState, useMemo } from 'react';
-import { useGetPaginatedBudgetTransactionsByDateRange, useGetAllBudgetTransactionsByYear, useAddBudgetTransaction, useUpdateBudgetTransaction, useDeleteBudgetTransaction } from '../hooks/useQueries';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, TrendingUp, TrendingDown, Edit, Trash2, Download, ChevronLeft, ChevronRight, Calendar, MapPin } from 'lucide-react';
-import { toast } from 'sonner';
-import BudgetDialog from '../components/BudgetDialog';
-import { TransactionType } from '../backend';
-import type { BudgetTransaction } from '../backend';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,10 +7,43 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { generateParishPDF } from '../lib/pdfGenerator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Edit,
+  MapPin,
+  Plus,
+  Trash2,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { TransactionType } from "../backend";
+import type { BudgetTransaction } from "../backend";
+import BudgetDialog from "../components/BudgetDialog";
+import {
+  useAddBudgetTransaction,
+  useDeleteBudgetTransaction,
+  useGetAllBudgetTransactionsByYear,
+  useGetPaginatedBudgetTransactionsByDateRange,
+  useUpdateBudgetTransaction,
+} from "../hooks/useQueries";
+import { generateParishPDF } from "../lib/pdfGenerator";
 
 export default function Budzet() {
   const currentDate = new Date();
@@ -38,23 +61,28 @@ export default function Budzet() {
     };
   }, [selectedMonth, selectedYear]);
 
-  const { data: paginatedData, isLoading: monthlyLoading } = useGetPaginatedBudgetTransactionsByDateRange(
-    startTimestamp,
-    endTimestamp,
-    currentPage,
-    pageSize
-  );
+  const { data: paginatedData, isLoading: monthlyLoading } =
+    useGetPaginatedBudgetTransactionsByDateRange(
+      startTimestamp,
+      endTimestamp,
+      currentPage,
+      pageSize,
+    );
 
-  const { data: yearlyTransactions = [], isLoading: yearlyLoading } = useGetAllBudgetTransactionsByYear(selectedYear);
+  const { data: yearlyTransactions = [], isLoading: yearlyLoading } =
+    useGetAllBudgetTransactionsByYear(selectedYear);
 
   const addTransaction = useAddBudgetTransaction();
   const updateTransaction = useUpdateBudgetTransaction();
   const deleteTransaction = useDeleteBudgetTransaction();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<BudgetTransaction | null>(null);
+  const [editingTransaction, setEditingTransaction] =
+    useState<BudgetTransaction | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [transactionToDelete, setTransactionToDelete] = useState<bigint | null>(null);
+  const [transactionToDelete, setTransactionToDelete] = useState<bigint | null>(
+    null,
+  );
 
   const transactions = paginatedData?.data || [];
   const totalCount = Number(paginatedData?.totalCount || 0);
@@ -102,11 +130,11 @@ export default function Budzet() {
 
     try {
       await deleteTransaction.mutateAsync(transactionToDelete);
-      toast.success('Transakcja została usunięta');
+      toast.success("Transakcja została usunięta");
       setDeleteDialogOpen(false);
       setTransactionToDelete(null);
     } catch (error: any) {
-      toast.error(error?.message || 'Błąd podczas usuwania transakcji');
+      toast.error(error?.message || "Błąd podczas usuwania transakcji");
       console.error(error);
     }
   };
@@ -114,15 +142,18 @@ export default function Budzet() {
   const handleSave = async (data: BudgetTransaction) => {
     try {
       if (editingTransaction) {
-        await updateTransaction.mutateAsync({ uid: editingTransaction.uid, transaction: data });
-        toast.success('Transakcja została zaktualizowana');
+        await updateTransaction.mutateAsync({
+          uid: editingTransaction.uid,
+          transaction: data,
+        });
+        toast.success("Transakcja została zaktualizowana");
       } else {
         await addTransaction.mutateAsync(data);
-        toast.success('Transakcja została dodana');
+        toast.success("Transakcja została dodana");
       }
       setDialogOpen(false);
     } catch (error: any) {
-      toast.error(error?.message || 'Błąd podczas zapisywania transakcji');
+      toast.error(error?.message || "Błąd podczas zapisywania transakcji");
       console.error(error);
     }
   };
@@ -130,7 +161,7 @@ export default function Budzet() {
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pageCount) {
       setCurrentPage(newPage);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -140,31 +171,35 @@ export default function Budzet() {
   };
 
   const exportMonthlyReport = async () => {
-    toast.info('Generowanie PDF...');
-    
+    toast.info("Generowanie PDF...");
+
     setTimeout(() => {
-      const monthName = new Date(selectedYear, selectedMonth).toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' });
+      const monthName = new Date(
+        selectedYear,
+        selectedMonth,
+      ).toLocaleDateString("pl-PL", { month: "long", year: "numeric" });
 
-      let content = '';
-      content += `PODSUMOWANIE FINANSOWE\n\n`;
-      content += `Przychody:  ${monthlyIncome.toLocaleString('pl-PL').padStart(15)} zł\n`;
-      content += `Wydatki:    ${monthlyExpense.toLocaleString('pl-PL').padStart(15)} zł\n`;
-      content += `${'─'.repeat(35)}\n`;
-      content += `Saldo:      ${monthlyBalance.toLocaleString('pl-PL').padStart(15)} zł\n\n`;
-      content += '═'.repeat(90) + '\n\n';
+      let content = "";
+      content += "PODSUMOWANIE FINANSOWE\n\n";
+      content += `Przychody:  ${monthlyIncome.toLocaleString("pl-PL").padStart(15)} zł\n`;
+      content += `Wydatki:    ${monthlyExpense.toLocaleString("pl-PL").padStart(15)} zł\n`;
+      content += `${"─".repeat(35)}\n`;
+      content += `Saldo:      ${monthlyBalance.toLocaleString("pl-PL").padStart(15)} zł\n\n`;
+      content += `${"═".repeat(90)}\n\n`;
 
-      content += `SZCZEGÓŁOWA LISTA TRANSAKCJI\n\n`;
-      
+      content += "SZCZEGÓŁOWA LISTA TRANSAKCJI\n\n";
+
       if (transactions.length === 0) {
-        content += `Brak transakcji w tym okresie.\n`;
+        content += "Brak transakcji w tym okresie.\n";
       } else {
         transactions.forEach((t, idx) => {
           const date = new Date(Number(t.timestamp) / 1000000);
-          const typeLabel = t.type === TransactionType.income ? 'PRZYCHÓD' : 'WYDATEK';
-          
-          content += `${(idx + 1).toString().padStart(3, ' ')}. ${date.toLocaleDateString('pl-PL')} | ${typeLabel}\n`;
+          const typeLabel =
+            t.type === TransactionType.income ? "PRZYCHÓD" : "WYDATEK";
+
+          content += `${(idx + 1).toString().padStart(3, " ")}. ${date.toLocaleDateString("pl-PL")} | ${typeLabel}\n`;
           content += `     Kategoria: ${t.category}\n`;
-          content += `     Kwota: ${Number(t.amount).toLocaleString('pl-PL')} zł\n`;
+          content += `     Kwota: ${Number(t.amount).toLocaleString("pl-PL")} zł\n`;
           content += `     Opis: ${t.description}\n`;
           if (t.relatedLocality) {
             content += `     Miejscowość: ${t.relatedLocality}\n`;
@@ -174,49 +209,68 @@ export default function Budzet() {
       }
 
       generateParishPDF({
-        title: 'RAPORT MIESIĘCZNY',
+        title: "RAPORT MIESIĘCZNY",
         subtitle: monthName.toUpperCase(),
         content,
-        footer: 'Raport finansowy wygenerowany automatycznie'
+        footer: "Raport finansowy wygenerowany automatycznie",
       });
 
-      toast.success('Raport miesięczny został wygenerowany - okno drukowania otworzy się automatycznie');
+      toast.success(
+        "Raport miesięczny został wygenerowany - okno drukowania otworzy się automatycznie",
+      );
     }, 100);
   };
 
   const exportYearlyReport = async () => {
-    toast.info('Generowanie PDF...');
-    
+    toast.info("Generowanie PDF...");
+
     setTimeout(() => {
-      let content = '';
-      content += `PODSUMOWANIE ROCZNE\n\n`;
+      let content = "";
+      content += "PODSUMOWANIE ROCZNE\n\n";
       content += `Rok: ${selectedYear}\n\n`;
-      content += '═'.repeat(90) + '\n\n';
+      content += `${"═".repeat(90)}\n\n`;
 
       content += `DANE ZA CAŁY ROK ${selectedYear}\n\n`;
-      content += `Przychody:         ${yearlyIncome.toLocaleString('pl-PL').padStart(15)} zł\n`;
-      content += `Wydatki:           ${yearlyExpense.toLocaleString('pl-PL').padStart(15)} zł\n`;
-      content += `${'─'.repeat(40)}\n`;
-      content += `Saldo roczne:      ${yearlyBalance.toLocaleString('pl-PL').padStart(15)} zł\n`;
+      content += `Przychody:         ${yearlyIncome.toLocaleString("pl-PL").padStart(15)} zł\n`;
+      content += `Wydatki:           ${yearlyExpense.toLocaleString("pl-PL").padStart(15)} zł\n`;
+      content += `${"─".repeat(40)}\n`;
+      content += `Saldo roczne:      ${yearlyBalance.toLocaleString("pl-PL").padStart(15)} zł\n`;
       content += `Liczba transakcji: ${yearlyTransactions.length.toString().padStart(15)}\n\n`;
 
       generateParishPDF({
-        title: 'RAPORT ROCZNY',
+        title: "RAPORT ROCZNY",
         subtitle: selectedYear.toString(),
         content,
-        footer: 'Raport finansowy wygenerowany automatycznie'
+        footer: "Raport finansowy wygenerowany automatycznie",
       });
 
-      toast.success('Raport roczny został wygenerowany - okno drukowania otworzy się automatycznie');
+      toast.success(
+        "Raport roczny został wygenerowany - okno drukowania otworzy się automatycznie",
+      );
     }, 100);
   };
 
-  const sortedTransactions = [...transactions].sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
+  const sortedTransactions = [...transactions].sort(
+    (a, b) => Number(b.timestamp) - Number(a.timestamp),
+  );
 
-  const yearOptions = Array.from({ length: 21 }, (_, i) => currentDate.getFullYear() - 10 + i);
+  const yearOptions = Array.from(
+    { length: 21 },
+    (_, i) => currentDate.getFullYear() - 10 + i,
+  );
   const monthOptions = [
-    'Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
-    'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'
+    "Styczeń",
+    "Luty",
+    "Marzec",
+    "Kwiecień",
+    "Maj",
+    "Czerwiec",
+    "Lipiec",
+    "Sierpień",
+    "Wrzesień",
+    "Październik",
+    "Listopad",
+    "Grudzień",
   ];
 
   return (
@@ -225,15 +279,27 @@ export default function Budzet() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Budżet Parafii</h1>
           <p className="text-muted-foreground mt-1">
-            {monthlyLoading ? 'Ładowanie...' : `${totalCount} transakcji w wybranym miesiącu`}
+            {monthlyLoading
+              ? "Ładowanie..."
+              : `${totalCount} transakcji w wybranym miesiącu`}
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={exportMonthlyReport} disabled={monthlyLoading}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportMonthlyReport}
+            disabled={monthlyLoading}
+          >
             <Download className="h-4 w-4 mr-2" />
             Raport miesięczny
           </Button>
-          <Button variant="outline" size="sm" onClick={exportYearlyReport} disabled={yearlyLoading}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportYearlyReport}
+            disabled={yearlyLoading}
+          >
             <Download className="h-4 w-4 mr-2" />
             Raport roczny
           </Button>
@@ -251,11 +317,16 @@ export default function Budzet() {
         <CardContent>
           <div className="flex gap-4 items-center">
             <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Miesiąc</label>
+              <label
+                htmlFor="month-select"
+                className="text-sm font-medium mb-2 block"
+              >
+                Miesiąc
+              </label>
               <Select
                 value={selectedMonth.toString()}
                 onValueChange={(value) => {
-                  setSelectedMonth(parseInt(value));
+                  setSelectedMonth(Number.parseInt(value));
                   setCurrentPage(1);
                 }}
               >
@@ -264,7 +335,7 @@ export default function Budzet() {
                 </SelectTrigger>
                 <SelectContent>
                   {monthOptions.map((month, index) => (
-                    <SelectItem key={index} value={index.toString()}>
+                    <SelectItem key={month} value={index.toString()}>
                       {month}
                     </SelectItem>
                   ))}
@@ -272,11 +343,16 @@ export default function Budzet() {
               </Select>
             </div>
             <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Rok</label>
+              <label
+                htmlFor="year-select"
+                className="text-sm font-medium mb-2 block"
+              >
+                Rok
+              </label>
               <Select
                 value={selectedYear.toString()}
                 onValueChange={(value) => {
-                  setSelectedYear(parseInt(value));
+                  setSelectedYear(Number.parseInt(value));
                   setCurrentPage(1);
                 }}
               >
@@ -316,26 +392,32 @@ export default function Budzet() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-green-600" />
-                    <span className="text-sm text-muted-foreground">Przychody</span>
+                    <span className="text-sm text-muted-foreground">
+                      Przychody
+                    </span>
                   </div>
                   <span className="text-lg font-semibold text-green-600">
-                    {monthlyIncome.toLocaleString('pl-PL')} zł
+                    {monthlyIncome.toLocaleString("pl-PL")} zł
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <TrendingDown className="h-4 w-4 text-red-600" />
-                    <span className="text-sm text-muted-foreground">Wydatki</span>
+                    <span className="text-sm text-muted-foreground">
+                      Wydatki
+                    </span>
                   </div>
                   <span className="text-lg font-semibold text-red-600">
-                    {monthlyExpense.toLocaleString('pl-PL')} zł
+                    {monthlyExpense.toLocaleString("pl-PL")} zł
                   </span>
                 </div>
                 <div className="pt-4 border-t border-border">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Saldo</span>
-                    <span className={`text-xl font-bold ${monthlyBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {monthlyBalance.toLocaleString('pl-PL')} zł
+                    <span
+                      className={`text-xl font-bold ${monthlyBalance >= 0 ? "text-green-600" : "text-red-600"}`}
+                    >
+                      {monthlyBalance.toLocaleString("pl-PL")} zł
                     </span>
                   </div>
                 </div>
@@ -363,26 +445,32 @@ export default function Budzet() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-green-600" />
-                    <span className="text-sm text-muted-foreground">Przychody</span>
+                    <span className="text-sm text-muted-foreground">
+                      Przychody
+                    </span>
                   </div>
                   <span className="text-lg font-semibold text-green-600">
-                    {yearlyIncome.toLocaleString('pl-PL')} zł
+                    {yearlyIncome.toLocaleString("pl-PL")} zł
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <TrendingDown className="h-4 w-4 text-red-600" />
-                    <span className="text-sm text-muted-foreground">Wydatki</span>
+                    <span className="text-sm text-muted-foreground">
+                      Wydatki
+                    </span>
                   </div>
                   <span className="text-lg font-semibold text-red-600">
-                    {yearlyExpense.toLocaleString('pl-PL')} zł
+                    {yearlyExpense.toLocaleString("pl-PL")} zł
                   </span>
                 </div>
                 <div className="pt-4 border-t border-border">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Saldo</span>
-                    <span className={`text-xl font-bold ${yearlyBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {yearlyBalance.toLocaleString('pl-PL')} zł
+                    <span
+                      className={`text-xl font-bold ${yearlyBalance >= 0 ? "text-green-600" : "text-red-600"}`}
+                    >
+                      {yearlyBalance.toLocaleString("pl-PL")} zł
                     </span>
                   </div>
                 </div>
@@ -426,7 +514,9 @@ export default function Budzet() {
                           {transaction.category}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {new Date(Number(transaction.timestamp) / 1000000).toLocaleDateString('pl-PL')}
+                          {new Date(
+                            Number(transaction.timestamp) / 1000000,
+                          ).toLocaleDateString("pl-PL")}
                         </span>
                         {transaction.relatedLocality && (
                           <Badge variant="secondary" className="text-xs">
@@ -435,15 +525,19 @@ export default function Budzet() {
                           </Badge>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">{transaction.description}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {transaction.description}
+                      </p>
                     </div>
                     <div className="flex items-center gap-3">
                       <span
                         className={`text-lg font-semibold ${
-                          transaction.type === TransactionType.income ? 'text-green-600' : 'text-red-600'
+                          transaction.type === TransactionType.income
+                            ? "text-green-600"
+                            : "text-red-600"
                         }`}
                       >
-                        {Number(transaction.amount).toLocaleString('pl-PL')} zł
+                        {Number(transaction.amount).toLocaleString("pl-PL")} zł
                       </span>
                       <div className="flex gap-1">
                         <Button
@@ -469,8 +563,13 @@ export default function Budzet() {
               {/* Pagination */}
               <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Wyświetl:</span>
-                  <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                  <span className="text-sm text-muted-foreground">
+                    Wyświetl:
+                  </span>
+                  <Select
+                    value={pageSize.toString()}
+                    onValueChange={handlePageSizeChange}
+                  >
                     <SelectTrigger className="w-[100px]">
                       <SelectValue />
                     </SelectTrigger>
@@ -481,7 +580,9 @@ export default function Budzet() {
                       <SelectItem value="100">100</SelectItem>
                     </SelectContent>
                   </Select>
-                  <span className="text-sm text-muted-foreground">na stronę</span>
+                  <span className="text-sm text-muted-foreground">
+                    na stronę
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -521,9 +622,12 @@ export default function Budzet() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Czy na pewno chcesz usunąć tę transakcję?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Czy na pewno chcesz usunąć tę transakcję?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Ta operacja jest nieodwracalna. Transakcja zostanie trwale usunięta z bazy danych.
+              Ta operacja jest nieodwracalna. Transakcja zostanie trwale
+              usunięta z bazy danych.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

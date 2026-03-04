@@ -1,9 +1,15 @@
-import { useState } from 'react';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import DiagnosticsView from '../components/DiagnosticsView';
-import { Settings } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Settings } from "lucide-react";
+import { useState } from "react";
+import DiagnosticsView from "../components/DiagnosticsView";
+import { useInternetIdentity } from "../hooks/useInternetIdentity";
 
 export default function LoginPage() {
   const { login, loginStatus } = useInternetIdentity();
@@ -29,27 +35,25 @@ export default function LoginPage() {
             </p>
             <p className="text-xs italic text-muted-foreground/80 border-t border-border pt-4 mt-4">
               „Ja chrzczę wodą, On zaś chrzcić was będzie Duchem Świętym"
-              <span className="block mt-1 text-muted-foreground/60">(Mk 1,8)</span>
+              <span className="block mt-1 text-muted-foreground/60">
+                (Mk 1,8)
+              </span>
             </p>
           </div>
 
           <div className="space-y-4">
             <Button
               onClick={login}
-              disabled={loginStatus === 'logging-in'}
+              disabled={loginStatus === "logging-in"}
               className="w-full h-12 text-base"
               size="lg"
             >
-              {loginStatus === 'logging-in' ? 'Logowanie...' : 'Zaloguj się'}
+              {loginStatus === "logging-in" ? "Logowanie..." : "Zaloguj się"}
             </Button>
 
             <Dialog open={showDiagnostics} onOpenChange={setShowDiagnostics}>
               <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  size="sm"
-                >
+                <Button variant="outline" className="w-full" size="sm">
                   <Settings className="mr-2 h-4 w-4" />
                   Diagnostics
                 </Button>
@@ -69,7 +73,7 @@ export default function LoginPage() {
         </div>
 
         <footer className="mt-8 text-center text-sm text-muted-foreground">
-          © 2025. Zbudowano z <span className="text-red-500">♥</span> używając{' '}
+          © 2025. Zbudowano z <span className="text-red-500">♥</span> używając{" "}
           <a
             href="https://caffeine.ai"
             target="_blank"

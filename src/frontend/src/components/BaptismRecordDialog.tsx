@@ -1,14 +1,26 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
-import { useCreateBaptismRecord, useUpdateBaptismRecord } from '../hooks/useQueries';
-import { buildBaptismRecordPayload, nanosecondsToDateString } from '../utils/baptismRecord';
-import type { BaptismRecord } from '../backend';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import type { BaptismRecord } from "../backend";
+import {
+  useCreateBaptismRecord,
+  useUpdateBaptismRecord,
+} from "../hooks/useQueries";
+import {
+  buildBaptismRecordPayload,
+  nanosecondsToDateString,
+} from "../utils/baptismRecord";
 
 interface BaptismRecordDialogProps {
   open: boolean;
@@ -16,35 +28,51 @@ interface BaptismRecordDialogProps {
   record: BaptismRecord | null;
 }
 
-export default function BaptismRecordDialog({ open, onOpenChange, record }: BaptismRecordDialogProps) {
+export default function BaptismRecordDialog({
+  open,
+  onOpenChange,
+  record,
+}: BaptismRecordDialogProps) {
   // Act data
-  const [actNumber, setActNumber] = useState('');
-  const [baptismDate, setBaptismDate] = useState('');
-  const [baptismPlace, setBaptismPlace] = useState('');
+  const [actNumber, setActNumber] = useState("");
+  const [baptismDate, setBaptismDate] = useState("");
+  const [baptismPlace, setBaptismPlace] = useState("");
 
   // Baptized person data
-  const [personFullName, setPersonFullName] = useState('');
-  const [birthDate, setBirthDate] = useState('');
-  const [birthPlace, setBirthPlace] = useState('');
+  const [personFullName, setPersonFullName] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [birthPlace, setBirthPlace] = useState("");
 
   // Father data
-  const [fatherFullName, setFatherFullName] = useState('');
-  const [fatherAge, setFatherAge] = useState('');
-  const [fatherReligion, setFatherReligion] = useState('');
-  const [fatherResidence, setFatherResidence] = useState('');
+  const [fatherFullName, setFatherFullName] = useState("");
+  const [fatherAge, setFatherAge] = useState("");
+  const [fatherReligion, setFatherReligion] = useState("");
+  const [fatherResidence, setFatherResidence] = useState("");
 
   // Mother data
-  const [motherFullName, setMotherFullName] = useState('');
-  const [motherAge, setMotherAge] = useState('');
-  const [motherReligion, setMotherReligion] = useState('');
-  const [motherResidence, setMotherResidence] = useState('');
+  const [motherFullName, setMotherFullName] = useState("");
+  const [motherAge, setMotherAge] = useState("");
+  const [motherReligion, setMotherReligion] = useState("");
+  const [motherResidence, setMotherResidence] = useState("");
+
+  // Godfather data (optional)
+  const [godfatherFullName, setGodfatherFullName] = useState("");
+  const [godfatherAge, setGodfatherAge] = useState("");
+  const [godfatherReligion, setGodfatherReligion] = useState("");
+  const [godfatherResidence, setGodfatherResidence] = useState("");
+
+  // Godmother data (optional)
+  const [godmotherFullName, setGodmotherFullName] = useState("");
+  const [godmotherAge, setGodmotherAge] = useState("");
+  const [godmotherReligion, setGodmotherReligion] = useState("");
+  const [godmotherResidence, setGodmotherResidence] = useState("");
 
   // Later annotations (optional)
-  const [confirmation, setConfirmation] = useState('');
-  const [marriage, setMarriage] = useState('');
-  const [ordination, setOrdination] = useState('');
-  const [profession, setProfession] = useState('');
-  const [generalNotes, setGeneralNotes] = useState('');
+  const [confirmation, setConfirmation] = useState("");
+  const [marriage, setMarriage] = useState("");
+  const [ordination, setOrdination] = useState("");
+  const [profession, setProfession] = useState("");
+  const [generalNotes, setGeneralNotes] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -75,94 +103,114 @@ export default function BaptismRecordDialog({ open, onOpenChange, record }: Bapt
       setMotherReligion(record.mother.religion);
       setMotherResidence(record.mother.residence);
 
+      // Godfather
+      setGodfatherFullName(record.godfather?.fullName || "");
+      setGodfatherAge(record.godfather?.age || "");
+      setGodfatherReligion(record.godfather?.religion || "");
+      setGodfatherResidence(record.godfather?.residence || "");
+
+      // Godmother
+      setGodmotherFullName(record.godmother?.fullName || "");
+      setGodmotherAge(record.godmother?.age || "");
+      setGodmotherReligion(record.godmother?.religion || "");
+      setGodmotherResidence(record.godmother?.residence || "");
+
       // Annotations
-      setConfirmation(record.annotations.confirmation || '');
-      setMarriage(record.annotations.marriage || '');
-      setOrdination(record.annotations.ordination || '');
-      setProfession(record.annotations.profession || '');
-      setGeneralNotes(record.annotations.generalNotes || '');
+      setConfirmation(record.annotations.confirmation || "");
+      setMarriage(record.annotations.marriage || "");
+      setOrdination(record.annotations.ordination || "");
+      setProfession(record.annotations.profession || "");
+      setGeneralNotes(record.annotations.generalNotes || "");
     } else {
       // Reset all fields
-      setActNumber('');
-      setBaptismDate('');
-      setBaptismPlace('');
-      setPersonFullName('');
-      setBirthDate('');
-      setBirthPlace('');
-      setFatherFullName('');
-      setFatherAge('');
-      setFatherReligion('');
-      setFatherResidence('');
-      setMotherFullName('');
-      setMotherAge('');
-      setMotherReligion('');
-      setMotherResidence('');
-      setConfirmation('');
-      setMarriage('');
-      setOrdination('');
-      setProfession('');
-      setGeneralNotes('');
+      setActNumber("");
+      setBaptismDate("");
+      setBaptismPlace("");
+      setPersonFullName("");
+      setBirthDate("");
+      setBirthPlace("");
+      setFatherFullName("");
+      setFatherAge("");
+      setFatherReligion("");
+      setFatherResidence("");
+      setMotherFullName("");
+      setMotherAge("");
+      setMotherReligion("");
+      setMotherResidence("");
+      setGodfatherFullName("");
+      setGodfatherAge("");
+      setGodfatherReligion("");
+      setGodfatherResidence("");
+      setGodmotherFullName("");
+      setGodmotherAge("");
+      setGodmotherReligion("");
+      setGodmotherResidence("");
+      setConfirmation("");
+      setMarriage("");
+      setOrdination("");
+      setProfession("");
+      setGeneralNotes("");
     }
-  }, [record, open]);
+  }, [record]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate required fields
     if (!actNumber.trim()) {
-      toast.error('Numer aktu jest wymagany');
+      toast.error("Numer aktu jest wymagany");
       return;
     }
     if (!baptismDate) {
-      toast.error('Data chrztu jest wymagana');
+      toast.error("Data chrztu jest wymagana");
       return;
     }
     if (!baptismPlace.trim()) {
-      toast.error('Miejsce chrztu jest wymagane');
+      toast.error("Miejsce chrztu jest wymagane");
       return;
     }
     if (!personFullName.trim()) {
-      toast.error('Imię i nazwisko ochrzczonego jest wymagane');
+      toast.error("Imię i nazwisko ochrzczonego jest wymagane");
       return;
     }
     if (!birthDate.trim()) {
-      toast.error('Data urodzenia jest wymagana');
+      toast.error("Data urodzenia jest wymagana");
       return;
     }
     if (!birthPlace.trim()) {
-      toast.error('Miejsce urodzenia jest wymagane');
+      toast.error("Miejsce urodzenia jest wymagane");
       return;
     }
     if (!fatherFullName.trim()) {
-      toast.error('Imię i nazwisko ojca jest wymagane');
+      toast.error("Imię i nazwisko ojca jest wymagane");
       return;
     }
     if (!fatherAge.trim()) {
-      toast.error('Wiek ojca jest wymagany');
+      toast.error("Wiek ojca jest wymagany");
       return;
     }
     if (!fatherReligion.trim()) {
-      toast.error('Wyznanie ojca jest wymagane');
+      toast.error("Wyznanie ojca jest wymagane");
       return;
     }
     if (!fatherResidence.trim()) {
-      toast.error('Miejsce zamieszkania ojca jest wymagane');
+      toast.error("Miejsce zamieszkania ojca jest wymagane");
       return;
     }
     if (!motherFullName.trim()) {
-      toast.error('Imię i nazwisko matki jest wymagane');
+      toast.error("Imię i nazwisko matki jest wymagane");
       return;
     }
     if (!motherAge.trim()) {
-      toast.error('Wiek matki jest wymagany');
+      toast.error("Wiek matki jest wymagany");
       return;
     }
     if (!motherReligion.trim()) {
-      toast.error('Wyznanie matki jest wymagane');
+      toast.error("Wyznanie matki jest wymagane");
       return;
     }
     if (!motherResidence.trim()) {
-      toast.error('Miejsce zamieszkania matki jest wymagane');
+      toast.error("Miejsce zamieszkania matki jest wymagane");
       return;
     }
 
@@ -185,26 +233,38 @@ export default function BaptismRecordDialog({ open, onOpenChange, record }: Bapt
           motherAge,
           motherReligion,
           motherResidence,
+          godfatherFullName,
+          godfatherAge,
+          godfatherReligion,
+          godfatherResidence,
+          godmotherFullName,
+          godmotherAge,
+          godmotherReligion,
+          godmotherResidence,
           confirmation,
           marriage,
           ordination,
           profession,
           generalNotes,
         },
-        record
+        record,
       );
 
       if (record) {
         await updateRecord.mutateAsync({ id: record.id, record: recordData });
-        toast.success('Wpis chrztu został pomyślnie zaktualizowany');
+        toast.success("Wpis chrztu został pomyślnie zaktualizowany");
       } else {
         await createRecord.mutateAsync(recordData);
-        toast.success('Wpis chrztu został pomyślnie utworzony');
+        toast.success("Wpis chrztu został pomyślnie utworzony");
       }
 
       onOpenChange(false);
     } catch (error) {
-      toast.error(record ? 'Błąd podczas aktualizacji wpisu chrztu' : 'Błąd podczas tworzenia wpisu chrztu');
+      toast.error(
+        record
+          ? "Błąd podczas aktualizacji wpisu chrztu"
+          : "Błąd podczas tworzenia wpisu chrztu",
+      );
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -215,7 +275,9 @@ export default function BaptismRecordDialog({ open, onOpenChange, record }: Bapt
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{record ? 'Edytuj Wpis Chrztu' : 'Dodaj Nowy Wpis Chrztu'}</DialogTitle>
+          <DialogTitle>
+            {record ? "Edytuj Wpis Chrztu" : "Dodaj Nowy Wpis Chrztu"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -260,7 +322,9 @@ export default function BaptismRecordDialog({ open, onOpenChange, record }: Bapt
 
           {/* Baptized Person Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Ochrzczony/a</h3>
+            <h3 className="text-lg font-semibold text-foreground">
+              Ochrzczony/a
+            </h3>
             <div className="space-y-2">
               <Label htmlFor="personFullName">Imię i Nazwisko *</Label>
               <Input
@@ -299,11 +363,15 @@ export default function BaptismRecordDialog({ open, onOpenChange, record }: Bapt
 
           {/* Natural Parents Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Rodzice Naturalni</h3>
-            
+            <h3 className="text-lg font-semibold text-foreground">
+              Rodzice Naturalni
+            </h3>
+
             {/* Father */}
             <div className="space-y-3">
-              <h4 className="text-sm font-medium text-muted-foreground">Ojciec</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">
+                Ojciec
+              </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="fatherFullName">Imię i Nazwisko *</Label>
@@ -338,7 +406,9 @@ export default function BaptismRecordDialog({ open, onOpenChange, record }: Bapt
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="fatherResidence">Miejsce Zamieszkania *</Label>
+                  <Label htmlFor="fatherResidence">
+                    Miejsce Zamieszkania *
+                  </Label>
                   <Input
                     id="fatherResidence"
                     value={fatherResidence}
@@ -352,7 +422,9 @@ export default function BaptismRecordDialog({ open, onOpenChange, record }: Bapt
 
             {/* Mother */}
             <div className="space-y-3">
-              <h4 className="text-sm font-medium text-muted-foreground">Matka</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">
+                Matka
+              </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="motherFullName">Imię i Nazwisko *</Label>
@@ -387,7 +459,9 @@ export default function BaptismRecordDialog({ open, onOpenChange, record }: Bapt
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="motherResidence">Miejsce Zamieszkania *</Label>
+                  <Label htmlFor="motherResidence">
+                    Miejsce Zamieszkania *
+                  </Label>
                   <Input
                     id="motherResidence"
                     value={motherResidence}
@@ -402,9 +476,118 @@ export default function BaptismRecordDialog({ open, onOpenChange, record }: Bapt
 
           <Separator />
 
+          {/* Godparents Section (Optional) */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-foreground">
+              Rodzice Chrzestni (opcjonalne)
+            </h3>
+
+            {/* Godfather */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-muted-foreground">
+                Ojciec Chrzestny
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="godfatherFullName">Imię i Nazwisko</Label>
+                  <Input
+                    id="godfatherFullName"
+                    value={godfatherFullName}
+                    onChange={(e) => setGodfatherFullName(e.target.value)}
+                    placeholder="np. Tomasz Nowak"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="godfatherAge">Wiek</Label>
+                  <Input
+                    id="godfatherAge"
+                    value={godfatherAge}
+                    onChange={(e) => setGodfatherAge(e.target.value)}
+                    placeholder="np. 40 lat"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="godfatherReligion">Wyznanie</Label>
+                  <Input
+                    id="godfatherReligion"
+                    value={godfatherReligion}
+                    onChange={(e) => setGodfatherReligion(e.target.value)}
+                    placeholder="np. rzymskokatolickie"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="godfatherResidence">
+                    Miejsce Zamieszkania
+                  </Label>
+                  <Input
+                    id="godfatherResidence"
+                    value={godfatherResidence}
+                    onChange={(e) => setGodfatherResidence(e.target.value)}
+                    placeholder="np. ul. Polna 5, Warszawa"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Godmother */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-muted-foreground">
+                Matka Chrzestna
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="godmotherFullName">Imię i Nazwisko</Label>
+                  <Input
+                    id="godmotherFullName"
+                    value={godmotherFullName}
+                    onChange={(e) => setGodmotherFullName(e.target.value)}
+                    placeholder="np. Maria Wiśniewska"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="godmotherAge">Wiek</Label>
+                  <Input
+                    id="godmotherAge"
+                    value={godmotherAge}
+                    onChange={(e) => setGodmotherAge(e.target.value)}
+                    placeholder="np. 38 lat"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="godmotherReligion">Wyznanie</Label>
+                  <Input
+                    id="godmotherReligion"
+                    value={godmotherReligion}
+                    onChange={(e) => setGodmotherReligion(e.target.value)}
+                    placeholder="np. rzymskokatolickie"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="godmotherResidence">
+                    Miejsce Zamieszkania
+                  </Label>
+                  <Input
+                    id="godmotherResidence"
+                    value={godmotherResidence}
+                    onChange={(e) => setGodmotherResidence(e.target.value)}
+                    placeholder="np. ul. Leśna 3, Kraków"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
           {/* Later Annotations Section (Optional) */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Adnotacje Późniejsze (opcjonalne)</h3>
+            <h3 className="text-lg font-semibold text-foreground">
+              Adnotacje Późniejsze (opcjonalne)
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="confirmation">Bierzmowanie</Label>
@@ -451,7 +634,9 @@ export default function BaptismRecordDialog({ open, onOpenChange, record }: Bapt
 
           {/* General Notes Section (Optional) */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Uwagi (opcjonalne)</h3>
+            <h3 className="text-lg font-semibold text-foreground">
+              Uwagi (opcjonalne)
+            </h3>
             <div className="space-y-2">
               <Label htmlFor="generalNotes">Uwagi Ogólne</Label>
               <Textarea
@@ -474,7 +659,11 @@ export default function BaptismRecordDialog({ open, onOpenChange, record }: Bapt
               Anuluj
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Zapisywanie...' : record ? 'Aktualizuj' : 'Utwórz'}
+              {isSubmitting
+                ? "Zapisywanie..."
+                : record
+                  ? "Aktualizuj"
+                  : "Utwórz"}
             </Button>
           </DialogFooter>
         </form>

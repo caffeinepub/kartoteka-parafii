@@ -1,14 +1,13 @@
-import { useState } from 'react';
-import { Plus, Search, Edit, Trash2, Download } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -16,26 +15,42 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
-import { useGetBaptismRegistry, useDeleteBaptismRecord } from '../hooks/useQueries';
-import BaptismRecordDialog from '../components/BaptismRecordDialog';
-import { BaptismRecord, BaptismRecordSortMode } from '../backend';
-import { formatBaptismDate } from '../utils/baptismRecord';
-import { generateBaptismCertificatePDF, generateBaptismRegistryListPDF } from '../lib/pdfGenerator';
-import { ExportPdfModeControl } from '../components/ExportPdfModeControl';
+} from "@/components/ui/table";
+import { Download, Edit, Plus, Search, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { type BaptismRecord, BaptismRecordSortMode } from "../backend";
+import BaptismRecordDialog from "../components/BaptismRecordDialog";
+import { ExportPdfModeControl } from "../components/ExportPdfModeControl";
+import {
+  useDeleteBaptismRecord,
+  useGetBaptismRegistry,
+} from "../hooks/useQueries";
+import {
+  generateBaptismCertificatePDF,
+  generateBaptismRegistryListPDF,
+} from "../lib/pdfGenerator";
+import { formatBaptismDate } from "../utils/baptismRecord";
 
 export default function BaptismsRegistry() {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
-  const [search, setSearch] = useState('');
-  const [sortMode, setSortMode] = useState<BaptismRecordSortMode>(BaptismRecordSortMode.newestFirst);
+  const [pageSize, _setPageSize] = useState(20);
+  const [search, setSearch] = useState("");
+  const [sortMode, setSortMode] = useState<BaptismRecordSortMode>(
+    BaptismRecordSortMode.newestFirst,
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<BaptismRecord | null>(null);
+  const [editingRecord, setEditingRecord] = useState<BaptismRecord | null>(
+    null,
+  );
   const [selectedRecordId, setSelectedRecordId] = useState<bigint | null>(null);
 
-  const { data: registryData, isLoading } = useGetBaptismRegistry(page, pageSize, search, sortMode);
+  const { data: registryData, isLoading } = useGetBaptismRegistry(
+    page,
+    pageSize,
+    search,
+    sortMode,
+  );
   const deleteRecord = useDeleteBaptismRecord();
 
   const handleSearch = (value: string) => {
@@ -59,23 +74,28 @@ export default function BaptismsRegistry() {
   };
 
   const handleDelete = async (record: BaptismRecord) => {
-    if (!confirm(`Czy na pewno chcesz usunąć akt chrztu: ${record.personFullName}?`)) return;
+    if (
+      !confirm(
+        `Czy na pewno chcesz usunąć akt chrztu: ${record.personFullName}?`,
+      )
+    )
+      return;
 
     try {
       await deleteRecord.mutateAsync(record.id);
-      toast.success('Akt chrztu został usunięty');
+      toast.success("Akt chrztu został usunięty");
       if (selectedRecordId === record.id) {
         setSelectedRecordId(null);
       }
     } catch (error) {
-      toast.error('Błąd podczas usuwania aktu chrztu');
+      toast.error("Błąd podczas usuwania aktu chrztu");
       console.error(error);
     }
   };
 
   const handleExportPDF = (record: BaptismRecord) => {
     generateBaptismCertificatePDF(record);
-    toast.success('Świadectwo chrztu zostało wygenerowane');
+    toast.success("Świadectwo chrztu zostało wygenerowane");
   };
 
   const handleRowClick = (record: BaptismRecord) => {
@@ -85,15 +105,15 @@ export default function BaptismsRegistry() {
   const handleExportAll = () => {
     const records = registryData?.data || [];
     generateBaptismRegistryListPDF(records);
-    toast.success('Lista aktów chrztu została wygenerowana');
+    toast.success("Lista aktów chrztu została wygenerowana");
   };
 
   const handleExportSelected = () => {
     const records = registryData?.data || [];
-    const selectedRecord = records.find(r => r.id === selectedRecordId);
+    const selectedRecord = records.find((r) => r.id === selectedRecordId);
     if (selectedRecord) {
       generateBaptismCertificatePDF(selectedRecord);
-      toast.success('Świadectwo chrztu zostało wygenerowane');
+      toast.success("Świadectwo chrztu zostało wygenerowane");
     }
   };
 
@@ -106,7 +126,9 @@ export default function BaptismsRegistry() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Księga Chrztów</h1>
           <p className="text-muted-foreground mt-1">
-            {isLoading ? 'Ładowanie...' : `${registryData?.totalCount || 0} aktów`}
+            {isLoading
+              ? "Ładowanie..."
+              : `${registryData?.totalCount || 0} aktów`}
           </p>
         </div>
         <div className="flex gap-2">
@@ -139,9 +161,15 @@ export default function BaptismsRegistry() {
             <SelectValue placeholder="Sortowanie" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={BaptismRecordSortMode.newestFirst}>Najnowsze</SelectItem>
-            <SelectItem value={BaptismRecordSortMode.oldestFirst}>Najstarsze</SelectItem>
-            <SelectItem value={BaptismRecordSortMode.alphabetical}>Alfabetycznie</SelectItem>
+            <SelectItem value={BaptismRecordSortMode.newestFirst}>
+              Najnowsze
+            </SelectItem>
+            <SelectItem value={BaptismRecordSortMode.oldestFirst}>
+              Najstarsze
+            </SelectItem>
+            <SelectItem value={BaptismRecordSortMode.alphabetical}>
+              Alfabetycznie
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -160,19 +188,34 @@ export default function BaptismsRegistry() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-                  <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
+              (["sk1", "sk2", "sk3", "sk4", "sk5"] as const).map((sk) => (
+                <TableRow key={sk}>
+                  <TableCell>
+                    <Skeleton className="h-4 w-20" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-28" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-8 w-24 ml-auto" />
+                  </TableCell>
                 </TableRow>
               ))
             ) : records.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                  {search ? 'Nie znaleziono aktów pasujących do wyszukiwania' : 'Brak aktów chrztu'}
+                <TableCell
+                  colSpan={5}
+                  className="text-center py-8 text-muted-foreground"
+                >
+                  {search
+                    ? "Nie znaleziono aktów pasujących do wyszukiwania"
+                    : "Brak aktów chrztu"}
                 </TableCell>
               </TableRow>
             ) : (
@@ -181,14 +224,21 @@ export default function BaptismsRegistry() {
                   key={record.id.toString()}
                   onClick={() => handleRowClick(record)}
                   className={`cursor-pointer transition-colors ${
-                    selectedRecordId === record.id ? 'bg-muted' : 'hover:bg-muted/50'
+                    selectedRecordId === record.id
+                      ? "bg-muted"
+                      : "hover:bg-muted/50"
                   }`}
                 >
-                  <TableCell className="font-medium">{record.actNumber}</TableCell>
+                  <TableCell className="font-medium">
+                    {record.actNumber}
+                  </TableCell>
                   <TableCell>{record.personFullName}</TableCell>
                   <TableCell>{formatBaptismDate(record.baptismDate)}</TableCell>
                   <TableCell>{record.baptismPlace}</TableCell>
-                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                  <TableCell
+                    className="text-right"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <div className="flex justify-end gap-2">
                       <Button
                         variant="ghost"
@@ -233,7 +283,7 @@ export default function BaptismsRegistry() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(p => Math.max(1, p - 1))}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
             >
               Poprzednia
@@ -241,7 +291,7 @@ export default function BaptismsRegistry() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
             >
               Następna
