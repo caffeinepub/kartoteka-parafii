@@ -376,23 +376,23 @@ actor {
     };
   };
 
-  var nextUniqueId = 0;
+  stable var nextUniqueId = 0;
 
-  let parishioners = Map.empty<Nat, Parishioner>();
-  let localities = Map.empty<Text, Locality>();
-  let budgetTransactions = Map.empty<UniqueId, BudgetTransaction>();
-  let events = Map.empty<UniqueId, Event>();
-  let parishFunctionAssignments = Map.empty<UniqueId, ParishFunctionAssignment>();
-  let parishFunctionLocalityAssignments = Map.empty<UniqueId, ParishFunctionLocalityAssignment>();
-  let statistics = Map.empty<UniqueId, StatisticEntry>();
-  let parishNotes = Map.empty<UniqueId, ParishNote>();
-  let userProfiles = Map.empty<Principal, UserProfile>();
-  var collectiveOfferings = Map.empty<UniqueId, CollectiveOffering>();
-  var individualOfferings = Map.empty<UniqueId, IndividualOffering>();
-  let letters = Map.empty<Nat, Letter>();
-  var nextLetterNumber = 1;
+  stable var parishioners = Map.empty<Nat, Parishioner>();
+  stable var localities = Map.empty<Text, Locality>();
+  stable var budgetTransactions = Map.empty<UniqueId, BudgetTransaction>();
+  stable var events = Map.empty<UniqueId, Event>();
+  stable var parishFunctionAssignments = Map.empty<UniqueId, ParishFunctionAssignment>();
+  stable var parishFunctionLocalityAssignments = Map.empty<UniqueId, ParishFunctionLocalityAssignment>();
+  stable var statistics = Map.empty<UniqueId, StatisticEntry>();
+  stable var parishNotes = Map.empty<UniqueId, ParishNote>();
+  stable var userProfiles = Map.empty<Principal, UserProfile>();
+  stable var collectiveOfferings = Map.empty<UniqueId, CollectiveOffering>();
+  stable var individualOfferings = Map.empty<UniqueId, IndividualOffering>();
+  stable var letters = Map.empty<Nat, Letter>();
+  stable var nextLetterNumber = 1;
 
-  var baptismRegistry = Map.empty<Nat, BaptismRecord>();
+  stable var baptismRegistry = Map.empty<Nat, BaptismRecord>();
 
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
