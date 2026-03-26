@@ -1,6 +1,5 @@
 import Map "mo:core/Map";
 import Principal "mo:core/Principal";
-import Runtime "mo:core/Runtime";
 
 module {
   public type UserRole = {
@@ -21,21 +20,22 @@ module {
     };
   };
 
-  // First authenticated principal that calls this becomes admin automatically.
-  // All subsequent unregistered principals are blocked (not auto-registered).
+  // First authenticated principal that calls this becomes admin.
+  // Existing registered users are unchanged.
+  // New users after admin is assigned are NOT auto-registered (must be added by admin).
   public func initialize(state : AccessControlState, caller : Principal) {
     if (caller.isAnonymous()) { return };
     switch (state.userRoles.get(caller)) {
-      case (?_) {
-        // Already registered — do nothing, preserve existing role
-      };
+      case (?_) {}; // already registered, nothing to do
       case (null) {
         if (not state.adminAssigned) {
-          // First ever login — becomes administrator
+          // First login ever — becomes admin
           state.userRoles.add(caller, #admin);
           state.adminAssigned := true;
         };
-        // If admin already assigned and caller is not registered — block (no role assigned)
+        // If admin already assigned and user not registered: do nothing
+        // They will get false from isAuthorized and see Brak dostepu
+        // until admin manually adds them
       };
     };
   };
@@ -44,15 +44,14 @@ module {
     if (caller.isAnonymous()) { return #guest };
     switch (state.userRoles.get(caller)) {
       case (?role) { role };
-      case (null) {
-        Runtime.trap("User is not registered");
-      };
+      case (null) { #guest }; // unregistered = guest (no access, no trap)
     };
   };
 
   public func assignRole(state : AccessControlState, caller : Principal, user : Principal, role : UserRole) {
     if (not (isAdmin(state, caller))) {
-      Runtime.trap("Unauthorized: Only admins can assign user roles");
+      // Return silently if not admin rather than trapping
+      return;
     };
     state.userRoles.add(user, role);
   };

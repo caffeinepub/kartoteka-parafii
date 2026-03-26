@@ -1,8 +1,8 @@
 import AccessControl "./access-control";
-import Prim "mo:prim";
 
 mixin (accessControlState : AccessControl.AccessControlState) {
-  // Initialize auth — first caller becomes admin automatically, no token required.
+  // Initialize auth: first caller becomes admin, others must be added manually.
+  // No token required — first authenticated login wins.
   public shared ({ caller }) func _initializeAccessControlWithSecret(_userSecret : Text) : async () {
     AccessControl.initialize(accessControlState, caller);
   };

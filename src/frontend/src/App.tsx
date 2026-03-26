@@ -1,5 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
-import { Lock } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Lock, RefreshCw } from "lucide-react";
 import { ThemeProvider } from "next-themes";
 import { useCallback, useState } from "react";
 import MainLayout from "./components/MainLayout";
@@ -12,6 +13,16 @@ import LoginPage from "./pages/LoginPage";
 
 function AccessDeniedScreen() {
   const { clear } = useInternetIdentity();
+  const queryClient = useQueryClient();
+  const [retrying, setRetrying] = useState(false);
+
+  const handleRetry = async () => {
+    setRetrying(true);
+    await queryClient.invalidateQueries();
+    await queryClient.refetchQueries();
+    setTimeout(() => setRetrying(false), 2000);
+  };
+
   return (
     <div
       className="flex h-screen items-center justify-center"
@@ -50,19 +61,36 @@ function AccessDeniedScreen() {
           Nie masz uprawnień do korzystania z tej aplikacji. Skontaktuj się z
           administratorem.
         </p>
-        <button
-          type="button"
-          onClick={() => clear()}
-          className="px-6 py-3 rounded-lg text-sm font-medium transition-all hover:opacity-90"
-          style={{
-            background: "oklch(0.75 0.12 80)",
-            color: "oklch(0.18 0.06 265)",
-            fontFamily: "'Fraunces', Georgia, serif",
-          }}
-          data-ocid="access_denied.button"
-        >
-          Wyloguj się
-        </button>
+        <div className="flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={handleRetry}
+            disabled={retrying}
+            className="px-6 py-3 rounded-lg text-sm font-medium transition-all hover:opacity-90 flex items-center justify-center gap-2"
+            style={{
+              background: "oklch(0.75 0.12 80)",
+              color: "oklch(0.18 0.06 265)",
+              fontFamily: "'Fraunces', Georgia, serif",
+            }}
+          >
+            <RefreshCw size={16} className={retrying ? "animate-spin" : ""} />
+            {retrying ? "Sprawdzam..." : "Spróbuj ponownie"}
+          </button>
+          <button
+            type="button"
+            onClick={() => clear()}
+            className="px-6 py-3 rounded-lg text-sm font-medium transition-all hover:opacity-90"
+            style={{
+              background: "transparent",
+              color: "oklch(0.65 0.05 265)",
+              border: "1px solid oklch(0.65 0.05 265 / 0.4)",
+              fontFamily: "'Fraunces', Georgia, serif",
+            }}
+            data-ocid="access_denied.button"
+          >
+            Wyloguj się
+          </button>
+        </div>
       </div>
     </div>
   );
