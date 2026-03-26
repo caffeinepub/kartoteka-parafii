@@ -114,6 +114,7 @@ export interface Letter {
   'date' : bigint,
   'year' : bigint,
   'number' : bigint,
+  'adresat' : [] | [string],
 }
 export interface Locality {
   'tasks' : Array<string>,
@@ -330,7 +331,7 @@ export interface _SERVICE {
   'addCollectiveOffering' : ActorMethod<[CollectiveOffering], UniqueId>,
   'addEvent' : ActorMethod<[Event], UniqueId>,
   'addIndividualOffering' : ActorMethod<[IndividualOffering], UniqueId>,
-  'addLetter' : ActorMethod<[string, string, bigint], bigint>,
+  'addLetter' : ActorMethod<[string, string, bigint, [] | [string]], bigint>,
   'addLocality' : ActorMethod<[Locality], undefined>,
   'addParishFunctionAssignment' : ActorMethod<
     [ParishFunctionAssignment],
@@ -465,7 +466,10 @@ export interface _SERVICE {
     [UniqueId, IndividualOffering],
     undefined
   >,
-  'updateLetter' : ActorMethod<[bigint, string, string], undefined>,
+  'updateLetter' : ActorMethod<
+    [bigint, string, string, [] | [string]],
+    undefined
+  >,
   'updateLocality' : ActorMethod<[string, Locality], undefined>,
   'updateParishFunctionAssignment' : ActorMethod<
     [UniqueId, ParishFunctionAssignment],

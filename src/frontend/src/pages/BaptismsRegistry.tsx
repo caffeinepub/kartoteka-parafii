@@ -1,4 +1,10 @@
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -16,10 +22,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Download, Edit, Plus, Search, Trash2 } from "lucide-react";
+import { Edit, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { type BaptismRecord, BaptismRecordSortMode } from "../backend";
+import BaptismDetailCard from "../components/BaptismDetailCard";
 import BaptismRecordDialog from "../components/BaptismRecordDialog";
 import { ExportPdfModeControl } from "../components/ExportPdfModeControl";
 import {
@@ -44,6 +51,10 @@ export default function BaptismsRegistry() {
     null,
   );
   const [selectedRecordId, setSelectedRecordId] = useState<bigint | null>(null);
+  const [detailViewOpen, setDetailViewOpen] = useState(false);
+  const [viewingRecord, setViewingRecord] = useState<BaptismRecord | null>(
+    null,
+  );
 
   const { data: registryData, isLoading } = useGetBaptismRegistry(
     page,
@@ -71,6 +82,7 @@ export default function BaptismsRegistry() {
   const handleEdit = (record: BaptismRecord) => {
     setEditingRecord(record);
     setDialogOpen(true);
+    setDetailViewOpen(false);
   };
 
   const handleDelete = async (record: BaptismRecord) => {
@@ -87,19 +99,25 @@ export default function BaptismsRegistry() {
       if (selectedRecordId === record.id) {
         setSelectedRecordId(null);
       }
+      if (viewingRecord?.id === record.id) {
+        setDetailViewOpen(false);
+        setViewingRecord(null);
+      }
     } catch (error) {
       toast.error("Błąd podczas usuwania aktu chrztu");
       console.error(error);
     }
   };
 
+  const handleViewDetails = (record: BaptismRecord) => {
+    setViewingRecord(record);
+    setDetailViewOpen(true);
+    setSelectedRecordId(record.id);
+  };
+
   const handleExportPDF = (record: BaptismRecord) => {
     generateBaptismCertificatePDF(record);
     toast.success("Świadectwo chrztu zostało wygenerowane");
-  };
-
-  const handleRowClick = (record: BaptismRecord) => {
-    setSelectedRecordId(record.id === selectedRecordId ? null : record.id);
   };
 
   const handleExportAll = () => {
@@ -222,10 +240,10 @@ export default function BaptismsRegistry() {
               records.map((record) => (
                 <TableRow
                   key={record.id.toString()}
-                  onClick={() => handleRowClick(record)}
+                  onClick={() => handleViewDetails(record)}
                   className={`cursor-pointer transition-colors ${
                     selectedRecordId === record.id
-                      ? "bg-muted"
+                      ? "bg-primary/5"
                       : "hover:bg-muted/50"
                   }`}
                 >
@@ -239,20 +257,12 @@ export default function BaptismsRegistry() {
                     className="text-right"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleExportPDF(record)}
-                        title="Download PDF"
-                        aria-label="Download PDF"
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
+                    <div className="flex justify-end gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEdit(record)}
+                        title="Edytuj"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -261,6 +271,7 @@ export default function BaptismsRegistry() {
                         size="icon"
                         onClick={() => handleDelete(record)}
                         disabled={deleteRecord.isPending}
+                        title="Usuń"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -299,6 +310,22 @@ export default function BaptismsRegistry() {
           </div>
         </div>
       )}
+
+      {/* Detail View Dialog */}
+      <Dialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Akt Chrztu</DialogTitle>
+          </DialogHeader>
+          {viewingRecord && (
+            <BaptismDetailCard
+              record={viewingRecord}
+              onEdit={() => handleEdit(viewingRecord)}
+              onDownloadPdf={() => handleExportPDF(viewingRecord)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <BaptismRecordDialog
         open={dialogOpen}

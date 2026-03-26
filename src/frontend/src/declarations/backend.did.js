@@ -171,6 +171,7 @@ export const Letter = IDL.Record({
   'date' : IDL.Int,
   'year' : IDL.Nat,
   'number' : IDL.Nat,
+  'adresat' : IDL.Opt(IDL.Text),
 });
 export const PaginatedResult_4 = IDL.Record({
   'data' : IDL.Vec(ParishFunctionAssignment),
@@ -350,7 +351,11 @@ export const idlService = IDL.Service({
   'addCollectiveOffering' : IDL.Func([CollectiveOffering], [UniqueId], []),
   'addEvent' : IDL.Func([Event], [UniqueId], []),
   'addIndividualOffering' : IDL.Func([IndividualOffering], [UniqueId], []),
-  'addLetter' : IDL.Func([IDL.Text, IDL.Text, IDL.Nat], [IDL.Nat], []),
+  'addLetter' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Nat, IDL.Opt(IDL.Text)],
+      [IDL.Nat],
+      [],
+    ),
   'addLocality' : IDL.Func([Locality], [], []),
   'addParishFunctionAssignment' : IDL.Func(
       [ParishFunctionAssignment],
@@ -522,7 +527,11 @@ export const idlService = IDL.Service({
   'updateCollectiveOffering' : IDL.Func([UniqueId, CollectiveOffering], [], []),
   'updateEvent' : IDL.Func([UniqueId, Event], [], []),
   'updateIndividualOffering' : IDL.Func([UniqueId, IndividualOffering], [], []),
-  'updateLetter' : IDL.Func([IDL.Nat, IDL.Text, IDL.Text], [], []),
+  'updateLetter' : IDL.Func(
+      [IDL.Nat, IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
+      [],
+      [],
+    ),
   'updateLocality' : IDL.Func([IDL.Text, Locality], [], []),
   'updateParishFunctionAssignment' : IDL.Func(
       [UniqueId, ParishFunctionAssignment],
@@ -705,6 +714,7 @@ export const idlFactory = ({ IDL }) => {
     'date' : IDL.Int,
     'year' : IDL.Nat,
     'number' : IDL.Nat,
+    'adresat' : IDL.Opt(IDL.Text),
   });
   const PaginatedResult_4 = IDL.Record({
     'data' : IDL.Vec(ParishFunctionAssignment),
@@ -884,7 +894,11 @@ export const idlFactory = ({ IDL }) => {
     'addCollectiveOffering' : IDL.Func([CollectiveOffering], [UniqueId], []),
     'addEvent' : IDL.Func([Event], [UniqueId], []),
     'addIndividualOffering' : IDL.Func([IndividualOffering], [UniqueId], []),
-    'addLetter' : IDL.Func([IDL.Text, IDL.Text, IDL.Nat], [IDL.Nat], []),
+    'addLetter' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Nat, IDL.Opt(IDL.Text)],
+        [IDL.Nat],
+        [],
+      ),
     'addLocality' : IDL.Func([Locality], [], []),
     'addParishFunctionAssignment' : IDL.Func(
         [ParishFunctionAssignment],
@@ -1068,7 +1082,11 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
-    'updateLetter' : IDL.Func([IDL.Nat, IDL.Text, IDL.Text], [], []),
+    'updateLetter' : IDL.Func(
+        [IDL.Nat, IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
+        [],
+        [],
+      ),
     'updateLocality' : IDL.Func([IDL.Text, Locality], [], []),
     'updateParishFunctionAssignment' : IDL.Func(
         [UniqueId, ParishFunctionAssignment],

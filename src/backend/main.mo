@@ -14,8 +14,7 @@ import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 
 
-
-actor {
+ actor {
   include MixinStorage();
 
   public type PaginatedResult<T> = {
@@ -252,6 +251,7 @@ actor {
     date : Int;
     year : Nat;
     number : Nat;
+    adresat : ?Text;
   };
 
   public type AnniversaryType = {
@@ -394,8 +394,38 @@ actor {
 
   stable var baptismRegistry = Map.empty<Nat, BaptismRecord>();
 
+  // Stable backup for access control state (persists across upgrades)
+  stable var _stableAdminAssigned : Bool = false;
+  stable var _stableUserRoles = Map.empty<Principal, AccessControl.UserRole>();
+
   let accessControlState = AccessControl.initState();
+
+  // Restore access control state after upgrade
+  system func postupgrade() {
+    accessControlState.adminAssigned := _stableAdminAssigned;
+    for ((principal, role) in _stableUserRoles.entries()) {
+      accessControlState.userRoles.add(principal, role);
+    };
+  };
+
+  // Save access control state before upgrade
+  system func preupgrade() {
+    _stableAdminAssigned := accessControlState.adminAssigned;
+    _stableUserRoles := Map.empty<Principal, AccessControl.UserRole>();
+    for ((principal, role) in accessControlState.userRoles.entries()) {
+      _stableUserRoles.add(principal, role);
+    };
+  };
   include MixinAuthorization(accessControlState);
+
+  public query ({ caller }) func isAuthorized() : async Bool {
+    if (caller.isAnonymous()) { return false };
+    switch (accessControlState.userRoles.get(caller)) {
+      case (?(#admin)) { true };
+      case (?(#user)) { true };
+      case (_) { false };
+    };
+  };
 
   public query ({ caller }) func getAnniversariesForYearPaginated(request : GetAnniversariesRequest) : async PaginatedResult<Anniversary> {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
@@ -1261,7 +1291,7 @@ actor {
     };
   };
 
-  public shared ({ caller }) func addLetter(title : Text, body : Text, year : Nat) : async Nat {
+  public shared ({ caller }) func addLetter(title : Text, body : Text, year : Nat, adresat : ?Text) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authorized users can add letters");
     };
@@ -1271,13 +1301,14 @@ actor {
 
     nextLetterNumber += 1;
 
-    let letter = {
+    let letter : Letter = {
       uid;
       title;
       body;
       date = 0;
       year;
       number = nextLetterNumber - 1;
+      adresat;
     };
 
     letters.add(uid, letter);
@@ -1285,7 +1316,7 @@ actor {
     uid;
   };
 
-  public shared ({ caller }) func updateLetter(uid : Nat, title : Text, body : Text) : async () {
+  public shared ({ caller }) func updateLetter(uid : Nat, title : Text, body : Text, adresat : ?Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authorized users can update letters");
     };
@@ -1296,6 +1327,7 @@ actor {
           existingLetter with
           title;
           body;
+          adresat;
         };
         letters.add(uid, updatedLetter);
       };

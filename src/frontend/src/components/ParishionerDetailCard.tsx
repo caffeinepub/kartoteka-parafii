@@ -7,6 +7,7 @@ import {
   Calendar,
   CheckCircle2,
   Circle,
+  Download,
   Edit,
   Heart,
   Mail,
@@ -21,6 +22,7 @@ interface ParishionerDetailCardProps {
   parishioner: Parishioner;
   offerings: IndividualOffering[];
   onEdit: () => void;
+  onDownloadPdf?: () => void;
 }
 
 const relationTypeLabels: Record<RelationType, string> = {
@@ -33,6 +35,7 @@ export default function ParishionerDetailCard({
   parishioner,
   offerings,
   onEdit,
+  onDownloadPdf,
 }: ParishionerDetailCardProps) {
   const photoUrl = parishioner.photo?.getDirectURL();
 
@@ -71,33 +74,75 @@ export default function ParishionerDetailCard({
 
   return (
     <div className="space-y-8 max-h-[85vh] overflow-y-auto px-2">
-      {/* Header Section with Photo and Basic Info */}
-      <div className="flex flex-col md:flex-row gap-8 items-start">
-        {photoUrl && (
-          <div className="flex-shrink-0">
-            <img
-              src={photoUrl}
-              alt={`${parishioner.firstName} ${parishioner.lastName}`}
-              className="w-40 h-40 rounded-xl object-cover shadow-lg border-4 border-primary/10"
-            />
+      {/* Header Section — navy background with white text for perfect contrast */}
+      <div
+        className="rounded-xl p-6 -mx-1"
+        style={{ background: "oklch(0.20 0.10 265)" }}
+      >
+        <div className="flex flex-col md:flex-row gap-6 items-start">
+          {photoUrl && (
+            <div className="flex-shrink-0">
+              <img
+                src={photoUrl}
+                alt={`${parishioner.firstName} ${parishioner.lastName}`}
+                className="w-36 h-36 rounded-xl object-cover shadow-lg border-4"
+                style={{ borderColor: "oklch(0.70 0.14 85)" }}
+              />
+            </div>
+          )}
+          <div className="flex-1 space-y-4">
+            <div>
+              <h2
+                className="text-4xl font-bold pb-3 mb-1"
+                style={{
+                  color: "#ffffff",
+                  borderBottom: "2px solid oklch(0.70 0.14 85)",
+                }}
+              >
+                {parishioner.firstName} {parishioner.lastName}
+              </h2>
+              {parishioner.profession && (
+                <p
+                  className="text-lg mt-2 flex items-center gap-2"
+                  style={{ color: "oklch(0.85 0.08 80)" }}
+                >
+                  <Briefcase className="h-5 w-5" />
+                  {parishioner.profession}
+                </p>
+              )}
+            </div>
+            <div className="flex gap-3 flex-wrap">
+              <Button
+                onClick={onEdit}
+                size="lg"
+                className="gap-2"
+                style={{
+                  background: "oklch(0.70 0.14 85)",
+                  color: "oklch(0.20 0.10 265)",
+                  border: "none",
+                }}
+              >
+                <Edit className="h-5 w-5" />
+                Edytuj dane
+              </Button>
+              {onDownloadPdf && (
+                <Button
+                  onClick={onDownloadPdf}
+                  size="lg"
+                  variant="outline"
+                  className="gap-2"
+                  style={{
+                    borderColor: "oklch(0.70 0.14 85)",
+                    color: "oklch(0.70 0.14 85)",
+                    background: "transparent",
+                  }}
+                >
+                  <Download className="h-5 w-5" />
+                  Pobierz PDF
+                </Button>
+              )}
+            </div>
           </div>
-        )}
-        <div className="flex-1 space-y-4">
-          <div>
-            <h2 className="text-4xl font-bold text-foreground mb-2">
-              {parishioner.firstName} {parishioner.lastName}
-            </h2>
-            {parishioner.profession && (
-              <p className="text-lg text-muted-foreground flex items-center gap-2">
-                <Briefcase className="h-5 w-5" />
-                {parishioner.profession}
-              </p>
-            )}
-          </div>
-          <Button onClick={onEdit} size="lg" className="gap-2">
-            <Edit className="h-5 w-5" />
-            Edytuj dane
-          </Button>
         </div>
       </div>
 
@@ -190,7 +235,9 @@ export default function ParishionerDetailCard({
                 <div>
                   <p className="font-medium text-sm">{sacrament.label}</p>
                   <p
-                    className={`text-lg font-semibold ${sacrament.year ? "text-primary" : "text-muted-foreground"}`}
+                    className={`text-lg font-semibold ${
+                      sacrament.year ? "text-primary" : "text-muted-foreground"
+                    }`}
                   >
                     {sacrament.year ? Number(sacrament.year) : "—"}
                   </p>

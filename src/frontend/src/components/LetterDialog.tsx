@@ -15,7 +15,7 @@ import type { Letter } from "../backend";
 interface LetterDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: { title: string; body: string }) => void;
+  onSave: (data: { title: string; body: string; adresat: string }) => void;
   editingLetter?: Letter | null;
 }
 
@@ -25,16 +25,17 @@ export default function LetterDialog({
   onSave,
   editingLetter,
 }: LetterDialogProps) {
+  const [adresat, setAdresat] = useState("");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
 
   useEffect(() => {
     if (open && editingLetter) {
-      // Load existing letter data for editing
+      setAdresat(editingLetter.adresat ?? "");
       setTitle(editingLetter.title);
       setBody(editingLetter.body);
     } else if (!open) {
-      // Clear form when dialog closes
+      setAdresat("");
       setTitle("");
       setBody("");
     }
@@ -42,12 +43,8 @@ export default function LetterDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!title.trim()) {
-      return;
-    }
-
-    onSave({ title: title.trim(), body: body.trim() });
+    if (!title.trim()) return;
+    onSave({ adresat: adresat.trim(), title: title.trim(), body: body.trim() });
   };
 
   const isEditMode = !!editingLetter;
@@ -68,6 +65,17 @@ export default function LetterDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="adresat">Adresat</Label>
+            <Input
+              id="adresat"
+              value={adresat}
+              onChange={(e) => setAdresat(e.target.value)}
+              placeholder="Imię i nazwisko lub nazwa instytucji..."
+              data-ocid="letter.input"
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="title">Tytuł pisma *</Label>
             <Input

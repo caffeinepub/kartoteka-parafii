@@ -7,6 +7,7 @@ import {
   Calendar,
   FileText,
   Home,
+  LogOut,
   Mail,
   MapPin,
   Menu,
@@ -99,41 +100,54 @@ export default function MainLayout() {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar - Desktop */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-72 border-r border-border bg-card">
-        <div className="p-6 border-b border-border">
+      <aside className="hidden lg:flex lg:flex-col lg:w-72 border-r border-sidebar-border bg-sidebar">
+        {/* Logo & Parish Name */}
+        <div className="p-6 border-b border-sidebar-border">
           <div className="flex items-center gap-3 mb-2">
             <img
               src="/assets/generated/parish-logo.dim_300x300.png"
               alt="Logo Parafii"
-              className="w-12 h-12 object-contain flex-shrink-0"
+              className="w-12 h-12 object-contain flex-shrink-0 drop-shadow-sm"
             />
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-bold text-foreground leading-tight">
+              <h1 className="text-base font-bold text-sidebar-foreground leading-tight">
                 Parafia Św. Jana Chrzciciela
               </h1>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p
+                className="text-xs mt-0.5"
+                style={{ color: "oklch(0.70 0.14 85)" }}
+              >
                 Zbrosza Duża
               </p>
             </div>
           </div>
         </div>
 
+        {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-4">
-          <ul className="space-y-1">
+          <ul className="space-y-0.5">
             {menuItems.map((item) => {
               const Icon = item.icon;
+              const isActive = currentSection === item.id;
               return (
                 <li key={item.id}>
                   <button
                     type="button"
                     onClick={() => setCurrentSection(item.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                      currentSection === item.id
-                        ? "bg-primary text-primary-foreground"
-                        : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                      isActive
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     }`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon
+                      className="h-4 w-4 flex-shrink-0"
+                      style={
+                        isActive
+                          ? { color: "oklch(0.18 0.08 265)" }
+                          : { opacity: 0.75 }
+                      }
+                    />
                     {item.label}
                   </button>
                 </li>
@@ -142,42 +156,56 @@ export default function MainLayout() {
           </ul>
         </nav>
 
-        <div className="p-4 border-t border-border">
+        {/* User Footer */}
+        <div className="p-4 border-t border-sidebar-border">
           <div className="flex items-center justify-between mb-3">
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
+              <p className="text-sm font-semibold text-sidebar-foreground truncate">
                 {userProfile?.name || "Użytkownik"}
               </p>
-              <p className="text-xs text-muted-foreground truncate">
+              <p
+                className="text-xs truncate"
+                style={{ color: "oklch(0.70 0.14 85 / 0.8)" }}
+              >
                 {userProfile?.role || "Pracownik"}
               </p>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="ml-2"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-            </Button>
           </div>
+          <button
+            type="button"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors mb-2"
+            style={{
+              background: "oklch(0.28 0.10 265)",
+              color: "oklch(0.93 0.04 80)",
+              border: "1px solid oklch(0.35 0.08 265)",
+            }}
+          >
+            {theme === "dark" ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+            {theme === "dark" ? "Tryb jasny" : "Tryb ciemny"}
+          </button>
           <Button
             onClick={handleLogout}
-            variant="outline"
-            className="w-full"
             size="sm"
+            className="w-full gap-2 text-sm"
+            style={{
+              background: "oklch(0.28 0.10 265)",
+              color: "oklch(0.93 0.04 80)",
+              border: "1px solid oklch(0.35 0.08 265)",
+            }}
           >
+            <LogOut className="h-4 w-4" />
             Wyloguj
           </Button>
         </div>
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-sidebar border-b border-sidebar-border">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-2">
             <img
@@ -185,7 +213,7 @@ export default function MainLayout() {
               alt="Logo Parafii"
               className="w-8 h-8 object-contain"
             />
-            <h1 className="text-base font-bold text-foreground">
+            <h1 className="text-base font-bold text-sidebar-foreground">
               Parafia Zbrosza Duża
             </h1>
           </div>
@@ -193,6 +221,7 @@ export default function MainLayout() {
             variant="ghost"
             size="icon"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="text-sidebar-foreground hover:bg-sidebar-accent"
           >
             {mobileMenuOpen ? (
               <X className="h-6 w-6" />
@@ -204,11 +233,12 @@ export default function MainLayout() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="border-t border-border bg-card">
+          <div className="border-t border-sidebar-border bg-sidebar">
             <nav className="p-4">
-              <ul className="space-y-1">
+              <ul className="space-y-0.5">
                 {menuItems.map((item) => {
                   const Icon = item.icon;
+                  const isActive = currentSection === item.id;
                   return (
                     <li key={item.id}>
                       <button
@@ -217,13 +247,13 @@ export default function MainLayout() {
                           setCurrentSection(item.id);
                           setMobileMenuOpen(false);
                         }}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                          currentSection === item.id
-                            ? "bg-primary text-primary-foreground"
-                            : "text-foreground hover:bg-accent"
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                          isActive
+                            ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                         }`}
                       >
-                        <Icon className="h-5 w-5" />
+                        <Icon className="h-4 w-4 flex-shrink-0" />
                         {item.label}
                       </button>
                     </li>
@@ -231,25 +261,36 @@ export default function MainLayout() {
                 })}
               </ul>
             </nav>
-            <div className="p-4 border-t border-border flex items-center gap-2">
-              <Button
-                onClick={handleLogout}
-                variant="outline"
-                className="flex-1"
-                size="sm"
-              >
-                Wyloguj
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
+            <div className="p-4 border-t border-sidebar-border">
+              <button
+                type="button"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors mb-2"
+                style={{
+                  background: "oklch(0.28 0.10 265)",
+                  color: "oklch(0.93 0.04 80)",
+                  border: "1px solid oklch(0.35 0.08 265)",
+                }}
               >
                 {theme === "dark" ? (
                   <Sun className="h-4 w-4" />
                 ) : (
                   <Moon className="h-4 w-4" />
                 )}
+                {theme === "dark" ? "Tryb jasny" : "Tryb ciemny"}
+              </button>
+              <Button
+                onClick={handleLogout}
+                size="sm"
+                className="w-full gap-2"
+                style={{
+                  background: "oklch(0.28 0.10 265)",
+                  color: "oklch(0.93 0.04 80)",
+                  border: "1px solid oklch(0.35 0.08 265)",
+                }}
+              >
+                <LogOut className="h-4 w-4" />
+                Wyloguj
               </Button>
             </div>
           </div>

@@ -60,13 +60,34 @@ export function useGetCallerUserProfile() {
       return actor.getCallerUserProfile();
     },
     enabled: !!actor && !actorFetching,
-    retry: false,
+    retry: 3,
+    retryDelay: 1000,
   });
 
   return {
     ...query,
     isLoading: actorFetching || query.isLoading,
     isFetched: !!actor && query.isFetched,
+  };
+}
+
+export function useIsAuthorized() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  const query = useQuery<boolean>({
+    queryKey: ["isAuthorized"],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.isAuthorized();
+    },
+    enabled: !!actor && !actorFetching,
+    retry: false,
+  });
+
+  return {
+    ...query,
+    isLoading: actorFetching || query.isLoading,
+    isAuthorized: query.data === true,
   };
 }
 
@@ -883,9 +904,10 @@ export function useAddLetter() {
       title,
       body,
       year,
-    }: { title: string; body: string; year: bigint }) => {
+      adresat,
+    }: { title: string; body: string; year: bigint; adresat?: string }) => {
       if (!actor) throw new Error("Actor not available");
-      return actor.addLetter(title, body, year);
+      return actor.addLetter(title, body, year, adresat || null);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["letters"] });
@@ -902,9 +924,10 @@ export function useUpdateLetter() {
       uid,
       title,
       body,
-    }: { uid: bigint; title: string; body: string }) => {
+      adresat,
+    }: { uid: bigint; title: string; body: string; adresat?: string }) => {
       if (!actor) throw new Error("Actor not available");
-      return actor.updateLetter(uid, title, body);
+      return actor.updateLetter(uid, title, body, adresat || null);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["letters"] });

@@ -172,6 +172,7 @@ export interface Letter {
     date: bigint;
     year: bigint;
     number: bigint;
+    adresat?: string;
 }
 export interface PaginatedResult_7 {
     data: Array<IndividualOffering>;
@@ -319,7 +320,7 @@ export interface backendInterface {
     addCollectiveOffering(offering: CollectiveOffering): Promise<UniqueId>;
     addEvent(arg0: Event): Promise<UniqueId>;
     addIndividualOffering(offering: IndividualOffering): Promise<UniqueId>;
-    addLetter(title: string, body: string, year: bigint): Promise<bigint>;
+    addLetter(title: string, body: string, year: bigint, adresat: string | null): Promise<bigint>;
     addLocality(locality: Locality): Promise<void>;
     addParishFunctionAssignment(arg0: ParishFunctionAssignment): Promise<UniqueId>;
     addParishFunctionLocalityAssignment(arg0: ParishFunctionLocalityAssignment): Promise<UniqueId>;
@@ -385,7 +386,7 @@ export interface backendInterface {
     updateCollectiveOffering(id: UniqueId, offering: CollectiveOffering): Promise<void>;
     updateEvent(id: UniqueId, event: Event): Promise<void>;
     updateIndividualOffering(id: UniqueId, offering: IndividualOffering): Promise<void>;
-    updateLetter(uid: bigint, title: string, body: string): Promise<void>;
+    updateLetter(uid: bigint, title: string, body: string, adresat: string | null): Promise<void>;
     updateLocality(name: string, locality: Locality): Promise<void>;
     updateParishFunctionAssignment(id: UniqueId, assignment: ParishFunctionAssignment): Promise<void>;
     updateParishFunctionLocalityAssignment(id: UniqueId, assignment: ParishFunctionLocalityAssignment): Promise<void>;

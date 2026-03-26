@@ -1,6 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Edit, Plus, Trash2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Download, Edit, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { ParishNote } from "../backend";
@@ -11,6 +17,9 @@ import {
   useUpdateParishNote,
 } from "../hooks/useQueries";
 import { generateParishPDF } from "../lib/pdfGenerator";
+
+const NAVY = "oklch(0.25 0.10 265)";
+const GOLD = "oklch(0.75 0.12 80)";
 
 export default function Uwagi() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,6 +36,8 @@ export default function Uwagi() {
     id: bigint;
     data: ParishNote;
   } | null>(null);
+  const [viewingNote, setViewingNote] = useState<ParishNote | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const notes = notesData?.data || [];
   const totalCount = Number(notesData?.totalCount || 0);
@@ -40,14 +51,18 @@ export default function Uwagi() {
   const handleEdit = (note: ParishNote) => {
     setEditingNote({ id: note.timestamp, data: note });
     setDialogOpen(true);
+    setDetailOpen(false);
   };
 
   const handleDelete = async (note: ParishNote) => {
     if (!confirm("Czy na pewno chcesz usunąć tę notatkę?")) return;
-
     try {
       await deleteNote.mutateAsync(note.timestamp);
       toast.success("Notatka została usunięta");
+      if (viewingNote?.timestamp === note.timestamp) {
+        setDetailOpen(false);
+        setViewingNote(null);
+      }
     } catch (error) {
       toast.error("Błąd podczas usuwania notatki");
       console.error(error);
@@ -72,35 +87,32 @@ export default function Uwagi() {
     }
   };
 
+  const handleCardClick = (note: ParishNote) => {
+    setViewingNote(note);
+    setDetailOpen(true);
+  };
+
   const exportNotesPDF = async () => {
     toast.info("Generowanie PDF...");
-
     setTimeout(() => {
       const sortedNotes = [...notes].sort(
         (a, b) => Number(b.timestamp) - Number(a.timestamp),
       );
-
-      let content = "";
-      content += "NOTATKI PARAFIALNE\n\n";
+      let content = "NOTATKI PARAFIALNE\n\n";
       content += `Łączna liczba notatek: ${totalCount}\n\n`;
       content += `${"═".repeat(90)}\n\n`;
-
       sortedNotes.forEach((note, idx) => {
         const date = new Date(Number(note.timestamp) / 1000000);
         content += `${(idx + 1).toString().padStart(3, " ")}. ${note.title}\n`;
         content += `     Data: ${date.toLocaleDateString("pl-PL")}\n`;
         content += `     Treść: ${note.content}\n\n`;
       });
-
       generateParishPDF({
         title: "NOTATKI PARAFIALNE",
         content,
         footer: "Dokument wygenerowany automatycznie",
       });
-
-      toast.success(
-        "PDF został wygenerowany - okno drukowania otworzy się automatycznie",
-      );
+      toast.success("PDF został wygenerowany");
     }, 100);
   };
 
@@ -153,12 +165,17 @@ export default function Uwagi() {
           {sortedNotes.map((note) => (
             <Card
               key={note.timestamp.toString()}
-              className="hover:shadow-lg transition-shadow"
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => handleCardClick(note)}
             >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-lg">{note.title}</CardTitle>
-                  <div className="flex gap-1">
+                  <div
+                    className="flex gap-1"
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  >
                     <Button
                       variant="ghost"
                       size="sm"
@@ -215,6 +232,84 @@ export default function Uwagi() {
           </Button>
         </div>
       )}
+
+      {/* Detail wizytówka */}
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-2xl p-0 overflow-hidden">
+          {viewingNote && (
+            <>
+              <DialogHeader className="p-0">
+                <div
+                  className="px-8 py-6"
+                  style={{
+                    background: NAVY,
+                    borderBottom: `3px solid ${GOLD}`,
+                  }}
+                >
+                  <DialogTitle
+                    className="text-2xl font-light tracking-tight"
+                    style={{
+                      fontFamily: "'Fraunces', Georgia, serif",
+                      color: "white",
+                    }}
+                  >
+                    {viewingNote.title}
+                  </DialogTitle>
+                  <p className="text-sm mt-2" style={{ color: GOLD }}>
+                    {new Date(
+                      Number(viewingNote.timestamp) / 1000000,
+                    ).toLocaleDateString("pl-PL", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                </div>
+              </DialogHeader>
+              <div className="px-8 py-6 space-y-4">
+                <div>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                    Treść notatki
+                  </p>
+                  <p className="text-base leading-relaxed whitespace-pre-wrap">
+                    {viewingNote.content}
+                  </p>
+                </div>
+              </div>
+              <div
+                className="px-8 py-4 flex gap-3"
+                style={{ borderTop: "1px solid oklch(0.90 0.02 265)" }}
+              >
+                <Button
+                  onClick={() => handleEdit(viewingNote)}
+                  style={{ background: GOLD, color: NAVY }}
+                  className="hover:opacity-90"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edytuj
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleDelete(viewingNote)}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Usuń
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setDetailOpen(false)}
+                  className="ml-auto"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Zamknij
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <NoteDialog
         open={dialogOpen}

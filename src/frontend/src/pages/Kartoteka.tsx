@@ -524,6 +524,15 @@ export default function Kartoteka() {
                 (o) => o.parishionerId === viewingParishioner.uid,
               )}
               onEdit={() => handleEdit(viewingParishioner)}
+              onDownloadPdf={() => {
+                const parishionerOfferings = individualOfferings.filter(
+                  (o) => o.parishionerId === viewingParishioner.uid,
+                );
+                generateSingleParishionerPDF(
+                  viewingParishioner,
+                  parishionerOfferings,
+                );
+              }}
             />
           )}
         </DialogContent>

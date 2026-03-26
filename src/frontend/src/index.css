@@ -1,3 +1,45 @@
+/* Fraunces — latin-ext (Polish characters) */
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/Fraunces-Regular-latin-ext.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* Fraunces — latin */
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/Fraunces-Regular-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* EB Garamond — latin-ext (Polish characters) */
+@font-face {
+  font-family: "EB Garamond";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/EBGaramond-Regular-latin-ext.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* EB Garamond — latin */
+@font-face {
+  font-family: "EB Garamond";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/EBGaramond-Regular-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,73 +47,79 @@
 @layer base {
   :root {
     --radius: 0.625rem;
-    --background: 0.98 0.01 45;
-    --foreground: 0.2 0.05 240;
+    /* Main background: warm cream */
+    --background: 0.97 0.01 60;
+    --foreground: 0.18 0.08 265;
     --card: 1 0 0;
-    --card-foreground: 0.2 0.05 240;
+    --card-foreground: 0.18 0.08 265;
     --popover: 1 0 0;
-    --popover-foreground: 0.2 0.05 240;
-    --primary: 0.35 0.12 240;
-    --primary-foreground: 0.98 0.01 45;
-    --secondary: 0.92 0.03 45;
-    --secondary-foreground: 0.2 0.05 240;
-    --muted: 0.95 0.02 45;
-    --muted-foreground: 0.5 0.03 240;
-    --accent: 0.75 0.15 45;
-    --accent-foreground: 0.98 0.01 45;
+    --popover-foreground: 0.18 0.08 265;
+    /* Primary: gold — buttons, accents */
+    --primary: 0.7 0.14 85;
+    --primary-foreground: 0.18 0.08 265;
+    --secondary: 0.92 0.03 60;
+    --secondary-foreground: 0.18 0.08 265;
+    --muted: 0.95 0.02 60;
+    --muted-foreground: 0.5 0.04 265;
+    /* Accent: soft gold tint */
+    --accent: 0.88 0.06 80;
+    --accent-foreground: 0.18 0.08 265;
     --destructive: 0.577 0.245 27.325;
     --destructive-foreground: 0.985 0 0;
-    --border: 0.9 0.02 240;
-    --input: 0.9 0.02 240;
-    --ring: 0.35 0.12 240;
+    --border: 0.88 0.03 265;
+    --input: 0.88 0.03 265;
+    --ring: 0.7 0.14 85;
     --chart-1: 0.646 0.222 41.116;
     --chart-2: 0.6 0.118 184.704;
     --chart-3: 0.398 0.07 227.392;
     --chart-4: 0.828 0.189 84.429;
     --chart-5: 0.769 0.188 70.08;
-    --sidebar: 0.98 0.01 45;
-    --sidebar-foreground: 0.2 0.05 240;
-    --sidebar-primary: 0.35 0.12 240;
-    --sidebar-primary-foreground: 0.98 0.01 45;
-    --sidebar-accent: 0.92 0.03 45;
-    --sidebar-accent-foreground: 0.2 0.05 240;
-    --sidebar-border: 0.9 0.02 240;
-    --sidebar-ring: 0.35 0.12 240;
+    /* Sidebar: deep navy */
+    --sidebar: 0.2 0.1 265;
+    --sidebar-foreground: 0.93 0.04 80;
+    --sidebar-primary: 0.7 0.14 85;
+    --sidebar-primary-foreground: 0.18 0.08 265;
+    --sidebar-accent: 0.28 0.1 265;
+    --sidebar-accent-foreground: 0.93 0.04 80;
+    --sidebar-border: 0.3 0.08 265;
+    --sidebar-ring: 0.7 0.14 85;
   }
 
   .dark {
-    --background: 0.15 0.05 240;
-    --foreground: 0.95 0.02 45;
-    --card: 0.2 0.05 240;
-    --card-foreground: 0.95 0.02 45;
-    --popover: 0.18 0.05 240;
-    --popover-foreground: 0.95 0.02 45;
-    --primary: 0.65 0.15 45;
-    --primary-foreground: 0.15 0.05 240;
-    --secondary: 0.25 0.05 240;
-    --secondary-foreground: 0.95 0.02 45;
-    --muted: 0.25 0.05 240;
-    --muted-foreground: 0.6 0.03 45;
-    --accent: 0.45 0.12 45;
-    --accent-foreground: 0.95 0.02 45;
+    /* Deep navy palette — #0a0f2e spirit */
+    --background: 0.09 0.06 265;
+    --foreground: 0.94 0.02 80;
+    --card: 0.13 0.06 265;
+    --card-foreground: 0.94 0.02 80;
+    --popover: 0.11 0.06 265;
+    --popover-foreground: 0.94 0.02 80;
+    --primary: 0.7 0.14 85;
+    --primary-foreground: 0.09 0.06 265;
+    --secondary: 0.17 0.06 265;
+    --secondary-foreground: 0.94 0.02 80;
+    --muted: 0.17 0.06 265;
+    --muted-foreground: 0.65 0.04 80;
+    --accent: 0.22 0.08 265;
+    --accent-foreground: 0.94 0.02 80;
     --destructive: 0.704 0.191 22.216;
-    --destructive-foreground: 0.95 0.02 45;
-    --border: 0.3 0.05 240;
-    --input: 0.3 0.05 240;
-    --ring: 0.65 0.15 45;
+    --destructive-foreground: 0.94 0.02 80;
+    --border: 0.22 0.06 265;
+    --input: 0.22 0.06 265;
+    --ring: 0.7 0.14 85;
     --chart-1: 0.488 0.243 264.376;
     --chart-2: 0.696 0.17 162.48;
     --chart-3: 0.769 0.188 70.08;
     --chart-4: 0.627 0.265 303.9;
     --chart-5: 0.645 0.246 16.439;
-    --sidebar: 0.2 0.05 240;
-    --sidebar-foreground: 0.95 0.02 45;
-    --sidebar-primary: 0.65 0.15 45;
-    --sidebar-primary-foreground: 0.15 0.05 240;
-    --sidebar-accent: 0.25 0.05 240;
-    --sidebar-accent-foreground: 0.95 0.02 45;
-    --sidebar-border: 0.3 0.05 240;
-    --sidebar-ring: 0.65 0.15 45;
+    /* Sidebar always stays deep navy */
+    --sidebar: 0.2 0.1 265;
+    --sidebar-foreground: 0.93 0.04 80;
+    --sidebar-primary: 0.7 0.14 85;
+    --sidebar-primary-foreground: 0.18 0.08 265;
+    --sidebar-accent: 0.28 0.1 265;
+    --sidebar-accent-foreground: 0.93 0.04 80;
+    --sidebar-border: 0.3 0.08 265;
+    --sidebar-ring: 0.7 0.14 85;
   }
 
   * {
@@ -79,5 +127,18 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: "Fraunces", Georgia, serif;
+    font-optical-sizing: auto;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Fraunces", Georgia, serif;
+    font-optical-sizing: auto;
+    font-weight: 300;
+    letter-spacing: -0.02em;
   }
 }
