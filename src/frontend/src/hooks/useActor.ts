@@ -6,6 +6,9 @@ import { getSecretParameter } from "../utils/urlParams";
 import { useInternetIdentity } from "./useInternetIdentity";
 
 const ACTOR_QUERY_KEY = "actor";
+// NAPRAWA #5: staleTime 5 minut zamiast Infinity — autoryzacja jest odświeżana
+const ACTOR_STALE_TIME = 5 * 60 * 1000;
+
 export function useActor() {
   const { identity } = useInternetIdentity();
   const queryClient = useQueryClient();
@@ -25,18 +28,19 @@ export function useActor() {
       };
 
       const actor = await createActorWithConfig(actorOptions);
-      const adminToken = getSecretParameter("caffeineAdminToken") || "";
-      // Initialize access control — errors are caught to prevent login failure
+
+      // NAPRAWA #3: try/catch — błąd inicjalizacji nie blokuje logowania
       try {
+        const adminToken = getSecretParameter("caffeineAdminToken") || "";
         await actor._initializeAccessControlWithSecret(adminToken);
       } catch (e) {
-        console.warn("Access control initialization warning:", e);
+        console.warn("Access control init failed (non-fatal):", e);
       }
+
       return actor;
     },
-    staleTime: Number.POSITIVE_INFINITY,
+    staleTime: ACTOR_STALE_TIME,
     enabled: true,
-    retry: 2,
   });
 
   useEffect(() => {

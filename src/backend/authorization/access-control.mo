@@ -20,22 +20,18 @@ module {
     };
   };
 
-  // First authenticated principal that calls this becomes admin.
-  // Existing registered users are unchanged.
-  // New users after admin is assigned are NOT auto-registered (must be added by admin).
-  public func initialize(state : AccessControlState, caller : Principal) {
+  // First principal with correct admin token becomes admin.
+  // Unknown principals are NOT auto-registered — they receive no access.
+  public func initialize(state : AccessControlState, caller : Principal, adminToken : Text, userProvidedToken : Text) {
     if (caller.isAnonymous()) { return };
     switch (state.userRoles.get(caller)) {
-      case (?_) {}; // already registered, nothing to do
+      case (?_) {}; // already registered, do nothing
       case (null) {
-        if (not state.adminAssigned) {
-          // First login ever — becomes admin
+        if (not state.adminAssigned and userProvidedToken == adminToken) {
           state.userRoles.add(caller, #admin);
           state.adminAssigned := true;
         };
-        // If admin already assigned and user not registered: do nothing
-        // They will get false from isAuthorized and see Brak dostepu
-        // until admin manually adds them
+        // NAPRAWA #1: nieznany użytkownik NIE jest automatycznie rejestrowany
       };
     };
   };
@@ -44,13 +40,16 @@ module {
     if (caller.isAnonymous()) { return #guest };
     switch (state.userRoles.get(caller)) {
       case (?role) { role };
-      case (null) { #guest }; // unregistered = guest (no access, no trap)
+      case (null) {
+        // NAPRAWA #2: zamiast Runtime.trap — zwracamy #guest (odmowa bez crashu)
+        #guest
+      };
     };
   };
 
   public func assignRole(state : AccessControlState, caller : Principal, user : Principal, role : UserRole) {
     if (not (isAdmin(state, caller))) {
-      // Return silently if not admin rather than trapping
+      // Only admins can assign roles — trap is intentional here (called after auth check)
       return;
     };
     state.userRoles.add(user, role);
