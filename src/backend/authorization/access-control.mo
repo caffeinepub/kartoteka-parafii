@@ -1,5 +1,6 @@
 import Map "mo:core/Map";
 import Principal "mo:core/Principal";
+import Runtime "mo:core/Runtime";
 
 module {
   public type UserRole = {
@@ -20,18 +21,17 @@ module {
     };
   };
 
-  // First principal with correct admin token becomes admin.
-  // Unknown principals are NOT auto-registered — they receive no access.
-  public func initialize(state : AccessControlState, caller : Principal, adminToken : Text, userProvidedToken : Text) {
+  // First caller becomes admin automatically (no token required).
+  // All subsequent unknown callers are blocked (not registered).
+  public func initialize(state : AccessControlState, caller : Principal) {
     if (caller.isAnonymous()) { return };
     switch (state.userRoles.get(caller)) {
-      case (?_) {}; // already registered, do nothing
+      case (?_) {};
       case (null) {
-        if (not state.adminAssigned and userProvidedToken == adminToken) {
+        if (not state.adminAssigned) {
           state.userRoles.add(caller, #admin);
           state.adminAssigned := true;
         };
-        // NAPRAWA #1: nieznany użytkownik NIE jest automatycznie rejestrowany
       };
     };
   };
@@ -40,17 +40,13 @@ module {
     if (caller.isAnonymous()) { return #guest };
     switch (state.userRoles.get(caller)) {
       case (?role) { role };
-      case (null) {
-        // NAPRAWA #2: zamiast Runtime.trap — zwracamy #guest (odmowa bez crashu)
-        #guest
-      };
+      case (null) { #guest };
     };
   };
 
   public func assignRole(state : AccessControlState, caller : Principal, user : Principal, role : UserRole) {
     if (not (isAdmin(state, caller))) {
-      // Only admins can assign roles — trap is intentional here (called after auth check)
-      return;
+      Runtime.trap("Unauthorized: Only admins can assign user roles");
     };
     state.userRoles.add(user, role);
   };

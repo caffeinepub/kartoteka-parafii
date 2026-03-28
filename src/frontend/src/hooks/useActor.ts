@@ -6,9 +6,6 @@ import { getSecretParameter } from "../utils/urlParams";
 import { useInternetIdentity } from "./useInternetIdentity";
 
 const ACTOR_QUERY_KEY = "actor";
-// NAPRAWA #5: staleTime 5 minut zamiast Infinity — autoryzacja jest odświeżana
-const ACTOR_STALE_TIME = 5 * 60 * 1000;
-
 export function useActor() {
   const { identity } = useInternetIdentity();
   const queryClient = useQueryClient();
@@ -21,39 +18,31 @@ export function useActor() {
         return await createActorWithConfig();
       }
 
-      const actorOptions = {
-        agentOptions: {
-          identity,
-        },
-      };
-
+      const actorOptions = { agentOptions: { identity } };
       const actor = await createActorWithConfig(actorOptions);
 
-      // NAPRAWA #3: try/catch — błąd inicjalizacji nie blokuje logowania
+      // Try to initialize — first caller becomes admin.
+      // If this fails for any reason, actor still loads.
       try {
         const adminToken = getSecretParameter("caffeineAdminToken") || "";
         await actor._initializeAccessControlWithSecret(adminToken);
       } catch (e) {
-        console.warn("Access control init failed (non-fatal):", e);
+        console.warn("Access control initialization failed:", e);
       }
 
       return actor;
     },
-    staleTime: ACTOR_STALE_TIME,
+    staleTime: 5 * 60 * 1000,
     enabled: true,
   });
 
   useEffect(() => {
     if (actorQuery.data) {
       queryClient.invalidateQueries({
-        predicate: (query) => {
-          return !query.queryKey.includes(ACTOR_QUERY_KEY);
-        },
+        predicate: (query) => !query.queryKey.includes(ACTOR_QUERY_KEY),
       });
       queryClient.refetchQueries({
-        predicate: (query) => {
-          return !query.queryKey.includes(ACTOR_QUERY_KEY);
-        },
+        predicate: (query) => !query.queryKey.includes(ACTOR_QUERY_KEY),
       });
     }
   }, [actorQuery.data, queryClient]);
