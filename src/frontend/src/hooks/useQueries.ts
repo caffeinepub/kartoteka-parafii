@@ -74,14 +74,30 @@ export function useGetCallerUserProfile() {
 export function useIsAuthorized() {
   const { actor, isFetching: actorFetching } = useActor();
 
+  // Use getCallerUserRole() which exists on the deployed canister.
+  // actor.isAuthorized() does NOT exist on the canister DID — calling it throws.
+  // A caller is authorized if their role is admin or user (not guest).
+  // #guest is returned for anonymous callers or principals not yet registered.
   const query = useQuery<boolean>({
     queryKey: ["isAuthorized"],
     queryFn: async () => {
       if (!actor) return false;
-      return actor.isAuthorized();
+      try {
+        const role = await actor.getCallerUserRole();
+        // Motoko variant arrives as { admin: null } | { user: null } | { guest: null }
+        if (typeof role === "object" && role !== null) {
+          return "admin" in role || "user" in role;
+        }
+        // Fallback: string form "admin" | "user" | "guest"
+        return role === "admin" || role === "user";
+      } catch (e) {
+        console.warn("useIsAuthorized: getCallerUserRole failed", e);
+        return false;
+      }
     },
     enabled: !!actor && !actorFetching,
-    retry: false,
+    retry: 1,
+    retryDelay: 1500,
   });
 
   return {
