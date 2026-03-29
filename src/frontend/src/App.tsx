@@ -4,12 +4,15 @@ import { Lock, RefreshCw } from "lucide-react";
 import { ThemeProvider } from "next-themes";
 import { useCallback, useState } from "react";
 import MainLayout from "./components/MainLayout";
+import PinEntryScreen from "./components/PinEntryScreen";
+import PinSetupScreen from "./components/PinSetupScreen";
 import ProfileSetupModal from "./components/ProfileSetupModal";
 import StartupErrorBoundary from "./components/StartupErrorBoundary";
 import UnhandledErrorListener from "./components/UnhandledErrorListener";
 import { useInternetIdentity } from "./hooks/useInternetIdentity";
 import { useGetCallerUserProfile, useIsAuthorized } from "./hooks/useQueries";
 import LoginPage from "./pages/LoginPage";
+import { isPinConfigured } from "./utils/pinAuth";
 
 function AccessDeniedScreen() {
   const { clear } = useInternetIdentity();
@@ -109,6 +112,7 @@ function AppContent() {
     isFetched: authFetched,
   } = useIsAuthorized();
   const [unhandledError, setUnhandledError] = useState<Error | null>(null);
+  const [pinUnlocked, setPinUnlocked] = useState(false);
 
   const isAuthenticated = !!identity;
   const showProfileSetup =
@@ -154,6 +158,25 @@ function AppContent() {
       <>
         <UnhandledErrorListener onError={handleUnhandledError} />
         <AccessDeniedScreen />
+      </>
+    );
+  }
+
+  // PIN layer — shown after II authentication and authorization check
+  if (isAuthenticated && isAuthorized && !pinUnlocked) {
+    const pinConfigured = isPinConfigured();
+    if (!pinConfigured) {
+      return (
+        <>
+          <UnhandledErrorListener onError={handleUnhandledError} />
+          <PinSetupScreen onComplete={() => setPinUnlocked(true)} />
+        </>
+      );
+    }
+    return (
+      <>
+        <UnhandledErrorListener onError={handleUnhandledError} />
+        <PinEntryScreen onSuccess={() => setPinUnlocked(true)} />
       </>
     );
   }
