@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import { Edit, Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { RelationType } from "../backend";
 import type {
@@ -42,6 +42,7 @@ export default function ParishionerDialog({
   parishioner,
   onSave,
 }: ParishionerDialogProps) {
+  const familyKeysRef = useRef<string[]>([]);
   const [formData, setFormData] = useState<Parishioner>({
     uid: BigInt(0),
     firstName: "",
@@ -78,6 +79,10 @@ export default function ParishionerDialog({
 
   useEffect(() => {
     if (parishioner) {
+      // Initialize stable keys for existing family members
+      familyKeysRef.current = parishioner.family.map(
+        (_, i) => `fm-existing-${i}-${Date.now()}`,
+      );
       setFormData(parishioner);
       // Refetch offerings when parishioner changes
       refetchOfferings();
@@ -112,6 +117,10 @@ export default function ParishionerDialog({
   };
 
   const addFamilyMember = () => {
+    familyKeysRef.current = [
+      ...familyKeysRef.current,
+      `fm-${Date.now()}-${Math.random()}`,
+    ];
     setFormData({
       ...formData,
       family: [
@@ -159,6 +168,7 @@ export default function ParishionerDialog({
   };
 
   const removeFamilyMember = (index: number) => {
+    familyKeysRef.current = familyKeysRef.current.filter((_, i) => i !== index);
     setFormData({
       ...formData,
       family: formData.family.filter((_, i) => i !== index),
@@ -502,7 +512,9 @@ export default function ParishionerDialog({
                 ) : (
                   formData.family.map((member, index) => (
                     <div
-                      key={`family-${index}-${member.name}`}
+                      key={
+                        familyKeysRef.current[index] ?? `fm-fallback-${index}`
+                      }
                       className="border border-border rounded-lg p-5 space-y-4 bg-muted/20"
                     >
                       <div className="flex items-center justify-between">

@@ -133,8 +133,8 @@ export function useGetPaginatedParishioners(page = 1, pageSize = 20) {
       return actor.getPaginatedParishioners(BigInt(page), BigInt(pageSize));
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -154,7 +154,7 @@ export function useGetAllParishioners() {
     },
     enabled: !!actor && !isFetching,
     staleTime: 60000,
-    gcTime: 300000,
+    gcTime: 1800000,
     placeholderData: [],
   });
 }
@@ -219,8 +219,8 @@ export function useGetPaginatedLocalities(page = 1, pageSize = 20) {
       return actor.getPaginatedLocalities(BigInt(page), BigInt(pageSize));
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -240,8 +240,8 @@ export function useGetPaginatedLocalitiesWithParishioners(
       );
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -313,8 +313,8 @@ export function useGetOverallBudgetBalance() {
       return actor.getOverallBudgetBalance();
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
     placeholderData: BigInt(0),
   });
 }
@@ -333,8 +333,8 @@ export function useGetPaginatedBudgetTransactions(page = 1, pageSize = 20) {
       );
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -365,8 +365,8 @@ export function useGetPaginatedBudgetTransactionsByDateRange(
       );
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
     placeholderData: {
       data: [],
       totalCount: BigInt(0),
@@ -400,7 +400,7 @@ export function useGetAllBudgetTransactionsByYear(year: number) {
     },
     enabled: !!actor && !isFetching,
     staleTime: 60000,
-    gcTime: 300000,
+    gcTime: 1800000,
     placeholderData: [],
   });
 }
@@ -467,8 +467,8 @@ export function useGetPaginatedEvents(page = 1, pageSize = 20) {
       return actor.getPaginatedEvents(BigInt(page), BigInt(pageSize));
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -519,8 +519,8 @@ export function useGetPaginatedParishFunctionAssignments(
       );
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -545,8 +545,8 @@ export function useGetPaginatedParishFunctionLocalityAssignments(
       );
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -635,8 +635,8 @@ export function useGetPaginatedStatisticEntries(page = 1, pageSize = 20) {
       return actor.getPaginatedStatisticEntries(BigInt(page), BigInt(pageSize));
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -684,8 +684,8 @@ export function useGetPaginatedParishNotes(page = 1, pageSize = 20) {
       return actor.getPaginatedParishNotes(BigInt(page), BigInt(pageSize));
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -733,8 +733,8 @@ export function useGetPaginatedCollectiveOfferings(page = 1, pageSize = 20) {
       );
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -748,8 +748,8 @@ export function useGetCollectiveOfferingsByLocality(locality: string) {
       return actor.getCollectiveOfferingsByLocality(locality);
     },
     enabled: !!actor && !isFetching && !!locality,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -821,8 +821,8 @@ export function useGetPaginatedIndividualOfferings(page = 1, pageSize = 20) {
       );
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -836,8 +836,8 @@ export function useGetIndividualOfferingsByParishioner(parishionerId: bigint) {
       return actor.getIndividualOfferingsByParishioner(parishionerId);
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -906,8 +906,8 @@ export function useGetAllLetters() {
       return actor.getAllLetters();
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -991,8 +991,8 @@ export function useGetAnniversariesForYearPaginated(
       });
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -1016,8 +1016,8 @@ export function useGetAnniversariesForYearPdfExport(
       });
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
@@ -1049,8 +1049,8 @@ export function useGetBaptismRegistry(
       });
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 300000,
+    gcTime: 1800000,
   });
 }
 
