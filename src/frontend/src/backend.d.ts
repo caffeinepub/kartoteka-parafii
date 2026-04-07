@@ -35,6 +35,14 @@ export interface PaginatedResult_12 {
     currentPage: bigint;
     pageCount: bigint;
 }
+export interface Sacraments {
+    confirmationYear?: bigint;
+    funeralYear?: bigint;
+    marriageYear?: bigint;
+    communionYear?: bigint;
+    birthYear?: bigint;
+    baptismYear?: bigint;
+}
 export interface ParishFunctionLocalityAssignment {
     uid: UniqueId;
     contacts: Array<string>;
@@ -45,14 +53,6 @@ export interface ParishFunctionLocalityAssignment {
 export interface Task {
     description: string;
     assignedParishioners: Array<bigint>;
-}
-export interface Sacraments {
-    confirmationYear?: bigint;
-    funeralYear?: bigint;
-    marriageYear?: bigint;
-    communionYear?: bigint;
-    birthYear?: bigint;
-    baptismYear?: bigint;
 }
 export interface ParishNote {
     title: string;
@@ -194,13 +194,6 @@ export interface GetBaptismRegistryRequest {
     pageSize?: bigint;
     search?: string;
 }
-export interface Event {
-    uid: UniqueId;
-    tasks: Array<Task>;
-    title: string;
-    description: string;
-    timestamp: bigint;
-}
 export type UniqueId = bigint;
 export interface PaginatedResult_11 {
     data: Array<BaptismRecord>;
@@ -216,6 +209,13 @@ export interface ParishFunctionAssignment {
     contacts: Array<string>;
     description: string;
     address: string;
+}
+export interface Event {
+    uid: UniqueId;
+    tasks: Array<Task>;
+    title: string;
+    description: string;
+    timestamp: bigint;
 }
 export interface PaginatedResult_3 {
     data: Array<ParishFunctionLocalityAssignment>;
@@ -379,6 +379,7 @@ export interface backendInterface {
     getTotalResidentCount(): Promise<bigint>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     hasParishioners(): Promise<boolean>;
+    isAuthorized(): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     updateBaptismRecord(id: bigint, record: BaptismRecord): Promise<void>;

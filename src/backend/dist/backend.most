@@ -1,0 +1,237 @@
+// Version: 1.0.0
+type BaptismAnnotations__932988542 =
+  {
+    confirmation : ?Text;
+    generalNotes : ?Text;
+    marriage : ?Text;
+    ordination : ?Text;
+    profession : ?Text
+  };
+type BaptismRecord__1064639799 =
+  {
+    actNumber : Text;
+    annotations : BaptismAnnotations__932988542;
+    baptismDate : Int;
+    baptismPlace : Text;
+    birthDate : Text;
+    birthPlace : Text;
+    createdAt : Int;
+    father : ParentsData__572321488;
+    godfather : ?ParentsData__572321488;
+    godmother : ?ParentsData__572321488;
+    id : Nat;
+    mother : ParentsData__572321488;
+    personFullName : Text
+  };
+type BudgetTransaction__701726859 =
+  {
+    amount : Nat;
+    category : Text;
+    description : Text;
+    relatedLocality : ?Text;
+    relatedParishioner : ?Nat;
+    timestamp : Int;
+    type_ : TransactionType__767491300;
+    uid : UniqueId__207728134
+  };
+type CollectiveOffering__767796390 =
+  {
+    amount : Nat;
+    description : Text;
+    id : UniqueId__207728134;
+    locality : Text;
+    timestamp : Int;
+    year : Int
+  };
+type Data__791452850<K, V> =
+  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type Event__492135844 =
+  {
+    description : Text;
+    tasks : [Task__972485619];
+    timestamp : Int;
+    title : Text;
+    uid : UniqueId__207728134
+  };
+type ExternalBlob__246066408 = Blob;
+type FamilyMember__410392939 =
+  {
+    name : Text;
+    relationType : RelationType__621772586;
+    sacraments : Sacraments__980576534
+  };
+type IndividualOffering__328479603 =
+  {
+    amount : Nat;
+    description : Text;
+    id : UniqueId__207728134;
+    parishionerId : Nat;
+    timestamp : Int;
+    year : Int
+  };
+type Internal__8484328<K, V> =
+  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type Letter__1042265737 =
+  {
+    adresat : ?Text;
+    body : Text;
+    date : Int;
+    number : Nat;
+    title : Text;
+    uid : Nat;
+    year : Nat
+  };
+type Locality__718172471 =
+  {contactPerson : Text; name : Text; phone : Text; tasks : [Text]};
+type Map__158565046<K, V> = Map__297112838<K, V>;
+type Map__297112838<K, V> =
+  {var root : Node__46230540<K, V>; var size : Nat__490723111};
+type Map__605269027<K, V> = Map__158565046<K, V>;
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Node__46230540<K, V> =
+  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type Offer__296166603 = {amount : Nat; description : Text; year : Int};
+type ParentsData__572321488 =
+  {age : Text; fullName : Text; religion : Text; residence : Text};
+type ParishFunctionAssignment__961500159 =
+  {
+    address : Text;
+    assignedParishioner : Nat;
+    contacts : [Text];
+    description : Text;
+    title : Text;
+    uid : UniqueId__207728134
+  };
+type ParishFunctionLocalityAssignment__648604255 =
+  {
+    assignedParishioners : [Nat];
+    contacts : [Text];
+    description : Text;
+    localityName : Text;
+    uid : UniqueId__207728134
+  };
+type ParishNote__182131823 = {content : Text; timestamp : Int; title : Text};
+type Parishioner__878037856 =
+  {
+    address : ?Text;
+    birthYear : ?Nat;
+    email : ?Text;
+    family : [FamilyMember__410392939];
+    firstName : Text;
+    lastName : Text;
+    offers : [Offer__296166603];
+    pastoralNotes : ?Text;
+    phone : ?Text;
+    photo : ?ExternalBlob__246066408;
+    profession : ?Text;
+    sacraments : Sacraments__980576534;
+    uid : Nat
+  };
+type RelationType__621772586 = {#child; #other; #spouse};
+type Sacraments__980576534 =
+  {
+    baptismYear : ?Nat;
+    birthYear : ?Nat;
+    communionYear : ?Nat;
+    confirmationYear : ?Nat;
+    funeralYear : ?Nat;
+    marriageYear : ?Nat
+  };
+type StatisticEntry__22497538 =
+  {communionCount : Nat; sundayAttendance : Nat; timestamp : Int};
+type Task__972485619 = {assignedParishioners : [Nat]; description : Text};
+type TransactionType__767491300 = {#expense; #income};
+type UniqueId__207728134 = Nat;
+type UserProfile__491224006 = {name : Text; role : Text};
+type UserRole__1054455867 = {#admin; #guest; #user};
+actor {
+  stable var _stableAdminAssigned : Bool;
+  stable var _stableUserRoles :
+    {
+      var root : Node__46230540<Principal, UserRole__1054455867>;
+      var size : Nat__490723111
+    };
+  stable accessControlState :
+    {
+      var adminAssigned : Bool;
+      userRoles : Map__605269027<Principal, UserRole__1054455867>
+    };
+  stable var baptismRegistry :
+    {
+      var root : Node__46230540<Nat, BaptismRecord__1064639799>;
+      var size : Nat__490723111
+    };
+  stable var budgetTransactions :
+    {
+      var root :
+        Node__46230540<UniqueId__207728134, BudgetTransaction__701726859>;
+      var size : Nat__490723111
+    };
+  stable var collectiveOfferings :
+    {
+      var root :
+        Node__46230540<UniqueId__207728134, CollectiveOffering__767796390>;
+      var size : Nat__490723111
+    };
+  stable var events :
+    {
+      var root : Node__46230540<UniqueId__207728134, Event__492135844>;
+      var size : Nat__490723111
+    };
+  stable var individualOfferings :
+    {
+      var root :
+        Node__46230540<UniqueId__207728134, IndividualOffering__328479603>;
+      var size : Nat__490723111
+    };
+  stable var letters :
+    {
+      var root : Node__46230540<Nat, Letter__1042265737>;
+      var size : Nat__490723111
+    };
+  stable var localities :
+    {
+      var root : Node__46230540<Text, Locality__718172471>;
+      var size : Nat__490723111
+    };
+  stable maxPageSize : Nat;
+  stable var nextLetterNumber : Nat;
+  stable var nextUniqueId : Nat;
+  stable pageSizeDefault : Nat;
+  stable var parishFunctionAssignments :
+    {
+      var root :
+        Node__46230540<UniqueId__207728134,
+                        ParishFunctionAssignment__961500159>;
+      var size : Nat__490723111
+    };
+  stable var parishFunctionLocalityAssignments :
+    {
+      var root :
+        Node__46230540<UniqueId__207728134,
+                        ParishFunctionLocalityAssignment__648604255>;
+      var size : Nat__490723111
+    };
+  stable var parishNotes :
+    {
+      var root : Node__46230540<UniqueId__207728134, ParishNote__182131823>;
+      var size : Nat__490723111
+    };
+  stable var parishioners :
+    {
+      var root : Node__46230540<Nat, Parishioner__878037856>;
+      var size : Nat__490723111
+    };
+  stable var statistics :
+    {
+      var root : Node__46230540<UniqueId__207728134, StatisticEntry__22497538>;
+      var size : Nat__490723111
+    };
+  stable var userProfiles :
+    {
+      var root : Node__46230540<Principal, UserProfile__491224006>;
+      var size : Nat__490723111
+    }
+};

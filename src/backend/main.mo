@@ -8,14 +8,14 @@ import Text "mo:core/Text";
 import Order "mo:core/Order";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
-import AccessControl "authorization/access-control";
-import Storage "blob-storage/Storage";
-import MixinAuthorization "authorization/MixinAuthorization";
-import MixinStorage "blob-storage/Mixin";
+import AccessControl "mo:caffeineai-authorization/access-control";
+import Storage "mo:caffeineai-object-storage/Storage";
+import MixinAuthorization "mo:caffeineai-authorization/MixinAuthorization";
+import MixinObjectStorage "mo:caffeineai-object-storage/Mixin";
 
 
  actor {
-  include MixinStorage();
+  include MixinObjectStorage();
 
   public type PaginatedResult<T> = {
     data : [T];

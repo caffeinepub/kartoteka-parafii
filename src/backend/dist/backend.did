@@ -1,0 +1,475 @@
+type _ImmutableObjectStorageRefillResult = 
+ record {
+   success: opt bool;
+   topped_up_amount: opt nat;
+ };
+type _ImmutableObjectStorageRefillInformation = record {
+                                                  proposed_top_up_amount:
+                                                   opt nat;};
+type _ImmutableObjectStorageCreateCertificateResult = 
+ record {
+   blob_hash: text;
+   method: text;
+ };
+type UserRole = 
+ variant {
+   admin;
+   guest;
+   user;
+ };
+type UserProfile = 
+ record {
+   name: text;
+   role: text;
+ };
+type UniqueId = nat;
+type TransactionType = 
+ variant {
+   expense;
+   income;
+ };
+type Task = 
+ record {
+   assignedParishioners: vec nat;
+   description: text;
+ };
+type StatisticEntry = 
+ record {
+   communionCount: nat;
+   sundayAttendance: nat;
+   timestamp: int;
+ };
+type Sacraments = 
+ record {
+   baptismYear: opt nat;
+   birthYear: opt nat;
+   communionYear: opt nat;
+   confirmationYear: opt nat;
+   funeralYear: opt nat;
+   marriageYear: opt nat;
+ };
+type RelationType = 
+ variant {
+   child;
+   other;
+   spouse;
+ };
+type Parishioner = 
+ record {
+   address: opt text;
+   birthYear: opt nat;
+   email: opt text;
+   family: vec FamilyMember;
+   firstName: text;
+   lastName: text;
+   offers: vec Offer;
+   pastoralNotes: opt text;
+   phone: opt text;
+   photo: opt ExternalBlob;
+   profession: opt text;
+   sacraments: Sacraments;
+   uid: nat;
+ };
+type ParishNote = 
+ record {
+   content: text;
+   timestamp: int;
+   title: text;
+ };
+type ParishFunctionLocalityAssignment = 
+ record {
+   assignedParishioners: vec nat;
+   contacts: vec text;
+   description: text;
+   localityName: text;
+   uid: UniqueId;
+ };
+type ParishFunctionAssignment = 
+ record {
+   address: text;
+   assignedParishioner: nat;
+   contacts: vec text;
+   description: text;
+   title: text;
+   uid: UniqueId;
+ };
+type ParentsData = 
+ record {
+   age: text;
+   fullName: text;
+   religion: text;
+   residence: text;
+ };
+type PaginatedResult_9 = 
+ record {
+   currentPage: nat;
+   data: vec CollectiveOffering;
+   pageCount: nat;
+   pageSize: nat;
+   totalCount: nat;
+ };
+type PaginatedResult_8 = 
+ record {
+   currentPage: nat;
+   data: vec Event;
+   pageCount: nat;
+   pageSize: nat;
+   totalCount: nat;
+ };
+type PaginatedResult_7 = 
+ record {
+   currentPage: nat;
+   data: vec IndividualOffering;
+   pageCount: nat;
+   pageSize: nat;
+   totalCount: nat;
+ };
+type PaginatedResult_6 = 
+ record {
+   currentPage: nat;
+   data: vec Locality;
+   pageCount: nat;
+   pageSize: nat;
+   totalCount: nat;
+ };
+type PaginatedResult_5 = 
+ record {
+   currentPage: nat;
+   data: vec LocalityWithParishioners;
+   pageCount: nat;
+   pageSize: nat;
+   totalCount: nat;
+ };
+type PaginatedResult_4 = 
+ record {
+   currentPage: nat;
+   data: vec ParishFunctionAssignment;
+   pageCount: nat;
+   pageSize: nat;
+   totalCount: nat;
+ };
+type PaginatedResult_3 = 
+ record {
+   currentPage: nat;
+   data: vec ParishFunctionLocalityAssignment;
+   pageCount: nat;
+   pageSize: nat;
+   totalCount: nat;
+ };
+type PaginatedResult_2 = 
+ record {
+   currentPage: nat;
+   data: vec ParishNote;
+   pageCount: nat;
+   pageSize: nat;
+   totalCount: nat;
+ };
+type PaginatedResult_12 = 
+ record {
+   currentPage: nat;
+   data: vec Anniversary;
+   pageCount: nat;
+   pageSize: nat;
+   totalCount: nat;
+ };
+type PaginatedResult_11 = 
+ record {
+   currentPage: nat;
+   data: vec BaptismRecord;
+   pageCount: nat;
+   pageSize: nat;
+   totalCount: nat;
+ };
+type PaginatedResult_10 = 
+ record {
+   currentPage: nat;
+   data: vec BudgetTransaction;
+   pageCount: nat;
+   pageSize: nat;
+   totalCount: nat;
+ };
+type PaginatedResult_1 = 
+ record {
+   currentPage: nat;
+   data: vec Parishioner;
+   pageCount: nat;
+   pageSize: nat;
+   totalCount: nat;
+ };
+type PaginatedResult = 
+ record {
+   currentPage: nat;
+   data: vec StatisticEntry;
+   pageCount: nat;
+   pageSize: nat;
+   totalCount: nat;
+ };
+type Offer = 
+ record {
+   amount: nat;
+   description: text;
+   year: int;
+ };
+type LocalityWithParishioners = 
+ record {
+   contactPerson: text;
+   name: text;
+   phone: text;
+   residents: vec LocalityResident;
+   tasks: vec text;
+   totalParishioners: nat;
+ };
+type LocalityResident = 
+ record {
+   isFamilyMember: bool;
+   name: text;
+   relationType: opt RelationType;
+ };
+type Locality = 
+ record {
+   contactPerson: text;
+   name: text;
+   phone: text;
+   tasks: vec text;
+ };
+type Letter = 
+ record {
+   adresat: opt text;
+   body: text;
+   date: int;
+   number: nat;
+   title: text;
+   uid: nat;
+   year: nat;
+ };
+type IndividualOffering = 
+ record {
+   amount: nat;
+   description: text;
+   id: UniqueId;
+   parishionerId: nat;
+   timestamp: int;
+   year: int;
+ };
+type GetBaptismRegistryRequest = 
+ record {
+   page: opt nat;
+   pageSize: opt nat;
+   search: opt text;
+   sortMode: opt BaptismRecordSortMode;
+ };
+type GetAnniversariesRequest = 
+ record {
+   anniversaryType: opt AnniversaryType;
+   page: opt nat;
+   pageSize: opt nat;
+   year: nat;
+ };
+type GetAnniversariesPdfExportRequest = 
+ record {
+   anniversaryType: opt AnniversaryType;
+   year: nat;
+ };
+type FamilyMember = 
+ record {
+   name: text;
+   relationType: RelationType;
+   sacraments: Sacraments;
+ };
+type ExternalBlob = blob;
+type Event = 
+ record {
+   description: text;
+   tasks: vec Task;
+   timestamp: int;
+   title: text;
+   uid: UniqueId;
+ };
+type CollectiveOffering = 
+ record {
+   amount: nat;
+   description: text;
+   id: UniqueId;
+   locality: text;
+   timestamp: int;
+   year: int;
+ };
+type BudgetTransaction = 
+ record {
+   amount: nat;
+   category: text;
+   description: text;
+   relatedLocality: opt text;
+   relatedParishioner: opt nat;
+   timestamp: int;
+   "type": TransactionType;
+   uid: UniqueId;
+ };
+type BaptismRecordSortMode = 
+ variant {
+   alphabetical;
+   newestFirst;
+   oldestFirst;
+ };
+type BaptismRecord = 
+ record {
+   actNumber: text;
+   annotations: BaptismAnnotations;
+   baptismDate: int;
+   baptismPlace: text;
+   birthDate: text;
+   birthPlace: text;
+   createdAt: int;
+   father: ParentsData;
+   godfather: opt ParentsData;
+   godmother: opt ParentsData;
+   id: nat;
+   mother: ParentsData;
+   personFullName: text;
+ };
+type BaptismAnnotations = 
+ record {
+   confirmation: opt text;
+   generalNotes: opt text;
+   marriage: opt text;
+   ordination: opt text;
+   profession: opt text;
+ };
+type AnniversaryType = 
+ variant {
+   baptism;
+   funeral;
+   marriage;
+ };
+type AnniversaryPdfExport = 
+ record {
+   anniversaries: vec Anniversary;
+   year: nat;
+ };
+type Anniversary = 
+ record {
+   address: opt text;
+   anniversaryNumber: nat;
+   anniversaryType: AnniversaryType;
+   eventYear: nat;
+   firstName: text;
+   lastName: text;
+   parishionerId: nat;
+   targetYear: nat;
+ };
+service : {
+  _immutableObjectStorageBlobsAreLive: (hashes: vec blob) -> (vec bool) query;
+  _immutableObjectStorageBlobsToDelete: () -> (vec blob) query;
+  _immutableObjectStorageConfirmBlobDeletion: (blobs: vec blob) -> ();
+  _immutableObjectStorageCreateCertificate: (blobHash: text) ->
+   (_ImmutableObjectStorageCreateCertificateResult);
+  _immutableObjectStorageRefillCashier: (refillInformation:
+   opt _ImmutableObjectStorageRefillInformation) ->
+   (_ImmutableObjectStorageRefillResult);
+  _immutableObjectStorageUpdateGatewayPrincipals: () -> ();
+  _initializeAccessControl: () -> ();
+  addBudgetTransaction: (transaction: BudgetTransaction) -> (UniqueId);
+  addCollectiveOffering: (offering: CollectiveOffering) -> (UniqueId);
+  addEvent: (Event) -> (UniqueId);
+  addIndividualOffering: (offering: IndividualOffering) -> (UniqueId);
+  addLetter: (title: text, body: text, year: nat, adresat: opt text) -> (nat);
+  addLocality: (locality: Locality) -> ();
+  addParishFunctionAssignment: (ParishFunctionAssignment) -> (UniqueId);
+  addParishFunctionLocalityAssignment: (ParishFunctionLocalityAssignment) ->
+   (UniqueId);
+  addParishNote: (ParishNote) -> (UniqueId);
+  addParishioner: (Parishioner) -> (nat);
+  addStatisticEntry: (StatisticEntry) -> (UniqueId);
+  assignCallerUserRole: (user: principal, role: UserRole) -> ();
+  clearBaptismRegistry: () -> ();
+  createBaptismRecord: ("record": BaptismRecord) -> (nat);
+  deleteBaptismRecord: (id: nat) -> ();
+  deleteBudgetTransaction: (uid: UniqueId) -> ();
+  deleteCollectiveOffering: (id: UniqueId) -> ();
+  deleteEvent: (id: UniqueId) -> ();
+  deleteIndividualOffering: (id: UniqueId) -> ();
+  deleteLetter: (uid: nat) -> ();
+  deleteLocality: (name: text) -> ();
+  deleteParishFunctionAssignment: (id: UniqueId) -> ();
+  deleteParishFunctionLocalityAssignment: (id: UniqueId) -> ();
+  deleteParishNote: (id: UniqueId) -> ();
+  deleteParishioner: (id: nat) -> ();
+  deleteStatisticEntry: (id: UniqueId) -> ();
+  getAllCollectiveOfferings: () -> (vec CollectiveOffering) query;
+  getAllIndividualOfferings: () -> (vec IndividualOffering) query;
+  getAllLetters: () -> (vec Letter) query;
+  getAllPaginatedParishFunctionData: (page: opt nat, pageSize: opt nat) ->
+   (record {
+      assignments: PaginatedResult_4;
+      localityAssignments: PaginatedResult_3;
+    }) query;
+  getAllResidents: () -> (vec LocalityResident) query;
+  getAnniversariesForYearPaginated: (request: GetAnniversariesRequest) ->
+   (PaginatedResult_12) query;
+  getAnniversariesForYearPdfExport: (request:
+   GetAnniversariesPdfExportRequest) -> (AnniversaryPdfExport) query;
+  getBaptismRecord: (id: nat) -> (opt BaptismRecord) query;
+  getBaptismRegistry: (request: GetBaptismRegistryRequest) ->
+   (PaginatedResult_11) query;
+  getCallerUserProfile: () -> (opt UserProfile) query;
+  getCallerUserRole: () -> (UserRole) query;
+  getCollectiveOffering: (id: UniqueId) -> (opt CollectiveOffering) query;
+  getCollectiveOfferingsByLocality: (locality: text) ->
+   (vec CollectiveOffering) query;
+  getIndividualOffering: (id: UniqueId) -> (opt IndividualOffering) query;
+  getIndividualOfferingsByParishioner: (parishionerId: nat) ->
+   (vec IndividualOffering) query;
+  getLetter: (uid: nat) -> (opt Letter) query;
+  getOverallBudgetBalance: () -> (nat) query;
+  getPaginatedBudgetTransactions: (page: opt nat, pageSize: opt nat) ->
+   (PaginatedResult_10) query;
+  getPaginatedBudgetTransactionsByDateRange: (page: opt nat, pageSize:
+   opt nat, startTimestamp: int, endTimestamp: int) ->
+   (PaginatedResult_10) query;
+  getPaginatedCollectiveOfferings: (page: opt nat, pageSize: opt nat) ->
+   (PaginatedResult_9) query;
+  getPaginatedEvents: (page: opt nat, pageSize: opt nat) ->
+   (PaginatedResult_8) query;
+  getPaginatedIndividualOfferings: (page: opt nat, pageSize: opt nat) ->
+   (PaginatedResult_7) query;
+  getPaginatedLocalities: (page: opt nat, pageSize: opt nat) ->
+   (PaginatedResult_6) query;
+  getPaginatedLocalitiesWithParishioners: (page: opt nat, pageSize:
+   opt nat) -> (PaginatedResult_5) query;
+  getPaginatedParishFunctionAssignments: (page: opt nat, pageSize:
+   opt nat) -> (PaginatedResult_4) query;
+  getPaginatedParishFunctionLocalityAssignments: (page: opt nat, pageSize:
+   opt nat) -> (PaginatedResult_3) query;
+  getPaginatedParishNotes: (page: opt nat, pageSize: opt nat) ->
+   (PaginatedResult_2) query;
+  getPaginatedParishioners: (page: opt nat, pageSize: opt nat) ->
+   (PaginatedResult_1) query;
+  getPaginatedStatisticEntries: (page: opt nat, pageSize: opt nat) ->
+   (PaginatedResult) query;
+  getResidentCountByLocality: (localityName: text) -> (nat) query;
+  getResidentsByLocality: (localityName: text) ->
+   (vec LocalityResident) query;
+  getTotalResidentCount: () -> (nat) query;
+  getUserProfile: (user: principal) -> (opt UserProfile) query;
+  hasParishioners: () -> (bool) query;
+  isAuthorized: () -> (bool) query;
+  isCallerAdmin: () -> (bool) query;
+  saveCallerUserProfile: (profile: UserProfile) -> ();
+  updateBaptismRecord: (id: nat, "record": BaptismRecord) -> ();
+  updateBudgetTransaction: (uid: UniqueId, transaction: BudgetTransaction) ->
+   ();
+  updateCollectiveOffering: (id: UniqueId, offering: CollectiveOffering) ->
+   ();
+  updateEvent: (id: UniqueId, event: Event) -> ();
+  updateIndividualOffering: (id: UniqueId, offering: IndividualOffering) ->
+   ();
+  updateLetter: (uid: nat, title: text, body: text, adresat: opt text) -> ();
+  updateLocality: (name: text, locality: Locality) -> ();
+  updateParishFunctionAssignment: (id: UniqueId, assignment:
+   ParishFunctionAssignment) -> ();
+  updateParishFunctionLocalityAssignment: (id: UniqueId, assignment:
+   ParishFunctionLocalityAssignment) -> ();
+  updateParishNote: (id: UniqueId, note: ParishNote) -> ();
+  updateParishioner: (id: nat, parishioner: Parishioner) -> ();
+  updateStatisticEntry: (id: UniqueId, entry: StatisticEntry) -> ();
+}

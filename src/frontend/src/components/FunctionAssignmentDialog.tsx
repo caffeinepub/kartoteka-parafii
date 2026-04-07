@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ParishFunctionAssignment } from "../backend";
 
 interface FunctionAssignmentDialogProps {
@@ -33,10 +33,15 @@ export default function FunctionAssignmentDialog({
     address: "",
     contacts: [],
   });
+  // Stable IDs for each contact row — prevents React from remounting inputs on each keystroke
+  const [contactIds, setContactIds] = useState<number[]>([]);
+  const nextId = useRef(0);
 
   useEffect(() => {
     if (assignment) {
       setFormData(assignment);
+      const ids = assignment.contacts.map(() => nextId.current++);
+      setContactIds(ids);
     } else {
       setFormData({
         uid: BigInt(0),
@@ -46,6 +51,7 @@ export default function FunctionAssignmentDialog({
         address: "",
         contacts: [],
       });
+      setContactIds([]);
     }
   }, [assignment]);
 
@@ -55,27 +61,22 @@ export default function FunctionAssignmentDialog({
   };
 
   const handleAddContact = () => {
-    setFormData({
-      ...formData,
-      contacts: [...formData.contacts, ""],
-    });
+    setFormData({ ...formData, contacts: [...formData.contacts, ""] });
+    setContactIds([...contactIds, nextId.current++]);
   };
 
   const handleRemoveContact = (index: number) => {
-    const newContacts = formData.contacts.filter((_, i) => i !== index);
     setFormData({
       ...formData,
-      contacts: newContacts,
+      contacts: formData.contacts.filter((_, i) => i !== index),
     });
+    setContactIds(contactIds.filter((_, i) => i !== index));
   };
 
   const handleContactChange = (index: number, value: string) => {
     const newContacts = [...formData.contacts];
     newContacts[index] = value;
-    setFormData({
-      ...formData,
-      contacts: newContacts,
-    });
+    setFormData({ ...formData, contacts: newContacts });
   };
 
   return (
@@ -147,10 +148,7 @@ export default function FunctionAssignmentDialog({
             ) : (
               <div className="space-y-2">
                 {formData.contacts.map((contact, index) => (
-                  <div
-                    key={`contact-${index}-${contact}`}
-                    className="flex gap-2"
-                  >
+                  <div key={contactIds[index]} className="flex gap-2">
                     <Input
                       value={contact}
                       onChange={(e) =>
