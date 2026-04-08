@@ -76,10 +76,10 @@ export default function BaptismDetailCard({
     record.godmother?.residence;
 
   return (
-    <div className="space-y-6 max-h-[82vh] overflow-y-auto px-1">
+    <div className="space-y-8 max-h-[82vh] overflow-y-auto px-6">
       {/* Header — navy background with white text for perfect contrast */}
       <div
-        className="rounded-xl p-6 -mx-1"
+        className="rounded-xl p-6 -mx-6"
         style={{ background: "oklch(0.20 0.10 265)" }}
       >
         <div className="flex flex-col md:flex-row gap-4 items-start justify-between">
@@ -142,13 +142,13 @@ export default function BaptismDetailCard({
 
       {/* Akt chrztu */}
       <Card className="border-2">
-        <CardHeader className="bg-muted/30 pb-3">
+        <CardHeader className="bg-muted/30 pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Church className="h-5 w-5 text-primary" />
             Dane aktu chrztu
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-5">
+        <CardContent className="pt-6">
           <div className="grid md:grid-cols-2 gap-6">
             <div className="flex items-start gap-3">
               <Calendar className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -178,13 +178,13 @@ export default function BaptismDetailCard({
 
       {/* Dane ochrzczonego */}
       <Card className="border-2">
-        <CardHeader className="bg-muted/30 pb-3">
+        <CardHeader className="bg-muted/30 pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <User className="h-5 w-5 text-primary" />
             Dane ochrzczonego
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-5">
+        <CardContent className="pt-6">
           <div className="grid md:grid-cols-2 gap-6">
             {record.birthDate && (
               <div className="flex items-start gap-3">
@@ -214,13 +214,13 @@ export default function BaptismDetailCard({
 
       {/* Rodzice naturalni */}
       <Card className="border-2">
-        <CardHeader className="bg-muted/30 pb-3">
+        <CardHeader className="bg-muted/30 pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Users className="h-5 w-5 text-primary" />
             Rodzice naturalni
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-5 space-y-3">
+        <CardContent className="pt-6 space-y-3">
           <ParentRow label="Ojciec" data={record.father} />
           <ParentRow label="Matka" data={record.mother} />
         </CardContent>
@@ -229,13 +229,13 @@ export default function BaptismDetailCard({
       {/* Rodzice chrzestni */}
       {hasGodparents && (
         <Card className="border-2">
-          <CardHeader className="bg-muted/30 pb-3">
+          <CardHeader className="bg-muted/30 pb-4">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Heart className="h-5 w-5 text-primary" />
               Rodzice chrzestni
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-5 space-y-3">
+          <CardContent className="pt-6 space-y-3">
             {record.godfather && (
               <ParentRow label="Ojciec chrzestny" data={record.godfather} />
             )}
@@ -249,13 +249,13 @@ export default function BaptismDetailCard({
       {/* Wpisy późniejsze */}
       {hasAnnotations && (
         <Card className="border-2">
-          <CardHeader className="bg-muted/30 pb-3">
+          <CardHeader className="bg-muted/30 pb-4">
             <CardTitle className="flex items-center gap-2 text-lg">
               <BookOpen className="h-5 w-5 text-primary" />
               Wpisy późniejsze
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-5">
+          <CardContent className="pt-6">
             <div className="grid md:grid-cols-2 gap-4">
               {annotations.confirmation && (
                 <div className="p-4 rounded-lg border bg-primary/5 border-primary/20">

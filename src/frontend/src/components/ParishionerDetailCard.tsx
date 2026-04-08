@@ -73,10 +73,10 @@ export default function ParishionerDetailCard({
   ];
 
   return (
-    <div className="space-y-8 max-h-[85vh] overflow-y-auto px-2">
+    <div className="space-y-8 max-h-[82vh] overflow-y-auto px-6">
       {/* Header Section — navy background with white text for perfect contrast */}
       <div
-        className="rounded-xl p-6 -mx-1"
+        className="rounded-xl p-6 -mx-6"
         style={{ background: "oklch(0.20 0.10 265)" }}
       >
         <div className="flex flex-col md:flex-row gap-6 items-start">

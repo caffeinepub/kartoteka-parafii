@@ -309,7 +309,7 @@ export default function Korespondencja() {
                 <>
                   <DialogHeader className="p-0">
                     <div
-                      className="px-8 py-6"
+                      className="px-6 py-5"
                       style={{
                         background: NAVY,
                         borderBottom: `3px solid ${GOLD}`,
@@ -339,7 +339,7 @@ export default function Korespondencja() {
                       )}
                     </div>
                   </DialogHeader>
-                  <div className="px-8 py-6 space-y-4 max-h-[50vh] overflow-y-auto">
+                  <div className="px-6 py-6 space-y-8 max-h-[82vh] overflow-y-auto">
                     <div>
                       <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                         Treść pisma
@@ -350,7 +350,7 @@ export default function Korespondencja() {
                     </div>
                   </div>
                   <div
-                    className="px-8 py-4 flex gap-3"
+                    className="px-6 py-4 flex gap-3"
                     style={{ borderTop: "1px solid oklch(0.90 0.02 265)" }}
                   >
                     <Button
