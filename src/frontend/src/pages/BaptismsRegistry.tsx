@@ -1,10 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -313,15 +308,13 @@ export default function BaptismsRegistry() {
 
       {/* Detail View Dialog */}
       <Dialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">Akt Chrztu</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden flex flex-col max-h-[90vh]">
           {viewingRecord && (
             <BaptismDetailCard
               record={viewingRecord}
               onEdit={() => handleEdit(viewingRecord)}
               onDownloadPdf={() => handleExportPDF(viewingRecord)}
+              onClose={() => setDetailViewOpen(false)}
             />
           )}
         </DialogContent>

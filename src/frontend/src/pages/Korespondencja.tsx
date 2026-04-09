@@ -301,13 +301,13 @@ export default function Korespondencja() {
 
       {/* Detail wizytówka */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden flex flex-col max-h-[90vh]">
           {viewingLetter &&
             (() => {
               const letterNumber = `KP-${viewingLetter.year}-${viewingLetter.number.toString().padStart(3, "0")}`;
               return (
                 <>
-                  <DialogHeader className="p-0">
+                  <DialogHeader className="p-0 flex-none">
                     <div
                       className="px-6 py-5"
                       style={{
@@ -339,47 +339,48 @@ export default function Korespondencja() {
                       )}
                     </div>
                   </DialogHeader>
-                  <div className="px-6 py-6 space-y-8 max-h-[82vh] overflow-y-auto">
+                  <div className="flex-1 overflow-y-auto min-h-0 px-6 py-6 space-y-6">
                     <div>
-                      <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                      <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                         Treść pisma
                       </p>
-                      <p className="text-base leading-relaxed whitespace-pre-wrap">
+                      <p className="text-base leading-relaxed whitespace-pre-wrap break-words">
                         {viewingLetter.body}
                       </p>
                     </div>
                   </div>
                   <div
-                    className="px-6 py-4 flex gap-3"
-                    style={{ borderTop: "1px solid oklch(0.90 0.02 265)" }}
+                    className="flex-none px-6 py-4 flex flex-wrap gap-2 items-center justify-between"
+                    style={{ borderTop: "1px solid oklch(0.85 0.05 80)" }}
                   >
-                    <Button
-                      onClick={() => handleEdit(viewingLetter)}
-                      style={{ background: GOLD, color: NAVY }}
-                      className="hover:opacity-90"
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edytuj
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleExportPDF(viewingLetter)}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Eksportuj PDF
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleDelete(viewingLetter)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Usuń
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        onClick={() => handleEdit(viewingLetter)}
+                        style={{ background: GOLD, color: NAVY }}
+                        className="hover:opacity-90"
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edytuj
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleExportPDF(viewingLetter)}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Eksportuj PDF
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleDelete(viewingLetter)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Usuń
+                      </Button>
+                    </div>
                     <Button
                       variant="outline"
                       onClick={() => setDetailOpen(false)}
-                      className="ml-auto"
                     >
                       <X className="h-4 w-4 mr-2" />
                       Zamknij

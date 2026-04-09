@@ -1,11 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -513,10 +508,7 @@ export default function Kartoteka() {
 
       {/* Detail View Dialog */}
       <Dialog open={detailViewOpen} onOpenChange={setDetailViewOpen}>
-        <DialogContent className="max-w-5xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">Karta parafianina</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-w-5xl p-0 overflow-hidden flex flex-col max-h-[90vh]">
           {viewingParishioner && (
             <ParishionerDetailCard
               parishioner={viewingParishioner}
@@ -533,6 +525,7 @@ export default function Kartoteka() {
                   parishionerOfferings,
                 );
               }}
+              onClose={() => setDetailViewOpen(false)}
             />
           )}
         </DialogContent>

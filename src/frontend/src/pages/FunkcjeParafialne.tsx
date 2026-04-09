@@ -399,8 +399,8 @@ export default function FunkcjeParafialne() {
                       <div>
                         <p className="text-sm font-medium">Kontakty:</p>
                         <ul className="text-sm text-muted-foreground">
-                          {assignment.contacts.map((c, ci) => (
-                            <li key={`c-${ci}-${c}`}>• {c}</li>
+                          {assignment.contacts.map((c) => (
+                            <li key={c}>• {c}</li>
                           ))}
                         </ul>
                       </div>
@@ -488,8 +488,8 @@ export default function FunkcjeParafialne() {
                       <div>
                         <p className="text-sm font-medium">Kontakty:</p>
                         <ul className="text-sm text-muted-foreground">
-                          {assignment.contacts.map((c, ci) => (
-                            <li key={`lc-${ci}-${c}`}>• {c}</li>
+                          {assignment.contacts.map((c) => (
+                            <li key={c}>• {c}</li>
                           ))}
                         </ul>
                       </div>
@@ -529,10 +529,10 @@ export default function FunkcjeParafialne() {
         open={detailIndividualOpen}
         onOpenChange={setDetailIndividualOpen}
       >
-        <DialogContent className="max-w-2xl p-0 overflow-hidden">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden flex flex-col max-h-[90vh]">
           {viewingIndividual && (
             <>
-              <DialogHeader className="p-0">
+              <DialogHeader className="p-0 flex-none">
                 <div
                   className="px-6 py-5"
                   style={{
@@ -556,13 +556,13 @@ export default function FunkcjeParafialne() {
                   )}
                 </div>
               </DialogHeader>
-              <div className="px-6 py-6 space-y-8 max-h-[82vh] overflow-y-auto">
+              <div className="flex-1 overflow-y-auto min-h-0 px-6 py-6 space-y-6">
                 {viewingIndividual.description && (
                   <div>
                     <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                       Opis
                     </p>
-                    <p className="text-base leading-relaxed whitespace-pre-wrap">
+                    <p className="text-base leading-relaxed whitespace-pre-wrap break-words">
                       {viewingIndividual.description}
                     </p>
                   </div>
@@ -573,10 +573,10 @@ export default function FunkcjeParafialne() {
                       Kontakty
                     </p>
                     <ul className="space-y-1">
-                      {viewingIndividual.contacts.map((c, ci) => (
-                        <li key={`vc-${ci}-${c}`} className="flex gap-2">
+                      {viewingIndividual.contacts.map((c) => (
+                        <li key={c} className="flex gap-2">
                           <span style={{ color: GOLD }}>•</span>
-                          <span>{c}</span>
+                          <span className="break-words">{c}</span>
                         </li>
                       ))}
                     </ul>
@@ -584,29 +584,30 @@ export default function FunkcjeParafialne() {
                 )}
               </div>
               <div
-                className="px-6 py-4 flex gap-3"
-                style={{ borderTop: "1px solid oklch(0.90 0.02 265)" }}
+                className="flex-none px-6 py-4 flex flex-wrap gap-2 items-center justify-between"
+                style={{ borderTop: "1px solid oklch(0.85 0.05 80)" }}
               >
-                <Button
-                  onClick={() => handleEditIndividual(viewingIndividual)}
-                  style={{ background: GOLD, color: NAVY }}
-                  className="hover:opacity-90"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edytuj
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleDeleteIndividual(viewingIndividual)}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Usuń
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => handleEditIndividual(viewingIndividual)}
+                    style={{ background: GOLD, color: NAVY }}
+                    className="hover:opacity-90"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edytuj
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleDeleteIndividual(viewingIndividual)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Usuń
+                  </Button>
+                </div>
                 <Button
                   variant="outline"
                   onClick={() => setDetailIndividualOpen(false)}
-                  className="ml-auto"
                 >
                   <X className="h-4 w-4 mr-2" />
                   Zamknij
@@ -619,10 +620,10 @@ export default function FunkcjeParafialne() {
 
       {/* Detail wizytówka — Miejscowości */}
       <Dialog open={detailLocalityOpen} onOpenChange={setDetailLocalityOpen}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden flex flex-col max-h-[90vh]">
           {viewingLocality && (
             <>
-              <DialogHeader className="p-0">
+              <DialogHeader className="p-0 flex-none">
                 <div
                   className="px-6 py-5"
                   style={{
@@ -641,13 +642,13 @@ export default function FunkcjeParafialne() {
                   </DialogTitle>
                 </div>
               </DialogHeader>
-              <div className="px-6 py-6 space-y-8 max-h-[82vh] overflow-y-auto">
+              <div className="flex-1 overflow-y-auto min-h-0 px-6 py-6 space-y-6">
                 {viewingLocality.description && (
                   <div>
                     <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                       Opis
                     </p>
-                    <p className="text-base leading-relaxed whitespace-pre-wrap">
+                    <p className="text-base leading-relaxed whitespace-pre-wrap break-words">
                       {viewingLocality.description}
                     </p>
                   </div>
@@ -658,10 +659,10 @@ export default function FunkcjeParafialne() {
                       Kontakty
                     </p>
                     <ul className="space-y-1">
-                      {viewingLocality.contacts.map((c, ci) => (
-                        <li key={`vlc-${ci}-${c}`} className="flex gap-2">
+                      {viewingLocality.contacts.map((c) => (
+                        <li key={c} className="flex gap-2">
                           <span style={{ color: GOLD }}>•</span>
-                          <span>{c}</span>
+                          <span className="break-words">{c}</span>
                         </li>
                       ))}
                     </ul>
@@ -669,29 +670,30 @@ export default function FunkcjeParafialne() {
                 )}
               </div>
               <div
-                className="px-6 py-4 flex gap-3"
-                style={{ borderTop: "1px solid oklch(0.90 0.02 265)" }}
+                className="flex-none px-6 py-4 flex flex-wrap gap-2 items-center justify-between"
+                style={{ borderTop: "1px solid oklch(0.85 0.05 80)" }}
               >
-                <Button
-                  onClick={() => handleEditLocality(viewingLocality)}
-                  style={{ background: GOLD, color: NAVY }}
-                  className="hover:opacity-90"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edytuj
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleDeleteLocality(viewingLocality)}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Usuń
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => handleEditLocality(viewingLocality)}
+                    style={{ background: GOLD, color: NAVY }}
+                    className="hover:opacity-90"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edytuj
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleDeleteLocality(viewingLocality)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Usuń
+                  </Button>
+                </div>
                 <Button
                   variant="outline"
                   onClick={() => setDetailLocalityOpen(false)}
-                  className="ml-auto"
                 >
                   <X className="h-4 w-4 mr-2" />
                   Zamknij

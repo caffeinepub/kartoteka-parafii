@@ -214,11 +214,8 @@ export default function Wydarzenia() {
             <div>
               <p className="text-sm font-medium mb-1">Zadania:</p>
               <ul className="text-sm space-y-1">
-                {event.tasks.map((task, ti) => (
-                  <li
-                    key={`task-${ti}-${task.description}`}
-                    className="text-muted-foreground"
-                  >
+                {event.tasks.map((task) => (
+                  <li key={task.description} className="text-muted-foreground">
                     • {task.description}
                   </li>
                 ))}
@@ -355,10 +352,10 @@ export default function Wydarzenia() {
 
       {/* Detail wizytówka */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden flex flex-col max-h-[90vh]">
           {viewingEvent && (
             <>
-              <DialogHeader className="p-0">
+              <DialogHeader className="p-0 flex-none">
                 <div
                   className="px-6 py-5"
                   style={{
@@ -387,13 +384,13 @@ export default function Wydarzenia() {
                   </p>
                 </div>
               </DialogHeader>
-              <div className="px-6 py-6 space-y-8 max-h-[82vh] overflow-y-auto">
+              <div className="flex-1 overflow-y-auto min-h-0 px-6 py-6 space-y-6">
                 {viewingEvent.description && (
                   <div>
                     <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                       Opis
                     </p>
-                    <p className="text-base leading-relaxed whitespace-pre-wrap">
+                    <p className="text-base leading-relaxed whitespace-pre-wrap break-words">
                       {viewingEvent.description}
                     </p>
                   </div>
@@ -404,15 +401,17 @@ export default function Wydarzenia() {
                       Zadania ({viewingEvent.tasks.length})
                     </p>
                     <ul className="space-y-2">
-                      {viewingEvent.tasks.map((task, ti) => (
-                        <li
-                          key={`vtask-${ti}-${task.description}`}
-                          className="flex gap-2"
-                        >
-                          <span style={{ color: GOLD }} className="font-bold">
-                            {ti + 1}.
+                      {viewingEvent.tasks.map((task, taskIdx) => (
+                        <li key={task.description} className="flex gap-2">
+                          <span
+                            style={{ color: GOLD }}
+                            className="font-bold flex-shrink-0"
+                          >
+                            {taskIdx + 1}.
                           </span>
-                          <span>{task.description}</span>
+                          <span className="break-words">
+                            {task.description}
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -420,30 +419,28 @@ export default function Wydarzenia() {
                 )}
               </div>
               <div
-                className="px-6 py-4 flex gap-3"
-                style={{ borderTop: "1px solid oklch(0.90 0.02 265)" }}
+                className="flex-none px-6 py-4 flex flex-wrap gap-2 items-center justify-between"
+                style={{ borderTop: "1px solid oklch(0.85 0.05 80)" }}
               >
-                <Button
-                  onClick={() => handleEdit(viewingEvent)}
-                  style={{ background: GOLD, color: NAVY }}
-                  className="hover:opacity-90"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edytuj
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleDelete(viewingEvent)}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Usuń
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setDetailOpen(false)}
-                  className="ml-auto"
-                >
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => handleEdit(viewingEvent)}
+                    style={{ background: GOLD, color: NAVY }}
+                    className="hover:opacity-90"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edytuj
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleDelete(viewingEvent)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Usuń
+                  </Button>
+                </div>
+                <Button variant="outline" onClick={() => setDetailOpen(false)}>
                   <X className="h-4 w-4 mr-2" />
                   Zamknij
                 </Button>
