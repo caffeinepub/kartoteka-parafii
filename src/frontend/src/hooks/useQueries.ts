@@ -78,10 +78,20 @@ export function useIsAuthorized() {
   // actor.isAuthorized() does NOT exist on the canister DID — calling it throws.
   // A caller is authorized if their role is admin or user (not guest).
   // #guest is returned for anonymous callers or principals not yet registered.
+  // IMPORTANT: _initializeAccessControl() must be called FIRST so the principal
+  // is registered (first caller → admin, subsequent callers → #user).
+  // Without this, getCallerUserRole() calls Runtime.trap for unregistered principals.
   const query = useQuery<boolean>({
     queryKey: ["isAuthorized"],
     queryFn: async () => {
       if (!actor) return false;
+      try {
+        // Register the caller — first caller becomes admin, others become #user.
+        await actor._initializeAccessControl();
+      } catch (e) {
+        // Non-fatal: principal may already be registered, or this is a re-login.
+        console.warn("useIsAuthorized: _initializeAccessControl notice", e);
+      }
       try {
         const role = await actor.getCallerUserRole();
         // Motoko variant arrives as { admin: null } | { user: null } | { guest: null }
